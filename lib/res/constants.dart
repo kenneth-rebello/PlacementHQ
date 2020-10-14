@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:placementshq/screens/for_officers/current_drives_screen.dart';
 import 'package:placementshq/screens/for_officers/new_drive_screen.dart';
 import 'package:placementshq/screens/for_officers/students_screen.dart';
-import 'package:placementshq/screens/for_students/companies_screen.dart';
+import 'package:placementshq/screens/for_students/drives_screen.dart';
 import 'package:placementshq/screens/for_students/notices_screen.dart';
 import 'package:placementshq/screens/profile_screens/profile_screen.dart';
 import 'package:placementshq/screens/for_students/registrations_screen.dart';
@@ -12,9 +12,9 @@ abstract class Constants {
 
   static List<HomeItem> homeItems = [
     HomeItem(
-      label: "Companies",
+      label: "Current Placement Drives",
       icon: Icons.business_center,
-      routeName: CompaniesScreen.routeName,
+      routeName: DrivesScreen.routeName,
       imagePath: 'assets/images/companies.png',
       protected: true,
     ),
@@ -43,7 +43,13 @@ abstract class Constants {
 
   static List<HomeItem> tpoHomeItems = [
     HomeItem(
-      label: "New Drive",
+      label: "Current Placement Drives",
+      routeName: CurrentDrivesScreen.routeName,
+      imagePath: 'assets/images/drive.png',
+      protected: false,
+    ),
+    HomeItem(
+      label: "New Placement Drive",
       icon: Icons.subscriptions,
       routeName: NewDriveScreen.routeName,
       imagePath: 'assets/images/companies.png',
@@ -53,12 +59,6 @@ abstract class Constants {
       label: "Students",
       routeName: StudentsScreen.routeName,
       imagePath: 'assets/images/students.png',
-      protected: false,
-    ),
-    HomeItem(
-      label: "Current Drives",
-      routeName: CurrentDrivesScreen.routeName,
-      imagePath: 'assets/images/drive.png',
       protected: false,
     ),
   ];
@@ -79,6 +79,12 @@ abstract class Constants {
     "Marine",
     "Mechanical",
     "Production",
+  ];
+
+  static const List<String> driveCategories = [
+    "Normal",
+    "Dream",
+    "Super Dream"
   ];
 }
 

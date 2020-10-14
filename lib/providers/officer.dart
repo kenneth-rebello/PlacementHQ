@@ -1,18 +1,19 @@
 import 'dart:convert';
-
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:placementshq/models/drive.dart';
 
 class OfficerProfile {
   String fullName;
   String collegeName;
+  String collegeId;
   String designation;
   int phone;
   String email;
 
   OfficerProfile({
     this.collegeName,
+    this.collegeId,
     this.fullName,
     this.designation,
     this.phone,
@@ -25,6 +26,7 @@ class Officer with ChangeNotifier {
   final String userId;
   final String emailId;
   OfficerProfile _profile;
+  List<Drive> _drives;
 
   Officer(this.token, this.userId, this.emailId);
 
@@ -33,6 +35,7 @@ class Officer with ChangeNotifier {
     if (_profile != null) {
       copy = new OfficerProfile();
       copy.collegeName = _profile.collegeName;
+      copy.collegeId = _profile.collegeId;
       copy.fullName = _profile.fullName;
       copy.designation = _profile.designation;
       copy.phone = _profile.phone;
@@ -43,6 +46,13 @@ class Officer with ChangeNotifier {
     return copy;
   }
 
+  String get collegeId {
+    if (profile != null) {
+      return profile.collegeId;
+    }
+    return null;
+  }
+
   Future<void> loadCurrentOfficerProfile() async {
     final url =
         "https://placementhq-777.firebaseio.com/officers/$userId.json?auth=$token";
@@ -51,6 +61,7 @@ class Officer with ChangeNotifier {
     if (profile != null) {
       _profile = new OfficerProfile(
         collegeName: profile["collegeName"],
+        collegeId: profile["collegeId"],
         fullName: profile["fullName"],
         designation: profile["designation"],
         phone: profile["phone"],

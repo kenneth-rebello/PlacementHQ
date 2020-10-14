@@ -15,9 +15,11 @@ class AcademicDetails extends StatefulWidget {
 class _AcademicDetailsState extends State<AcademicDetails> {
   final _form = GlobalKey<FormState>();
   List<String> suggestions = [];
+  bool _enabled = true;
   TextEditingController cont = new TextEditingController();
   Map<String, dynamic> initValues = {
     "collegeName": "",
+    "collegeId": "",
     "specialization": Constants.branches[0],
     "secMarks": 0,
     "highSecMarks": 0,
@@ -44,6 +46,7 @@ class _AcademicDetailsState extends State<AcademicDetails> {
 
   @override
   void initState() {
+    Provider.of<Colleges>(context, listen: false).loadColleges();
     Profile profile = Provider.of<User>(context, listen: false).profile;
     if (profile != null) {
       if (profile.collegeName != null && profile.collegeName != "")
@@ -71,9 +74,13 @@ class _AcademicDetailsState extends State<AcademicDetails> {
   @override
   Widget build(BuildContext context) {
     final colleges = Provider.of<Colleges>(context).colleges;
+    print(colleges);
     final List<String> collegesList =
         colleges.length > 0 ? colleges.map((c) => c.name).toList() : [];
-
+    final mapCollegeToId = {};
+    colleges.forEach((c) {
+      mapCollegeToId[c.name] = c.id;
+    });
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: SingleChildScrollView(
@@ -88,9 +95,11 @@ class _AcademicDetailsState extends State<AcademicDetails> {
                 decoration: InputDecoration(
                   hintText: "College Name",
                 ),
+                enabled: _enabled,
                 onChanged: (val) {
                   setState(() {
                     initValues["collegeName"] = val;
+                    initValues["collegeId"] = mapCollegeToId[val];
                     suggestions = [];
                     suggestions = collegesList
                         .where((college) =>
@@ -111,7 +120,12 @@ class _AcademicDetailsState extends State<AcademicDetails> {
                       ),
                       onTap: () {
                         cont.text = suggestions[idx];
-                        initValues["collegeName"] = suggestions[idx];
+                        setState(() {
+                          initValues["collegeName"] = suggestions[idx];
+                          initValues["collegeId"] =
+                              mapCollegeToId[suggestions[idx]];
+                          _enabled = false;
+                        });
                       },
                     ),
                   ),

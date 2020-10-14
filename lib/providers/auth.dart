@@ -123,7 +123,7 @@ class Auth with ChangeNotifier {
         "isOfficer": isOfficer,
         "isVerified": isVerified,
       });
-      prefs.setString('userData', userData);
+      prefs.setString('pHQuserData', userData);
     }
   }
 
@@ -151,9 +151,9 @@ class Auth with ChangeNotifier {
 
   Future<bool> autoLogIn() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!prefs.containsKey('userData')) return false;
+    if (!prefs.containsKey('pHQuserData')) return false;
     final userData =
-        json.decode(prefs.getString('userData')) as Map<String, dynamic>;
+        json.decode(prefs.getString('pHQuserData')) as Map<String, dynamic>;
     final expiryDate = DateTime.parse(userData['expiryDate']);
     if (expiryDate.isBefore(DateTime.now())) return false;
     isVerified = userData["isVerified"];
@@ -176,7 +176,7 @@ class Auth with ChangeNotifier {
     _userId = null;
     _expiryDate = null;
     final prefs = await SharedPreferences.getInstance();
-    prefs.remove('userData');
+    prefs.remove('pHQuserData');
     notifyListeners();
   }
 

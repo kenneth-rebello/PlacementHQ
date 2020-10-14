@@ -50,15 +50,14 @@ class _PersonalDetailsState extends State<PersonalDetails> {
       if (profile.middleName != null)
         initValues["middleName"] = profile.middleName;
       if (profile.dateOfBirth != null)
-        initValues["dateOfBirth"] = profile.dateOfBirth.toIso8601String();
+        initValues["dateOfBirth"] = profile.dateOfBirth;
       if (profile.dateOfBirth != null)
-        dateToShow = formatter.format(profile.dateOfBirth);
+        dateToShow = formatter.format(DateTime.parse(profile.dateOfBirth));
       if (profile.gender != null) initValues["gender"] = profile.gender;
       if (profile.imageUrl != null) initValues["imageUrl"] = profile.imageUrl;
       if (profile.nationality != null)
         initValues["nationality"] = profile.nationality;
-      if (profile.verified != null)
-        initValues["verified"] = profile.verified;
+      if (profile.verified != null) initValues["verified"] = profile.verified;
     }
     super.initState();
   }

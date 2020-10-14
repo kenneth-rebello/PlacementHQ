@@ -19,11 +19,6 @@ class _HomeGridState extends State<HomeGrid> {
     Provider.of<User>(context, listen: false)
         .loadCurrentUserProfile()
         .then((profile) {
-      if (profile != null) {
-        // Provider.of<Companies>(context, listen: false)
-        //     .getCompanies();
-      }
-
       setState(() {
         _loading = false;
       });

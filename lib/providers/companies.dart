@@ -33,16 +33,22 @@ class Companies with ChangeNotifier {
     return [..._companies];
   }
 
-  Future<void> loadCompanies() async {
+  Future<void> loadCompaniesForList(String collegeId) async {
     final url =
         "https://placementhq-777.firebaseio.com/companies.json?auth=$_token";
     final res = await http.get(url);
     final companies = json.decode(res.body) as Map<String, dynamic>;
     List<Company> newCompanies = [];
-    companies.forEach((key, company) {
-      newCompanies.add(Company(name: company["name"], id: key));
-    });
+    if (companies != null) {
+      companies.forEach((key, company) {
+        newCompanies.add(Company(name: company["name"], id: key));
+      });
+    }
     _companies = newCompanies;
     notifyListeners();
+  }
+
+  Company getById(String id) {
+    return _companies.firstWhere((company) => company.id == id);
   }
 }

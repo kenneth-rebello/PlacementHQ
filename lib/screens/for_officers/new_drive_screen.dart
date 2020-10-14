@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/providers/colleges.dart';
+import 'package:intl/intl.dart';
 import 'package:placementshq/providers/companies.dart';
+import 'package:placementshq/providers/drives.dart';
+import 'package:placementshq/providers/officer.dart';
+import 'package:placementshq/res/constants.dart';
+import 'package:placementshq/widgets/input/input.dart';
 import 'package:provider/provider.dart';
 
 class NewDriveScreen extends StatefulWidget {
@@ -13,28 +17,64 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
   final _form = GlobalKey<FormState>();
   List<String> suggestions = [];
   TextEditingController cont = new TextEditingController();
+  DateFormat formatter = new DateFormat("dd-MM-yyyy");
   Map<String, dynamic> values = {
     "companyName": "",
+    "companyImageUrl": "",
     "companyId": "",
-    "minCGPI": "",
-    "maxGapYears": "",
-    "minKTs": "",
+    "minCGPI": 0.0,
+    "maxGapYears": 1,
+    "maxKTs": 4,
     "externalLink": "",
     "jobDesc": "",
-    "location": "",
-    "CTC": "",
-    "category": "",
+    "location": "N/A",
+    "ctc": 0,
+    "category": Constants.driveCategories[0],
     "companyMessage": "",
-    "expectedDate": null
+    "expectedDate": DateTime.now().add(Duration(days: 7)).toIso8601String(),
   };
   bool _loading = false;
   bool newCompany = true;
 
+  chooseDate() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.parse(values["expectedDate"]),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(Duration(days: 365)),
+    ).then((pickedDate) {
+      if (pickedDate != null)
+        setState(() {
+          values["expectedDate"] = pickedDate.toIso8601String();
+        });
+    });
+  }
+
+  void _confirm() {
+    if (_form.currentState.validate()) {
+      _form.currentState.save();
+      String collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+      setState(() {
+        _loading = true;
+      });
+      Company company;
+      if (!newCompany) {
+        company = Provider.of<Companies>(context).getById(values["companyId"]);
+      }
+      Provider.of<Drives>(context, listen: false)
+          .createNewDrive(values, collegeId, company)
+          .then((_) {
+        Navigator.of(context).pop();
+      });
+    }
+  }
+
   @override
   void initState() {
     _loading = true;
+    String collegeId = Provider.of<Officer>(context, listen: false).collegeId;
     Provider.of<Companies>(context, listen: false)
-        .loadCompanies()
+        .loadCompaniesForList(collegeId)
         .then((value) {
       setState(() {
         _loading = false;
@@ -47,11 +87,14 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
   Widget build(BuildContext context) {
     final companies = Provider.of<Companies>(context).companies;
     final companiesList = companies.map((c) => c.name).toList();
-    Map<String, String> mapCompanyToId = {};
+    Map<String, dynamic> mapCompanyToId = {};
     companies.forEach((c) {
-      mapCompanyToId[c.name] = c.id;
+      mapCompanyToId[c.name] = {
+        "id": c.id,
+        "url": c.imageUrl,
+      };
     });
-    print(companiesList);
+
     return Scaffold(
       appBar: AppBar(
         title: Text("Add New Placement Drive"),
@@ -68,21 +111,23 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                   autovalidate: true,
                   child: Column(
                     children: [
-                      TextFormField(
+                      Input(
                         controller: cont,
-                        decoration: InputDecoration(
-                          hintText: "Company Name",
-                        ),
+                        label: "Company Name",
+                        enabled: newCompany,
+                        requiredField: true,
                         onChanged: (val) {
                           setState(() {
                             values["companyName"] = val;
                             values["companyId"] = mapCompanyToId[val];
-                            suggestions = [];
-                            suggestions = companiesList
-                                .where((company) => company
-                                    .toLowerCase()
-                                    .contains(val.toLowerCase()))
-                                .toList();
+                            if (val.length > 3) {
+                              suggestions = [];
+                              suggestions = companiesList
+                                  .where((company) => company
+                                      .toLowerCase()
+                                      .contains(val.toLowerCase()))
+                                  .toList();
+                            }
                           });
                         },
                       ),
@@ -100,15 +145,155 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                                 cont.text = suggestions[idx];
                                 values["companyName"] = suggestions[idx];
                                 values["companyId"] =
-                                    mapCompanyToId[suggestions[idx]];
+                                    mapCompanyToId[suggestions[idx]]["id"];
+                                values["companyImageUrl"] =
+                                    mapCompanyToId[suggestions[idx]]["url"];
+                                setState(() {
+                                  newCompany = false;
+                                  suggestions = [];
+                                });
                               },
                             ),
                           ),
                         ),
-                      RaisedButton(
-                        onPressed: () {
-                          print(values);
+                      if (newCompany)
+                        Input(
+                          label: "Image URL for company logo",
+                          onSaved: (val) {
+                            setState(() {
+                              values["companyImageUrl"] = val;
+                            });
+                          },
+                        ),
+                      Input(
+                        initialValue: values["companyMessage"],
+                        label: "Message from company",
+                        onSaved: (val) {
+                          setState(() {
+                            values["companyMessage"] = val;
+                          });
                         },
+                        maxLines: null,
+                        minLines: 2,
+                      ),
+                      Input(
+                        label: "Minimum required CGPI",
+                        helper: "Defaults to 0.0",
+                        type: TextInputType.number,
+                        onSaved: (val) {
+                          setState(() {
+                            values["minCGPI"] = double.parse(val);
+                          });
+                        },
+                      ),
+                      Input(
+                        label: "Maximum allowed Gap Years",
+                        helper: "Defaults to 1",
+                        type: TextInputType.number,
+                        onSaved: (val) {
+                          setState(() {
+                            values["maxGapYears"] = int.parse(val);
+                          });
+                        },
+                      ),
+                      Input(
+                        label: "Maximum allowed live KTs",
+                        helper: "Defaults to 4",
+                        type: TextInputType.number,
+                        onSaved: (val) {
+                          setState(() {
+                            values["maxKTs"] = int.parse(val);
+                          });
+                        },
+                      ),
+                      Input(
+                        label: "Registration Link",
+                        helper:
+                            "Only if company required registration on a seperate website",
+                        onSaved: (val) {
+                          setState(() {
+                            values["externalLink"] = val;
+                          });
+                        },
+                      ),
+                      Input(
+                        label: "Job Description",
+                        onSaved: (val) {
+                          setState(() {
+                            values["jobDesc"] = val;
+                          });
+                        },
+                      ),
+                      Input(
+                        label: "Location",
+                        helper: "Defaults to N/A",
+                        onSaved: (val) {
+                          setState(() {
+                            values["location"] = val;
+                          });
+                        },
+                      ),
+                      Input(
+                        label: "CTC",
+                        helper: "in Lakhs. Eg: 8.5",
+                        type: TextInputType.number,
+                        requiredField: true,
+                        onChanged: (val) {
+                          setState(() {
+                            double ctc = double.parse(val);
+                            values["ctc"] = ctc;
+                            if (ctc > 5.0) values["category"] = "Dream";
+                            if (ctc > 10.0) values["category"] = "Super Dream";
+                          });
+                        },
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Category:",
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                          DropdownButton(
+                            value: values["category"],
+                            items: Constants.driveCategories
+                                .map<DropdownMenuItem>(
+                                  (value) => DropdownMenuItem(
+                                    value: value,
+                                    child: Text(value),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (val) {
+                              setState(() {
+                                values["category"] = val;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Expected Date:" +
+                                formatter.format(
+                                    DateTime.parse(values["expectedDate"])),
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                          FlatButton(
+                            onPressed: chooseDate,
+                            child: Text(
+                              "Open Calendar",
+                              style: TextStyle(
+                                color: Color.fromRGBO(0, 0, 100, 1),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      RaisedButton(
+                        onPressed: _confirm,
                         child: Text(
                           "Submit",
                           style: Theme.of(context).textTheme.button,

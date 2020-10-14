@@ -9,7 +9,7 @@ class Profile {
   String firstName;
   String middleName;
   String lastName;
-  DateTime dateOfBirth;
+  String dateOfBirth;
   String gender;
   String nationality;
   String imageUrl;
@@ -99,13 +99,18 @@ class User with ChangeNotifier {
     return copy;
   }
 
+  String get collegeId {
+    if (userProfile != null) {
+      return userProfile.collegeId;
+    } else
+      return null;
+  }
+
   Future<Profile> loadCurrentUserProfile() async {
     final url =
         "https://placementhq-777.firebaseio.com/users/$userId.json?auth=$token";
     final data = await http.get(url);
     final profile = json.decode(data.body);
-    print("Profile Loaded");
-    print(profile);
 
     if (profile != null) {
       userProfile = new Profile(
@@ -113,10 +118,7 @@ class User with ChangeNotifier {
         firstName: profile["firstName"],
         middleName: profile["middleName"],
         lastName: profile["lastName"],
-        dateOfBirth:
-            (profile["dateOfBirth"] == null || profile["dateOfBirth"] == "")
-                ? null
-                : DateTime.parse(profile["dateOfBirth"]),
+        dateOfBirth: profile["dateOfBirth"],
         gender: profile["gender"],
         nationality: profile["nationality"],
         imageUrl: profile["imageUrl"],
@@ -156,7 +158,7 @@ class User with ChangeNotifier {
       userProfile = null;
     }
     notifyListeners();
-    return profile;
+    return userProfile;
   }
 
   Future<void> editProfile(Map<String, dynamic> profileData) async {

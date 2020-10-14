@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:placementshq/providers/companies.dart';
+import 'package:placementshq/providers/drives.dart';
 import 'package:provider/provider.dart';
 import 'package:placementshq/providers/auth.dart';
 import 'package:placementshq/providers/colleges.dart';
@@ -14,7 +15,7 @@ import 'package:placementshq/screens/profile_screens/profile_screen.dart';
 import 'package:placementshq/screens/profile_screens/tpo_application.dart';
 import 'package:placementshq/screens/for_students/notices_screen.dart';
 import 'package:placementshq/screens/for_students/registrations_screen.dart';
-import 'package:placementshq/screens/for_students/companies_screen.dart';
+import 'package:placementshq/screens/for_students/drives_screen.dart';
 import 'package:placementshq/screens/for_officers/current_drives_screen.dart';
 import 'package:placementshq/screens/for_officers/new_drive_screen.dart';
 import 'package:placementshq/screens/for_officers/students_screen.dart';
@@ -60,15 +61,26 @@ class MyApp extends StatelessWidget {
             auth.token,
           ),
         ),
+        ChangeNotifierProxyProvider<Auth, Drives>(
+          create: (ctx) => null,
+          update: (ctx, auth, prevUser) => Drives(
+            auth.token,
+          ),
+        )
       ],
       child: Consumer<Auth>(
         builder: (ctx, auth, _) => MaterialApp(
           title: Constants.title,
           theme: ThemeData(
-            primaryColor: Color.fromRGBO(9, 0, 138, 1),
-            accentColor: Color.fromRGBO(255, 115, 0, 1),
-            buttonColor: Color.fromRGBO(9, 0, 138, 1),
+            primaryColor: Colors.indigo[800],
+            accentColor: Colors.orange[500],
+            buttonColor: Colors.indigo[800],
             textTheme: TextTheme(
+              headline3: TextStyle(
+                color: Colors.indigo[800],
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
               button: TextStyle(color: Colors.white),
             ),
           ),
@@ -82,7 +94,7 @@ class MyApp extends StatelessWidget {
                           : AuthScreen(),
                 ),
           routes: {
-            CompaniesScreen.routeName: (ctx) => CompaniesScreen(),
+            DrivesScreen.routeName: (ctx) => DrivesScreen(),
             RegistrationsScreen.routeName: (ctx) => RegistrationsScreen(),
             NoticesScreen.routeName: (ctx) => NoticesScreen(),
             ProfileScreen.routeName: (ctx) => ProfileScreen(),

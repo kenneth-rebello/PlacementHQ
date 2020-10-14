@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:placementshq/providers/auth.dart';
 import 'package:placementshq/providers/colleges.dart';
-import 'package:placementshq/providers/companies.dart';
 import 'package:placementshq/providers/officer.dart';
 import 'package:provider/provider.dart';
 
@@ -76,9 +75,7 @@ class _TPOApplicationState extends State<TPOApplication> {
     _loading = true;
     email = Provider.of<Auth>(context, listen: false).userEmail;
     values["email"] = email;
-    Provider.of<Companies>(context, listen: false)
-        .loadCompanies()
-        .then((value) {
+    Provider.of<Colleges>(context, listen: false).loadColleges().then((value) {
       setState(() {
         _loading = false;
       });
