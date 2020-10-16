@@ -4,6 +4,7 @@ import 'package:placementshq/providers/companies.dart';
 import 'package:placementshq/providers/drives.dart';
 import 'package:placementshq/providers/officer.dart';
 import 'package:placementshq/res/constants.dart';
+import 'package:placementshq/widgets/input/check_list_item.dart';
 import 'package:placementshq/widgets/input/input.dart';
 import 'package:provider/provider.dart';
 
@@ -17,12 +18,17 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
   final _form = GlobalKey<FormState>();
   List<String> suggestions = [];
   TextEditingController cont = new TextEditingController();
+  TextEditingController contImage = new TextEditingController();
   DateFormat formatter = new DateFormat("dd-MM-yyyy");
   Map<String, dynamic> values = {
     "companyName": "",
     "companyImageUrl": "",
     "companyId": "",
-    "minCGPI": 0.0,
+    "minSecMarks": 0,
+    "minHighSecMarks": 0,
+    "minDiplomaMarks": 0,
+    "minBEMarks": 0.0,
+    "minCGPA": 0.0,
     "maxGapYears": 1,
     "maxKTs": 4,
     "externalLink": "",
@@ -32,11 +38,22 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
     "category": Constants.driveCategories[0],
     "companyMessage": "",
     "expectedDate": DateTime.now().add(Duration(days: 7)).toIso8601String(),
+    "createdOn": DateTime.now().toIso8601String(),
+    "regDeadline": DateTime.now().add(Duration(days: 3)).toIso8601String(),
+    "requirements": {
+      "middleName": false,
+      "age": false,
+      "gender": false,
+      "nationality": false,
+      "address": false,
+      "city": false,
+      "state": false,
+    }
   };
   bool _loading = false;
   bool newCompany = true;
 
-  chooseDate() {
+  chooseDate(String fieldName) {
     showDatePicker(
       context: context,
       initialDate: DateTime.parse(values["expectedDate"]),
@@ -45,7 +62,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
     ).then((pickedDate) {
       if (pickedDate != null)
         setState(() {
-          values["expectedDate"] = pickedDate.toIso8601String();
+          values[fieldName] = pickedDate.toIso8601String();
         });
     });
   }
@@ -53,18 +70,56 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
   void _confirm() {
     if (_form.currentState.validate()) {
       _form.currentState.save();
+      print(values);
       String collegeId = Provider.of<Officer>(context, listen: false).collegeId;
-      setState(() {
-        _loading = true;
-      });
+
       Company company;
       if (!newCompany) {
-        company = Provider.of<Companies>(context).getById(values["companyId"]);
+        company = Provider.of<Companies>(context, listen: false)
+            .getById(values["companyId"]);
       }
-      Provider.of<Drives>(context, listen: false)
-          .createNewDrive(values, collegeId, company)
-          .then((_) {
-        Navigator.of(context).pop();
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text(
+              "Are you sure you want to add new drive for ${values["companyName"]}?"),
+          actions: [
+            FlatButton(
+              onPressed: () {
+                Navigator.of(ctx).pop(false);
+              },
+              child: Text(
+                "No",
+                style: TextStyle(
+                  color: Colors.red,
+                ),
+              ),
+            ),
+            FlatButton(
+              onPressed: () {
+                Navigator.of(ctx).pop(true);
+              },
+              child: Text(
+                "Yes",
+                style: TextStyle(color: Colors.indigo[800]),
+              ),
+            )
+          ],
+        ),
+      ).then((res) {
+        if (res) {
+          setState(() {
+            _loading = true;
+          });
+          Provider.of<Drives>(context, listen: false)
+              .createNewDrive(values, collegeId, company)
+              .then((_) {
+            setState(() {
+              _loading = false;
+            });
+            Navigator.of(context).pop();
+          });
+        }
       });
     }
   }
@@ -114,12 +169,16 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                       Input(
                         controller: cont,
                         label: "Company Name",
+                        helper:
+                            "If company name appears below, kinldy select it to avoid creating unnecessary redundant data",
+                        helperLines: 2,
                         enabled: newCompany,
                         requiredField: true,
                         onChanged: (val) {
                           setState(() {
                             values["companyName"] = val;
-                            values["companyId"] = mapCompanyToId[val];
+                            values["companyId"] = "";
+                            values["companyImageUrl"] = "";
                             if (val.length > 3) {
                               suggestions = [];
                               suggestions = companiesList
@@ -143,12 +202,14 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                               ),
                               onTap: () {
                                 cont.text = suggestions[idx];
-                                values["companyName"] = suggestions[idx];
-                                values["companyId"] =
-                                    mapCompanyToId[suggestions[idx]]["id"];
-                                values["companyImageUrl"] =
+                                contImage.text =
                                     mapCompanyToId[suggestions[idx]]["url"];
                                 setState(() {
+                                  values["companyName"] = suggestions[idx];
+                                  values["companyId"] =
+                                      mapCompanyToId[suggestions[idx]]["id"];
+                                  values["companyImageUrl"] =
+                                      mapCompanyToId[suggestions[idx]]["url"];
                                   newCompany = false;
                                   suggestions = [];
                                 });
@@ -156,15 +217,16 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                             ),
                           ),
                         ),
-                      if (newCompany)
-                        Input(
-                          label: "Image URL for company logo",
-                          onSaved: (val) {
-                            setState(() {
-                              values["companyImageUrl"] = val;
-                            });
-                          },
-                        ),
+                      Input(
+                        label: "Image URL for company logo",
+                        controller: contImage,
+                        onSaved: (val) {
+                          setState(() {
+                            values["companyImageUrl"] = val;
+                          });
+                        },
+                        enabled: newCompany,
+                      ),
                       Input(
                         initialValue: values["companyMessage"],
                         label: "Message from company",
@@ -177,13 +239,65 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         minLines: 2,
                       ),
                       Input(
-                        label: "Minimum required CGPI",
+                        label: "Minimum required Xth%",
                         helper: "Defaults to 0.0",
                         type: TextInputType.number,
                         onSaved: (val) {
-                          setState(() {
-                            values["minCGPI"] = double.parse(val);
-                          });
+                          if (val != null && val != "")
+                            setState(() {
+                              values["minSecMarks"] = double.parse(val);
+                            });
+                        },
+                      ),
+                      Input(
+                        label: "Minimum required XIIth %",
+                        helper: "Defaults to 0.0",
+                        type: TextInputType.number,
+                        onSaved: (val) {
+                          if (val != null && val != "")
+                            setState(() {
+                              values["minHighSecMarks"] = double.parse(val);
+                            });
+                        },
+                      ),
+                      Input(
+                        label: "Minimum required Diploma %",
+                        helper: "Defaults to 0.0",
+                        type: TextInputType.number,
+                        onSaved: (val) {
+                          if (val != null && val != "")
+                            setState(() {
+                              values["minDiplomaMarks"] = double.parse(val);
+                            });
+                        },
+                      ),
+                      Input(
+                        label: "Minimum required BE %",
+                        helper: "Default adjusts to minimum CGPA",
+                        type: TextInputType.number,
+                        onSaved: (val) {
+                          if (val != null && val != "")
+                            setState(() {
+                              values["minBEMarks"] = double.parse(val);
+                            });
+                        },
+                      ),
+                      Input(
+                        label: "Minimum required CGPA",
+                        helper: "Defaults to 0.0",
+                        type: TextInputType.number,
+                        onSaved: (val) {
+                          if (val != null && val != "")
+                            setState(() {
+                              double cgpa = double.parse(val);
+                              values["minCGPA"] = cgpa;
+                              double multi = 7.1;
+                              if (cgpa < 7.0) {
+                                multi = 7.1;
+                              } else
+                                multi = 7.4;
+                              values["minBEMarks"] = (multi * cgpa) + 12;
+                            });
                         },
                       ),
                       Input(
@@ -191,9 +305,10 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         helper: "Defaults to 1",
                         type: TextInputType.number,
                         onSaved: (val) {
-                          setState(() {
-                            values["maxGapYears"] = int.parse(val);
-                          });
+                          if (val != null && val != "")
+                            setState(() {
+                              values["maxGapYears"] = int.parse(val);
+                            });
                         },
                       ),
                       Input(
@@ -201,15 +316,16 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         helper: "Defaults to 4",
                         type: TextInputType.number,
                         onSaved: (val) {
-                          setState(() {
-                            values["maxKTs"] = int.parse(val);
-                          });
+                          if (val != null && val != "")
+                            setState(() {
+                              values["maxKTs"] = int.parse(val);
+                            });
                         },
                       ),
                       Input(
                         label: "Registration Link",
                         helper:
-                            "Only if company required registration on a seperate website",
+                            "Only if company requires registration on a seperate website",
                         onSaved: (val) {
                           setState(() {
                             values["externalLink"] = val;
@@ -226,7 +342,6 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                       ),
                       Input(
                         label: "Location",
-                        helper: "Defaults to N/A",
                         onSaved: (val) {
                           setState(() {
                             values["location"] = val;
@@ -242,6 +357,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                           setState(() {
                             double ctc = double.parse(val);
                             values["ctc"] = ctc;
+                            if (ctc <= 5.0) values["category"] = "Normal";
                             if (ctc > 5.0) values["category"] = "Dream";
                             if (ctc > 10.0) values["category"] = "Super Dream";
                           });
@@ -282,7 +398,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                             style: TextStyle(fontSize: 16, color: Colors.grey),
                           ),
                           FlatButton(
-                            onPressed: chooseDate,
+                            onPressed: () => chooseDate("expectedDate"),
                             child: Text(
                               "Open Calendar",
                               style: TextStyle(
@@ -291,6 +407,102 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                             ),
                           ),
                         ],
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            width: 200,
+                            child: Text(
+                              "Registration Deadline:" +
+                                  formatter.format(
+                                      DateTime.parse(values["regDeadline"])),
+                              style: TextStyle(fontSize: 16, color: Colors.red),
+                              softWrap: true,
+                            ),
+                          ),
+                          FlatButton(
+                            onPressed: () => chooseDate("regDeadline"),
+                            child: Text(
+                              "Open Calendar",
+                              style: TextStyle(
+                                color: Color.fromRGBO(0, 0, 100, 1),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      ListTile(
+                        title: Text(
+                          "Mandatory Fields",
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.headline3,
+                        ),
+                        subtitle: Text(
+                            "Profile fields students must have to register for this drive"),
+                      ),
+                      CheckListItem(
+                        value: values["requirements"]["middleName"],
+                        onChanged: (val) {
+                          setState(() {
+                            values["requirements"]["middleName"] = val;
+                          });
+                        },
+                        label: "Middle Name",
+                      ),
+                      CheckListItem(
+                        value: values["requirements"]["gender"],
+                        onChanged: (val) {
+                          setState(() {
+                            values["requirements"]["gender"] = val;
+                          });
+                        },
+                        label: "Gender",
+                      ),
+                      CheckListItem(
+                        value: values["requirements"]["age"],
+                        onChanged: (val) {
+                          setState(() {
+                            values["requirements"]["age"] = val;
+                          });
+                        },
+                        label: "Age",
+                      ),
+                      CheckListItem(
+                        value: values["requirements"]["nationality"],
+                        onChanged: (val) {
+                          setState(() {
+                            values["requirements"]["nationality"] = val;
+                          });
+                        },
+                        label: "Nationality",
+                      ),
+                      CheckListItem(
+                        value: values["requirements"]["address"],
+                        onChanged: (val) {
+                          setState(() {
+                            values["requirements"]["address"] = val;
+                          });
+                        },
+                        label: "Address",
+                      ),
+                      CheckListItem(
+                        value: values["requirements"]["city"],
+                        onChanged: (val) {
+                          setState(() {
+                            values["requirements"]["city"] = val;
+                          });
+                        },
+                        label: "City",
+                      ),
+                      CheckListItem(
+                        value: values["requirements"]["state"],
+                        onChanged: (val) {
+                          setState(() {
+                            values["requirements"]["state"] = val;
+                          });
+                        },
+                        label: "State",
                       ),
                       RaisedButton(
                         onPressed: _confirm,

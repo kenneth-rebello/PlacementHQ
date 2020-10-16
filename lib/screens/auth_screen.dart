@@ -218,7 +218,7 @@ class _AuthCardState extends State<AuthCard> {
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: <Widget>[
                 TextFormField(
                   decoration: InputDecoration(labelText: 'E-Mail'),

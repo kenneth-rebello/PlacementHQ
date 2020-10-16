@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:placementshq/providers/auth.dart';
 import 'package:placementshq/providers/colleges.dart';
 import 'package:placementshq/providers/officer.dart';
+import 'package:placementshq/widgets/input/input.dart';
 import 'package:provider/provider.dart';
 
 class TPOApplication extends StatefulWidget {
@@ -109,16 +110,13 @@ class _TPOApplicationState extends State<TPOApplication> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      TextFormField(
+                      Input(
                         controller: cont,
-                        decoration: InputDecoration(
-                          hintText: "College Name",
-                          filled: true,
-                          helperMaxLines: 6,
-                          helperText:
-                              "\u2022Suggested to use full name displayed on official college website.\n\u2022Avoid making acronyms.\nIf your college name shows in the space below this, please click it.",
-                        ),
-                        readOnly: !newCollege,
+                        label: "College Name",
+                        helperLines: 6,
+                        helper:
+                            "\u2022Suggested to use full name displayed on official college website.\n\u2022Avoid making acronyms.\nIf your college name shows in the space below this, please click it.",
+                        disabled: !newCollege,
                         onChanged: (val) {
                           setState(() {
                             values["collegeName"] = val;
@@ -130,13 +128,8 @@ class _TPOApplicationState extends State<TPOApplication> {
                                     .contains(val.toLowerCase()))
                                 .toList();
                           });
-                          print(values);
                         },
-                        validator: (val) {
-                          if (val.length < 2) {
-                            return "***Required field***";
-                          }
-                        },
+                        requiredField: true,
                       ),
                       if (suggestions.length > 0)
                         Container(
@@ -164,90 +157,58 @@ class _TPOApplicationState extends State<TPOApplication> {
                             ),
                           ),
                         ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: TextFormField(
-                          initialValue: values["fullName"],
-                          decoration: InputDecoration(
-                            hintText: "Your Full Name",
-                            filled: true,
-                          ),
-                          onSaved: (val) {
-                            setState(() {
-                              values["fullName"] = val;
-                            });
-                          },
-                          validator: (val) {
-                            if (val.length < 2) {
-                              return "***Required field***";
-                            }
-                          },
-                        ),
+                      Input(
+                        initialValue: values["fullName"],
+                        label: "Your Full Name",
+                        onSaved: (val) {
+                          setState(() {
+                            values["fullName"] = val;
+                          });
+                        },
+                        requiredField: true,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: TextFormField(
-                          initialValue: values["designation"],
-                          decoration: InputDecoration(
-                            hintText: "Your designation in said college",
-                            filled: true,
-                          ),
-                          onSaved: (val) {
-                            setState(() {
-                              values["designation"] = val;
-                            });
-                          },
-                          validator: (val) {
-                            if (val.length < 2) {
-                              return "***Required field***";
-                            }
-                          },
-                        ),
+                      Input(
+                        initialValue: values["designation"],
+                        label: "Your designation in said college",
+                        onSaved: (val) {
+                          setState(() {
+                            values["designation"] = val;
+                          });
+                        },
+                        requiredField: true,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: TextFormField(
-                          initialValue: values["phone"].toString(),
-                          keyboardType: TextInputType.phone,
-                          decoration: InputDecoration(
-                            hintText: "Your phone number",
-                            filled: true,
-                          ),
-                          onSaved: (val) {
-                            setState(() {
-                              values["phone"] = int.parse(val);
-                            });
-                          },
-                          validator: (val) {
-                            if (val.length < 10) {
-                              return "Too short";
-                            }
-                            if (val.length > 10) {
-                              return "Too long";
-                            }
-                          },
-                        ),
+                      Input(
+                        initialValue: values["phone"].toString(),
+                        type: TextInputType.phone,
+                        label: "Your phone number",
+                        onSaved: (val) {
+                          setState(() {
+                            values["phone"] = int.parse(val);
+                          });
+                        },
+                        validator: (val) {
+                          if (val.length < 10) {
+                            return "Too short";
+                          }
+                          if (val.length > 10) {
+                            return "Too long";
+                          }
+                        },
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: TextFormField(
-                          initialValue: values["email"],
-                          keyboardType: TextInputType.emailAddress,
-                          decoration: InputDecoration(
-                            hintText: "Your email",
-                            filled: true,
-                          ),
-                          onSaved: (val) {
-                            setState(() {
-                              values["email"] = val;
-                            });
-                          },
-                          validator: (val) {
-                            if (val != email) {
-                              return "You must use your registered email";
-                            }
-                          },
-                        ),
+                      Input(
+                        initialValue: values["email"],
+                        type: TextInputType.emailAddress,
+                        label: "Your email",
+                        onSaved: (val) {
+                          setState(() {
+                            values["email"] = val;
+                          });
+                        },
+                        validator: (val) {
+                          if (val != email) {
+                            return "You must use your registered email";
+                          }
+                        },
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),

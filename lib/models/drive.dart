@@ -1,9 +1,15 @@
+import 'package:placementshq/models/registration.dart';
+
 class Drive {
   final String id;
   final String companyName;
   final String companyId;
   final String companyImageUrl;
-  final double minCGPI;
+  final double minSecMarks;
+  final double minHighSecMarks;
+  final double minBEMarks;
+  final double minDiplomaMarks;
+  final double minCGPA;
   final int maxGapYears;
   final int maxKTs;
   final String externalLink;
@@ -13,6 +19,9 @@ class Drive {
   final String category;
   final String companyMessage;
   final String expectedDate;
+  final String regDeadline;
+  List<Registration> registered;
+  Map<String, dynamic> requirements;
 
   Drive({
     this.id,
@@ -20,7 +29,11 @@ class Drive {
     this.companyId,
     this.companyMessage,
     this.companyImageUrl,
-    this.minCGPI,
+    this.minSecMarks,
+    this.minHighSecMarks,
+    this.minDiplomaMarks,
+    this.minBEMarks,
+    this.minCGPA,
     this.maxGapYears,
     this.maxKTs,
     this.externalLink,
@@ -29,5 +42,8 @@ class Drive {
     this.ctc,
     this.category,
     this.expectedDate,
+    this.regDeadline,
+    this.registered,
+    this.requirements,
   });
 }

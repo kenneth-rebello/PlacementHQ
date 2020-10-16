@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:placementshq/models/user_profile.dart';
 import 'package:placementshq/providers/auth.dart';
 import 'package:placementshq/providers/user.dart';
+import 'package:placementshq/widgets/input/input.dart';
 import 'package:provider/provider.dart';
 
 class ContactDetails extends StatefulWidget {
@@ -60,11 +62,11 @@ class _ContactDetailsState extends State<ContactDetails> {
           autovalidate: true,
           child: Column(
             children: [
-              TextFormField(
+              Input(
                 initialValue: initValues["phone"].toString(),
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(labelText: "Phone Number"),
-                textInputAction: TextInputAction.next,
+                type: TextInputType.phone,
+                label: "Phone Number",
+                action: TextInputAction.next,
                 onSaved: (value) {
                   initValues["phone"] = int.parse(value);
                 },
@@ -77,11 +79,11 @@ class _ContactDetailsState extends State<ContactDetails> {
                   }
                 },
               ),
-              TextFormField(
+              Input(
                 initialValue: initValues["email"],
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(labelText: "Email Address"),
-                textInputAction: TextInputAction.next,
+                type: TextInputType.emailAddress,
+                label: "Email Address",
+                action: TextInputAction.next,
                 onSaved: (value) {
                   initValues["email"] = value;
                 },
@@ -90,31 +92,31 @@ class _ContactDetailsState extends State<ContactDetails> {
                     return "You must use your registered email";
                   }
                 },
-                focusNode: _eNode,
+                node: _eNode,
                 onFieldSubmitted: (_) {
                   FocusScope.of(context).requestFocus(_aNode);
                 },
               ),
-              TextFormField(
+              Input(
                 initialValue: initValues["address"],
-                decoration: InputDecoration(labelText: "Residence Address"),
-                textInputAction: TextInputAction.next,
+                label: "Residence Address",
+                action: TextInputAction.next,
                 onSaved: (value) {
                   initValues["address"] = value;
                 },
-                focusNode: _aNode,
+                node: _aNode,
                 onFieldSubmitted: (_) {
                   FocusScope.of(context).requestFocus(_cNode);
                 },
               ),
-              TextFormField(
+              Input(
                 initialValue: initValues["city"],
-                decoration: InputDecoration(labelText: "City"),
-                textInputAction: TextInputAction.next,
+                label: "City",
+                action: TextInputAction.next,
                 onSaved: (value) {
                   initValues["city"] = value;
                 },
-                focusNode: _cNode,
+                node: _cNode,
                 onFieldSubmitted: (_) {
                   FocusScope.of(context).requestFocus(_sNode);
                 },
@@ -122,14 +124,14 @@ class _ContactDetailsState extends State<ContactDetails> {
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Container(
                   width: 130,
-                  child: TextFormField(
+                  child: Input(
                     initialValue: initValues["state"],
-                    decoration: InputDecoration(labelText: "State"),
-                    textInputAction: TextInputAction.next,
+                    label: "State",
+                    action: TextInputAction.next,
                     onSaved: (value) {
                       initValues["state"] = value;
                     },
-                    focusNode: _sNode,
+                    node: _sNode,
                     onFieldSubmitted: (_) {
                       FocusScope.of(context).requestFocus(_pNode);
                     },
@@ -137,19 +139,15 @@ class _ContactDetailsState extends State<ContactDetails> {
                 ),
                 Container(
                   width: 100,
-                  child: TextFormField(
+                  child: Input(
                     initialValue: initValues["pincode"].toString(),
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(labelText: "Pincode"),
+                    type: TextInputType.number,
+                    label: "Pincode",
                     onSaved: (value) {
                       initValues["pincode"] = int.parse(value);
                     },
-                    validator: (val) {
-                      if (val.length < 2) {
-                        return "**Required**";
-                      }
-                    },
-                    focusNode: _pNode,
+                    requiredField: true,
+                    node: _pNode,
                   ),
                 ),
               ]),

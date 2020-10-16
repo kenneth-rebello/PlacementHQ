@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/models/drive.dart';
 import 'package:placementshq/providers/drives.dart';
 import 'package:placementshq/providers/user.dart';
-import 'package:placementshq/widgets/drive_list_item.dart';
+import 'package:placementshq/widgets/drive_list_item/drive_list_item.dart';
 import 'package:provider/provider.dart';
 
 class DrivesScreen extends StatefulWidget {
@@ -14,7 +13,6 @@ class DrivesScreen extends StatefulWidget {
 
 class _DrivesScreenState extends State<DrivesScreen> {
   bool _loading = false;
-  bool _expanded = false;
 
   @override
   void initState() {
@@ -31,10 +29,12 @@ class _DrivesScreenState extends State<DrivesScreen> {
   @override
   Widget build(BuildContext context) {
     final profile = Provider.of<User>(context).profile;
-    final drives = Provider.of<Drives>(context).drives;
+    final registered = profile.hasRegistered;
+    var drives = Provider.of<Drives>(context).drives;
+    drives = drives.where((drive) => !registered.contains(drive.id)).toList();
     return Scaffold(
       appBar: AppBar(
-        title: FittedBox(child: Text("Current Placement Drives")),
+        title: FittedBox(child: Text("Latest Placement Drives")),
       ),
       body: _loading
           ? Center(

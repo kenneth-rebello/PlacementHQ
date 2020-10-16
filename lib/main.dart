@@ -77,7 +77,7 @@ class MyApp extends StatelessWidget {
             buttonColor: Colors.indigo[800],
             textTheme: TextTheme(
               headline3: TextStyle(
-                color: Colors.indigo[800],
+                color: Colors.indigo[900],
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
               ),
@@ -94,15 +94,24 @@ class MyApp extends StatelessWidget {
                           : AuthScreen(),
                 ),
           routes: {
-            DrivesScreen.routeName: (ctx) => DrivesScreen(),
-            RegistrationsScreen.routeName: (ctx) => RegistrationsScreen(),
-            NoticesScreen.routeName: (ctx) => NoticesScreen(),
-            ProfileScreen.routeName: (ctx) => ProfileScreen(),
-            EditProfile.routeName: (ctx) => EditProfile(),
-            TPOApplication.routeName: (ctx) => TPOApplication(),
-            NewDriveScreen.routeName: (ctx) => NewDriveScreen(),
-            StudentsScreen.routeName: (ctx) => StudentsScreen(),
-            CurrentDrivesScreen.routeName: (ctx) => CurrentDrivesScreen(),
+            DrivesScreen.routeName: (ctx) =>
+                auth.isAuth ? DrivesScreen() : AuthScreen(),
+            RegistrationsScreen.routeName: (ctx) =>
+                auth.isAuth ? RegistrationsScreen() : AuthScreen(),
+            NoticesScreen.routeName: (ctx) =>
+                auth.isAuth ? NoticesScreen() : AuthScreen(),
+            ProfileScreen.routeName: (ctx) =>
+                auth.isAuth ? ProfileScreen() : AuthScreen(),
+            EditProfile.routeName: (ctx) =>
+                auth.isAuth ? EditProfile() : AuthScreen(),
+            TPOApplication.routeName: (ctx) =>
+                auth.isAuth ? TPOApplication() : AuthScreen(),
+            NewDriveScreen.routeName: (ctx) =>
+                auth.isAuth ? NewDriveScreen() : AuthScreen(),
+            StudentsScreen.routeName: (ctx) =>
+                auth.isAuth ? StudentsScreen() : AuthScreen(),
+            CurrentDrivesScreen.routeName: (ctx) =>
+                auth.isAuth ? CurrentDrivesScreen() : AuthScreen(),
           },
         ),
       ),

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/http_exception.dart';
@@ -99,7 +100,7 @@ class Auth with ChangeNotifier {
       _expiryDate = DateTime.now().add(
         Duration(seconds: int.parse(data['expiresIn'])),
       );
-      autoLogout();
+      // autoLogout();
 
       //Check if user is a TPO (and whether verified or not)
       final res = await http.get(
@@ -162,7 +163,7 @@ class Auth with ChangeNotifier {
     _userId = userData['userId'];
     _expiryDate = expiryDate;
     userEmail = userData["email"];
-    autoLogout();
+    // autoLogout();
     notifyListeners();
     return true;
   }
@@ -184,6 +185,8 @@ class Auth with ChangeNotifier {
     if (authTimer != null) {
       authTimer.cancel();
     }
+    DateFormat formatter = new DateFormat("dd-MM-yyyy hh:mm");
+    print(formatter.format(_expiryDate));
     final timeToExpire = _expiryDate.difference(DateTime.now()).inSeconds;
     authTimer = Timer(Duration(seconds: timeToExpire), logout);
   }

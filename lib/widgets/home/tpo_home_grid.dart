@@ -25,6 +25,19 @@ class _TPOHomeGridState extends State<TPOHomeGrid> {
     super.initState();
   }
 
+  Future<void> _refresher() async {
+    setState(() {
+      _loading = true;
+    });
+    Provider.of<Officer>(context, listen: false)
+        .loadCurrentOfficerProfile()
+        .then((_) {
+      setState(() {
+        _loading = false;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -46,37 +59,40 @@ class _TPOHomeGridState extends State<TPOHomeGrid> {
             ? Center(
                 child: CircularProgressIndicator(),
               )
-            : Container(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(10),
-                  itemCount: items.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 1,
-                    childAspectRatio: 9 / 4,
-                    mainAxisSpacing: 15,
-                  ),
-                  itemBuilder: (ctx, idx) => GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pushNamed(items[idx].routeName);
-                    },
-                    child: GridTile(
-                      child: Container(
-                        color: idx % 2 != 0
-                            ? theme.primaryColor
-                            : theme.accentColor,
+            : RefreshIndicator(
+                onRefresh: _refresher,
+                child: Container(
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(10),
+                    itemCount: items.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 1,
+                      childAspectRatio: 9 / 4,
+                      mainAxisSpacing: 15,
+                    ),
+                    itemBuilder: (ctx, idx) => GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pushNamed(items[idx].routeName);
+                      },
+                      child: GridTile(
                         child: Container(
-                          padding: EdgeInsets.all(10),
-                          child: Image.asset(items[idx].imagePath,
-                              color: Colors.white70),
+                          color: idx % 2 != 0
+                              ? theme.primaryColor
+                              : theme.accentColor,
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            child: Image.asset(items[idx].imagePath,
+                                color: Colors.white70),
+                          ),
                         ),
-                      ),
-                      footer: GridTileBar(
-                        title: Text(
-                          items[idx].label,
-                          style: TextStyle(color: Colors.white),
-                          textAlign: TextAlign.center,
+                        footer: GridTileBar(
+                          title: Text(
+                            items[idx].label,
+                            style: TextStyle(color: Colors.white),
+                            textAlign: TextAlign.center,
+                          ),
+                          backgroundColor: Colors.black45,
                         ),
-                        backgroundColor: Colors.black45,
                       ),
                     ),
                   ),

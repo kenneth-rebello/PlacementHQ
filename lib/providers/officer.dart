@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:placementshq/models/drive.dart';
+import 'package:placementshq/models/user_profile.dart';
 
 class OfficerProfile {
   String fullName;
@@ -26,7 +26,7 @@ class Officer with ChangeNotifier {
   final String userId;
   final String emailId;
   OfficerProfile _profile;
-  List<Drive> _drives;
+  List<Profile> _students = [];
 
   Officer(this.token, this.userId, this.emailId);
 
@@ -87,5 +87,60 @@ class Officer with ChangeNotifier {
     final url =
         "https://placementhq-777.firebaseio.com/officers/$userId.json?auth=$token";
     await http.patch(url, body: json.encode(profileData));
+  }
+
+  Future<void> loadStudents() async {
+    final url =
+        'https://placementhq-777.firebaseio.com/users.json?orderBy="collegeId"&equalTo="$collegeId"&auth=$token&print=pretty';
+    final res = await http.get(url);
+    final students = json.decode(res.body) as Map<String, dynamic>;
+    List<Profile> newStudents = [];
+    if (students != null) {
+      students.forEach((key, student) {
+        newStudents.add(Profile(
+          verified: student["verified"],
+          firstName: student["firstName"],
+          middleName: student["middleName"],
+          lastName: student["lastName"],
+          dateOfBirth: student["dateOfBirth"],
+          gender: student["gender"],
+          nationality: student["nationality"],
+          imageUrl: student["imageUrl"],
+          collegeId: student["collegeId"],
+          collegeName: student["collegeName"],
+          specialization: student["specialization"],
+          secMarks: student["secMarks"] == null
+              ? null
+              : student["secMarks"] is int
+                  ? student["secMarks"].toDouble()
+                  : student["secMarks"],
+          beMarks: student["beMarks"] == null
+              ? null
+              : student["beMarks"] is int
+                  ? student["beMarks"].toDouble()
+                  : student["beMarks"],
+          highSecMarks: student["highSecMarks"] == null
+              ? null
+              : student["highSecMarks"] is int
+                  ? student["highSecMarks"].toDouble()
+                  : student["highSecMarks"],
+          cgpa: student["cgpa"] == null
+              ? null
+              : student["cgpa"] is int
+                  ? student["cgpa"].toDouble()
+                  : student["cgpa"],
+          numOfGapYears: student["numOfGapYears"],
+          numOfKTs: student["numOfKTs"],
+          phone: student["phone"],
+          email: student["email"],
+          address: student["address"],
+          city: student["city"],
+          state: student["state"],
+          pincode: student["pincode"],
+        ));
+      });
+      _students = newStudents;
+      notifyListeners();
+    }
   }
 }

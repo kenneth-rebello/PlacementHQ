@@ -23,8 +23,20 @@ class _HomeGridState extends State<HomeGrid> {
         _loading = false;
       });
     });
-
     super.initState();
+  }
+
+  Future<void> _refresh() async {
+    setState(() {
+      _loading = true;
+    });
+    Provider.of<User>(context, listen: false)
+        .loadCurrentUserProfile()
+        .then((profile) {
+      setState(() {
+        _loading = false;
+      });
+    });
   }
 
   @override
@@ -38,36 +50,39 @@ class _HomeGridState extends State<HomeGrid> {
     }
     return _loading
         ? Center(child: CircularProgressIndicator())
-        : Container(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(10),
-              itemCount: items.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 1,
-                childAspectRatio: 9 / 4,
-                mainAxisSpacing: 15,
-              ),
-              itemBuilder: (ctx, idx) => GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pushNamed(items[idx].routeName);
-                },
-                child: GridTile(
-                  child: Container(
-                    color:
-                        idx % 2 != 0 ? theme.primaryColor : theme.accentColor,
+        : RefreshIndicator(
+            onRefresh: _refresh,
+            child: Container(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(10),
+                itemCount: items.length,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 1,
+                  childAspectRatio: 9 / 4,
+                  mainAxisSpacing: 15,
+                ),
+                itemBuilder: (ctx, idx) => GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pushNamed(items[idx].routeName);
+                  },
+                  child: GridTile(
                     child: Container(
-                      padding: EdgeInsets.all(10),
-                      child: Image.asset(items[idx].imagePath,
-                          color: Colors.white70),
+                      color:
+                          idx % 2 != 0 ? theme.primaryColor : theme.accentColor,
+                      child: Container(
+                        padding: EdgeInsets.all(10),
+                        child: Image.asset(items[idx].imagePath,
+                            color: Colors.white70),
+                      ),
                     ),
-                  ),
-                  footer: GridTileBar(
-                    title: Text(
-                      items[idx].label,
-                      style: TextStyle(color: Colors.white),
-                      textAlign: TextAlign.center,
+                    footer: GridTileBar(
+                      title: Text(
+                        items[idx].label,
+                        style: TextStyle(color: Colors.white),
+                        textAlign: TextAlign.center,
+                      ),
+                      backgroundColor: Colors.black45,
                     ),
-                    backgroundColor: Colors.black45,
                   ),
                 ),
               ),

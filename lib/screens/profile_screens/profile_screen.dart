@@ -24,12 +24,17 @@ class ProfileScreen extends StatelessWidget {
       body: profile == null
           ? Container(
               alignment: Alignment.center,
+              margin: EdgeInsets.all(10),
               child: Container(
                 height: 200,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Text("You have not yet created a profile."),
+                    Text(
+                      "For students, click the below button to create your profile now in 3 quick and easy steps.",
+                      textAlign: TextAlign.center,
+                    ),
                     RaisedButton(
                       onPressed: () {
                         Navigator.of(context).pushNamed(EditProfile.routeName);

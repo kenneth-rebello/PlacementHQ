@@ -2,61 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
-class Profile {
-  //Personal
-  bool verified;
-  String firstName;
-  String middleName;
-  String lastName;
-  String dateOfBirth;
-  String gender;
-  String nationality;
-  String imageUrl;
-  //Academic
-  String collegeName;
-  String collegeId;
-  String specialization;
-  double secMarks;
-  double highSecMarks;
-  double cgpi;
-  double beMarks;
-  int numOfGapYears;
-  int numOfKTs;
-  //Contact
-  int phone;
-  String email;
-  String address;
-  String city;
-  String state;
-  int pincode;
-
-  Profile({
-    this.verified,
-    this.firstName,
-    this.middleName,
-    this.lastName,
-    this.dateOfBirth,
-    this.gender,
-    this.nationality,
-    this.imageUrl,
-    this.collegeName,
-    this.collegeId,
-    this.specialization,
-    this.secMarks,
-    this.highSecMarks,
-    this.beMarks,
-    this.cgpi,
-    this.numOfGapYears,
-    this.numOfKTs,
-    this.phone,
-    this.email,
-    this.address,
-    this.city,
-    this.state,
-    this.pincode,
-  });
-}
+import 'package:placementshq/models/registration.dart';
+import 'package:placementshq/models/user_profile.dart';
 
 class User with ChangeNotifier {
   final String token;
@@ -70,6 +17,7 @@ class User with ChangeNotifier {
     Profile copy;
     if (userProfile != null)
       copy = Profile(
+        id: userProfile.id,
         verified: userProfile.verified,
         firstName: userProfile.firstName,
         middleName: userProfile.middleName,
@@ -83,8 +31,10 @@ class User with ChangeNotifier {
         specialization: userProfile.specialization,
         secMarks: userProfile.secMarks,
         highSecMarks: userProfile.highSecMarks,
+        hasDiploma: userProfile.hasDiploma,
+        diplomaMarks: userProfile.diplomaMarks,
         beMarks: userProfile.beMarks,
-        cgpi: userProfile.cgpi,
+        cgpa: userProfile.cgpa,
         numOfGapYears: userProfile.numOfGapYears,
         numOfKTs: userProfile.numOfKTs,
         phone: userProfile.phone,
@@ -93,6 +43,7 @@ class User with ChangeNotifier {
         city: userProfile.city,
         state: userProfile.state,
         pincode: userProfile.pincode,
+        registrations: userProfile.registrations,
       );
     else
       copy = null;
@@ -106,6 +57,20 @@ class User with ChangeNotifier {
       return null;
   }
 
+  List<Registration> get userRegistrations {
+    if (userProfile != null) {
+      return [
+        ...userProfile.registrations
+          ..sort((a, b) {
+            return DateTime.parse(a.registeredOn).compareTo(
+              DateTime.parse(b.registeredOn),
+            );
+          })
+      ];
+    } else
+      return [];
+  }
+
   Future<Profile> loadCurrentUserProfile() async {
     final url =
         "https://placementhq-777.firebaseio.com/users/$userId.json?auth=$token";
@@ -114,6 +79,7 @@ class User with ChangeNotifier {
 
     if (profile != null) {
       userProfile = new Profile(
+        id: userId,
         verified: profile["verified"],
         firstName: profile["firstName"],
         middleName: profile["middleName"],
@@ -140,11 +106,18 @@ class User with ChangeNotifier {
             : profile["highSecMarks"] is int
                 ? profile["highSecMarks"].toDouble()
                 : profile["highSecMarks"],
-        cgpi: profile["cgpi"] == null
+        hasDiploma:
+            profile["hasDiploma"] == null ? false : profile["hasDiploma"],
+        diplomaMarks: profile["diplomaMarks"] == null
             ? null
-            : profile["cgpi"] is int
-                ? profile["cgpi"].toDouble()
-                : profile["cgpi"],
+            : profile["diplomaMarks"] is int
+                ? profile["diplomaMarks"].toDouble()
+                : profile["diplomaMarks"],
+        cgpa: profile["cgpa"] == null
+            ? null
+            : profile["cgpa"] is int
+                ? profile["cgpa"].toDouble()
+                : profile["cgpa"],
         numOfGapYears: profile["numOfGapYears"],
         numOfKTs: profile["numOfKTs"],
         phone: profile["phone"],
@@ -153,7 +126,26 @@ class User with ChangeNotifier {
         city: profile["city"],
         state: profile["state"],
         pincode: profile["pincode"],
+        registrations: [],
       );
+      if (profile["collegeId"] != null && profile["collegeId"] != "") {
+        final urlReg =
+            'https://placementhq-777.firebaseio.com/collegeData/${profile["collegeId"]}/registrations.json?orderBy="userId"&equalTo="$userId"&print=pretty&auth=$token';
+        final dataReg = await http.get(urlReg);
+        final registrations = json.decode(dataReg.body) as Map<String, dynamic>;
+        final List<Registration> newReg = [];
+        registrations.forEach((key, reg) {
+          newReg.add(Registration(
+            company: reg["company"],
+            candidate: reg["candidate"],
+            companyImageUrl: reg["companyImageUrl"],
+            userId: reg["userId"],
+            driveId: reg["driveId"],
+            registeredOn: reg["registeredOn"],
+          ));
+        });
+        userProfile.registrations = [...newReg];
+      }
     } else {
       userProfile = null;
     }
@@ -171,6 +163,18 @@ class User with ChangeNotifier {
         profileData,
       ),
     );
+  }
+
+  void addNewRegistration(Registration newRegistration) {
+    userProfile.registrations.add(newRegistration);
+    notifyListeners();
+  }
+
+  void getUsersRegistrations() async {
+    final url =
+        'https://placementhq-777.firebaseio.com/collegeData/${profile.collegeId}/registrations.json?orderBy="userId"&equalTo="$userId"&auth=$token';
+    final res = await http.get(url);
+    print(res);
   }
 
   void updateValues(Map<String, dynamic> profileData) {
@@ -201,7 +205,9 @@ class User with ChangeNotifier {
       userProfile.secMarks = profileData["secMarks"];
     if (profileData["highSecMarks"] != null)
       userProfile.highSecMarks = profileData["highSecMarks"];
-    if (profileData["cgpi"] != null) userProfile.cgpi = profileData["cgpi"];
+    if (profileData["hasDiploma"] != null)
+      userProfile.hasDiploma = profileData["hasDiploma"];
+    if (profileData["cgpa"] != null) userProfile.cgpa = profileData["cgpa"];
     if (profileData["numOfGapYears"] != null)
       userProfile.numOfGapYears = profileData["numOfGapYears"];
     if (profileData["numOfKTs"] != null)

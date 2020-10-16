@@ -12,7 +12,7 @@ abstract class Constants {
 
   static List<HomeItem> homeItems = [
     HomeItem(
-      label: "Current Placement Drives",
+      label: "Latest Placement Drives",
       icon: Icons.business_center,
       routeName: DrivesScreen.routeName,
       imagePath: 'assets/images/companies.png',

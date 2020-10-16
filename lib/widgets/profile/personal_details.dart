@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:placementshq/models/user_profile.dart';
 import 'package:placementshq/providers/user.dart';
+import 'package:placementshq/widgets/input/input.dart';
 import 'package:provider/provider.dart';
 
 class PersonalDetails extends StatefulWidget {
@@ -88,50 +90,42 @@ class _PersonalDetailsState extends State<PersonalDetails> {
           key: _form,
           child: Column(
             children: [
-              TextFormField(
+              Input(
                 initialValue: initValues["firstName"],
-                decoration: InputDecoration(labelText: "First Name"),
-                textInputAction: TextInputAction.next,
+                label: "First Name",
+                action: TextInputAction.next,
                 onSaved: (value) {
                   initValues["firstName"] = value;
                 },
                 onFieldSubmitted: (_) {
                   FocusScope.of(context).requestFocus(_mNode);
                 },
-                validator: (val) {
-                  if (val.length < 2) {
-                    return "**Required**";
-                  }
-                },
+                requiredField: true,
               ),
-              TextFormField(
+              Input(
                 initialValue: initValues["middleName"],
-                decoration: InputDecoration(labelText: "Middle Name"),
-                textInputAction: TextInputAction.next,
+                label: "Middle Name",
+                action: TextInputAction.next,
                 onSaved: (value) {
                   initValues["middleName"] = value;
                 },
-                focusNode: _mNode,
+                node: _mNode,
                 onFieldSubmitted: (_) {
                   FocusScope.of(context).requestFocus(_lNode);
                 },
               ),
-              TextFormField(
+              Input(
                 initialValue: initValues["lastName"],
-                decoration: InputDecoration(labelText: "Last Name"),
-                textInputAction: TextInputAction.next,
+                label: "Last Name",
+                action: TextInputAction.next,
                 onSaved: (value) {
                   initValues["lastName"] = value;
                 },
-                focusNode: _lNode,
+                node: _lNode,
                 onFieldSubmitted: (_) {
                   FocusScope.of(context).requestFocus(_iNode);
                 },
-                validator: (val) {
-                  if (val.length < 2) {
-                    return "**Required**";
-                  }
-                },
+                requiredField: true,
               ),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Text(
@@ -171,21 +165,19 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               Row(children: [
                 Container(
                   width: 200,
-                  child: TextFormField(
+                  child: Input(
                     initialValue: initValues["imageUrl"],
-                    decoration: InputDecoration(
-                      labelText: "Online Image URL",
-                      helperText:
-                          "Tip: Copy and paste image URL of your LinkedIn profile picture",
-                      helperMaxLines: 2,
-                    ),
-                    textInputAction: TextInputAction.next,
+                    label: "Online Image URL",
+                    helper:
+                        "Tip: Copy and paste image URL of your LinkedIn profile picture",
+                    helperLines: 2,
+                    action: TextInputAction.next,
                     onChanged: (value) {
                       setState(() {
                         initValues["imageUrl"] = value;
                       });
                     },
-                    focusNode: _iNode,
+                    node: _iNode,
                     onFieldSubmitted: (_) {
                       FocusScope.of(context).requestFocus(_nNode);
                     },
@@ -202,16 +194,14 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   ),
                 )
               ]),
-              TextFormField(
+              Input(
                 initialValue: initValues["nationality"],
-                decoration: InputDecoration(
-                  labelText: "Nationality",
-                  hintText: "Eg: Indian",
-                ),
+                label: "Nationality",
+                helper: "Eg: Indian",
                 onSaved: (value) {
                   initValues["nationality"] = value;
                 },
-                focusNode: _nNode,
+                node: _nNode,
               ),
               Container(
                 padding: EdgeInsets.all(5),

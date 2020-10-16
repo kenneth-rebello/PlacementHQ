@@ -35,13 +35,22 @@ class Companies with ChangeNotifier {
 
   Future<void> loadCompaniesForList(String collegeId) async {
     final url =
-        "https://placementhq-777.firebaseio.com/companies.json?auth=$_token";
+        "https://placementhq-777.firebaseio.com/collegeData/$collegeId/companies.json?auth=$_token";
     final res = await http.get(url);
     final companies = json.decode(res.body) as Map<String, dynamic>;
     List<Company> newCompanies = [];
     if (companies != null) {
       companies.forEach((key, company) {
-        newCompanies.add(Company(name: company["name"], id: key));
+        newCompanies.add(
+          Company(
+            name: company["name"],
+            id: key,
+            imageUrl: company["imageUrl"],
+            lowestPackage: company["lowestPackage"],
+            highestPackage: company["highestPackage"],
+            lastVisitedYear: company["lastVisitedYear"],
+          ),
+        );
       });
     }
     _companies = newCompanies;
