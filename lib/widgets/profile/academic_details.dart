@@ -113,6 +113,11 @@ class _AcademicDetailsState extends State<AcademicDetails> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
+              Text(
+                "Academic Details",
+                style: Theme.of(context).textTheme.headline3,
+                textAlign: TextAlign.center,
+              ),
               if (_showCollege)
                 Input(
                   controller: cont,
@@ -155,7 +160,11 @@ class _AcademicDetailsState extends State<AcademicDetails> {
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Text(
                   "Specialization:",
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
                 DropdownButton(
                   value: initValues["specialization"],

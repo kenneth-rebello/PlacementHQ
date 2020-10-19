@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:placementhq/providers/companies.dart';
 import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/screens/drive_screens/drive_details.dart';
+import 'package:placementhq/screens/for_officers/new_notice_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/colleges.dart';
@@ -70,26 +71,52 @@ class MyApp extends StatelessWidget {
         )
       ],
       child: Consumer<Auth>(
-        builder: (ctx, auth, _) => MaterialApp(
+        builder: (ctxApp, auth, _) => MaterialApp(
           title: Constants.title,
           theme: ThemeData(
             primaryColor: Colors.indigo[800],
             accentColor: Colors.orange[500],
             buttonColor: Colors.indigo[800],
             textTheme: TextTheme(
+              headline1: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 22,
+                fontFamily: 'Exo',
+              ),
               headline3: TextStyle(
                 color: Colors.indigo[900],
                 fontWeight: FontWeight.bold,
-                fontSize: 20,
+                fontSize: 18,
+                fontFamily: 'Merriweather',
               ),
-              button: TextStyle(color: Colors.white),
+              headline4: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w400,
+                fontStyle: FontStyle.italic,
+                fontFamily: 'Ubuntu',
+                fontSize: 17,
+              ),
+              bodyText1: TextStyle(
+                fontFamily: 'Ubuntu',
+                fontSize: 14,
+              ),
+              bodyText2: TextStyle(
+                fontFamily: 'Ubuntu',
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+              button: TextStyle(
+                fontFamily: 'Ubuntu',
+                color: Colors.white,
+              ),
             ),
           ),
           home: auth.isAuth
               ? HomeScreen()
               : FutureBuilder<bool>(
                   future: auth.autoLogIn(),
-                  builder: (ctx, snapshot) =>
+                  builder: (ctxFuture, snapshot) =>
                       snapshot.connectionState == ConnectionState.waiting
                           ? SplashScreen()
                           : AuthScreen(),
@@ -111,6 +138,8 @@ class MyApp extends StatelessWidget {
                 auth.isAuth ? NewDriveScreen() : AuthScreen(),
             StudentsScreen.routeName: (ctx) =>
                 auth.isAuth ? StudentsScreen() : AuthScreen(),
+            NewNoticeScreen.routeName: (ctx) =>
+                auth.isAuth ? NewNoticeScreen() : AuthScreen(),
             CurrentDrivesScreen.routeName: (ctx) =>
                 auth.isAuth ? CurrentDrivesScreen() : AuthScreen(),
             DriveDetailsScreen.routeName: (ctx) =>

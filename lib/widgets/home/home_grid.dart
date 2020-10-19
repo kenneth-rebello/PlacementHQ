@@ -76,7 +76,7 @@ class _HomeGridState extends State<HomeGrid> {
                     footer: GridTileBar(
                       title: Text(
                         items[idx].label,
-                        style: TextStyle(color: Colors.white),
+                        style: Theme.of(context).textTheme.headline4,
                         textAlign: TextAlign.center,
                       ),
                       backgroundColor: Colors.black45,

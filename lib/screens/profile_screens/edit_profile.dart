@@ -52,7 +52,10 @@ class _EditProfileState extends State<EditProfile>
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Edit Profile"),
+          title: Text(
+            "Edit Profile",
+            style: Theme.of(context).textTheme.headline1,
+          ),
           bottom: TabBar(controller: _tabController, tabs: [
             Tab(
               icon: Icon(Icons.account_circle),

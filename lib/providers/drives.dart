@@ -3,15 +3,16 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:placementhq/models/drive.dart';
 import 'package:http/http.dart' as http;
+import 'package:placementhq/models/notice.dart';
 import 'package:placementhq/models/registration.dart';
 import 'package:placementhq/providers/companies.dart';
-import 'package:placementhq/models/user_profile.dart';
 
 class Drives with ChangeNotifier {
   List<Drive> _drives = [];
   String token;
   String _collegeId;
   List<Registration> _registrations = [];
+  List<Notice> _notices = [];
 
   Drives(this.token);
 
@@ -21,6 +22,10 @@ class Drives with ChangeNotifier {
 
   List<Registration> get registrations {
     return [..._registrations];
+  }
+
+  List<Notice> get notices {
+    return [..._notices];
   }
 
   Drive getById(String id) {
@@ -132,32 +137,6 @@ class Drives with ChangeNotifier {
     }
   }
 
-  Future<Registration> newRegistration(Profile user, Drive drive) async {
-    final url =
-        "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/registrations.json?auth=$token";
-    await http.post(
-      url,
-      body: json.encode({
-        "userId": user.id,
-        "driveId": drive.id,
-        "rollNo": user.rollNo,
-        "candidate": user.fullNameWMid,
-        "company": drive.companyName,
-        "companyImageUrl": drive.companyImageUrl,
-        "registeredOn": DateTime.now().toIso8601String(),
-      }),
-    );
-
-    return Registration(
-      candidate: user.fullNameWMid,
-      company: drive.companyName,
-      rollNo: user.rollNo,
-      companyImageUrl: drive.companyImageUrl,
-      userId: user.id,
-      driveId: drive.id,
-    );
-  }
-
   Future<String> getDriveRegistrations(String driveId) async {
     final urlReg =
         'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/registrations.json?orderBy="driveId"&equalTo="$driveId"&auth=$token';
@@ -180,6 +159,49 @@ class Drives with ChangeNotifier {
     _registrations = newReg;
     notifyListeners();
     return _collegeId;
+  }
+
+  Future<void> getDriveNotices(String driveId) async {
+    final url =
+        'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/notices.json?orderBy="driveId"&equalTo="$driveId"&auth=$token';
+    final res = await http.get(url);
+    final notices = json.decode(res.body) as Map<String, dynamic>;
+
+    List<Notice> newNotices = [];
+    notices.forEach((key, notice) {
+      newNotices.add(Notice(
+        id: key,
+        companyName: notice["companyName"],
+        notice: notice["notice"],
+        driveId: notice["driveId"],
+        issuedBy: notice["issuedBy"],
+        issuerId: notice["issuerId"],
+        issuedOn: notice["issuedOn"],
+      ));
+    });
+    _notices = newNotices;
+    notifyListeners();
+  }
+
+  Future<void> getAllNotices(String collegeId) async {
+    final url =
+        'https://placementhq-777.firebaseio.com/collegeData/$collegeId/notices.json?auth=$token';
+    final res = await http.get(url);
+    final notices = json.decode(res.body) as Map<String, dynamic>;
+    List<Notice> newNotices = [];
+    notices.forEach((key, notice) {
+      newNotices.add(Notice(
+        id: key,
+        companyName: notice["companyName"],
+        notice: notice["notice"],
+        driveId: notice["driveId"],
+        issuedBy: notice["issuedBy"],
+        issuerId: notice["issuerId"],
+        issuedOn: notice["issuedOn"],
+      ));
+    });
+    _notices = newNotices;
+    notifyListeners();
   }
 
   Future<void> confirmSelection(Registration reg) async {

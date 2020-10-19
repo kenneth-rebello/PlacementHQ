@@ -1,31 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:placementhq/providers/drives.dart';
-import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/widgets/notice_item/notice_item.dart';
 import 'package:provider/provider.dart';
 
-class NoticesScreen extends StatefulWidget {
-  static const routeName = "/notices";
-
+class DriveNoticesScreen extends StatefulWidget {
+  final String driveId;
+  DriveNoticesScreen(this.driveId);
   @override
-  _NoticesScreenState createState() => _NoticesScreenState();
+  _DriveNoticesScreenState createState() => _DriveNoticesScreenState();
 }
 
-class _NoticesScreenState extends State<NoticesScreen> {
+class _DriveNoticesScreenState extends State<DriveNoticesScreen> {
   bool _loading = false;
 
   @override
   void initState() {
     _loading = true;
-    final collegeId = Provider.of<User>(context, listen: false).collegeId;
-    Provider.of<Drives>(context, listen: false)
-        .getAllNotices(collegeId)
-        .then((value) {
-      setState(() {
-        _loading = false;
+    if (widget.driveId != null) {
+      Provider.of<Drives>(context, listen: false)
+          .getDriveNotices(widget.driveId)
+          .then((value) {
+        setState(() {
+          _loading = false;
+        });
       });
-    });
-
+    }
     super.initState();
   }
 

@@ -17,13 +17,15 @@ class TwoValues extends StatelessWidget {
         children: [
           RichText(
             text: TextSpan(
-              style: TextStyle(color: Colors.black),
               children: <TextSpan>[
                 TextSpan(
                   text: label1 + ": ",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.bodyText2,
                 ),
-                TextSpan(text: value1),
+                TextSpan(
+                  text: value1,
+                  style: Theme.of(context).textTheme.bodyText1,
+                ),
               ],
             ),
           ),
@@ -33,10 +35,11 @@ class TwoValues extends StatelessWidget {
               children: <TextSpan>[
                 TextSpan(
                   text: label2 + ": ",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.bodyText2,
                 ),
                 TextSpan(
                   text: value2,
+                  style: Theme.of(context).textTheme.bodyText1,
                 ),
               ],
             ),

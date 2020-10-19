@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:placementhq/models/user_profile.dart';
 
 class OfficerProfile {
+  String id;
   String fullName;
   String collegeName;
   String collegeId;
@@ -12,6 +13,7 @@ class OfficerProfile {
   String email;
 
   OfficerProfile({
+    this.id,
     this.collegeName,
     this.collegeId,
     this.fullName,
@@ -34,6 +36,7 @@ class Officer with ChangeNotifier {
     OfficerProfile copy;
     if (_profile != null) {
       copy = new OfficerProfile();
+      copy.id = _profile.id;
       copy.collegeName = _profile.collegeName;
       copy.collegeId = _profile.collegeId;
       copy.fullName = _profile.fullName;
@@ -64,6 +67,7 @@ class Officer with ChangeNotifier {
     final profile = json.decode(res.body);
     if (profile != null) {
       _profile = new OfficerProfile(
+        id: userId,
         collegeName: profile["collegeName"],
         collegeId: profile["collegeId"],
         fullName: profile["fullName"],
@@ -156,5 +160,15 @@ class Officer with ChangeNotifier {
       (student) => student.id == id,
       orElse: () => null,
     );
+  }
+
+  Future<void> addNewNotice(Map<String, dynamic> data) async {
+    if (collegeId != null) {
+      data["issuedBy"] = _profile.fullName;
+      data["issuerId"] = _profile.id;
+      final url =
+          'https://placementhq-777.firebaseio.com/collegeData/$collegeId/notices.json?auth=$token';
+      await http.post(url, body: json.encode(data));
+    }
   }
 }

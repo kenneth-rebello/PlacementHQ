@@ -6,6 +6,8 @@ import 'package:placementhq/providers/officer.dart';
 import 'package:placementhq/res/constants.dart';
 import 'package:placementhq/widgets/input/check_list_item.dart';
 import 'package:placementhq/widgets/input/input.dart';
+import 'package:placementhq/widgets/input/no_button.dart';
+import 'package:placementhq/widgets/input/yes_button.dart';
 import 'package:provider/provider.dart';
 
 class NewDriveScreen extends StatefulWidget {
@@ -83,28 +85,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
         builder: (ctx) => AlertDialog(
           title: Text(
               "Are you sure you want to add new drive for ${values["companyName"]}?"),
-          actions: [
-            FlatButton(
-              onPressed: () {
-                Navigator.of(ctx).pop(false);
-              },
-              child: Text(
-                "No",
-                style: TextStyle(
-                  color: Colors.red,
-                ),
-              ),
-            ),
-            FlatButton(
-              onPressed: () {
-                Navigator.of(ctx).pop(true);
-              },
-              child: Text(
-                "Yes",
-                style: TextStyle(color: Colors.indigo[800]),
-              ),
-            )
-          ],
+          actions: [NoButton(ctx), YesButton(ctx)],
         ),
       ).then((res) {
         if (res) {
@@ -152,7 +133,10 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Add New Placement Drive"),
+        title: Text(
+          "Add New Placement Drive",
+          style: Theme.of(context).textTheme.headline1,
+        ),
       ),
       body: _loading
           ? Center(
@@ -368,7 +352,11 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         children: [
                           Text(
                             "Category:",
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.normal,
+                            ),
                           ),
                           DropdownButton(
                             value: values["category"],
@@ -395,7 +383,11 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                             "Expected Date:" +
                                 formatter.format(
                                     DateTime.parse(values["expectedDate"])),
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.normal,
+                            ),
                           ),
                           FlatButton(
                             onPressed: () => chooseDate("expectedDate"),
@@ -417,7 +409,11 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                               "Registration Deadline:" +
                                   formatter.format(
                                       DateTime.parse(values["regDeadline"])),
-                              style: TextStyle(fontSize: 16, color: Colors.red),
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.red,
+                                fontWeight: FontWeight.normal,
+                              ),
                               softWrap: true,
                             ),
                           ),

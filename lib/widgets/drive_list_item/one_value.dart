@@ -16,13 +16,15 @@ class OneValue extends StatelessWidget {
         children: [
           RichText(
             text: TextSpan(
-              style: TextStyle(color: Colors.black),
               children: <TextSpan>[
                 TextSpan(
                   text: label + ": ",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.bodyText2,
                 ),
-                TextSpan(text: value),
+                TextSpan(
+                  text: value,
+                  style: Theme.of(context).textTheme.bodyText1,
+                ),
               ],
             ),
           ),

@@ -86,12 +86,17 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20),
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: SingleChildScrollView(
         child: Form(
           key: _form,
           child: Column(
             children: [
+              Text(
+                "Personal Details",
+                style: Theme.of(context).textTheme.headline3,
+                textAlign: TextAlign.center,
+              ),
               Input(
                 initialValue: initValues["firstName"],
                 label: "First Name",
@@ -132,7 +137,11 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 Text(
                   "Gender:",
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.normal,
+                  ),
                 ),
                 DropdownButton(
                   value: initValues["gender"],
@@ -156,7 +165,11 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 children: [
                   Text(
                     "Date of Birth:" + (dateToShow == "" ? "" : dateToShow),
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.normal,
+                    ),
                   ),
                   FlatButton(
                     onPressed: chooseDate,

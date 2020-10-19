@@ -34,7 +34,11 @@ class _DrivesScreenState extends State<DrivesScreen> {
     drives = drives.where((drive) => !registered.contains(drive.id)).toList();
     return Scaffold(
       appBar: AppBar(
-        title: FittedBox(child: Text("Latest Placement Drives")),
+        title: FittedBox(
+            child: Text(
+          "Latest Placement Drives",
+          style: Theme.of(context).textTheme.headline1,
+        )),
       ),
       body: _loading
           ? Center(

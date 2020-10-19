@@ -55,13 +55,18 @@ class _ContactDetailsState extends State<ContactDetails> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20),
+      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: SingleChildScrollView(
         child: Form(
           key: _form,
           autovalidate: true,
           child: Column(
             children: [
+              Text(
+                "Contact Details",
+                style: Theme.of(context).textTheme.headline3,
+                textAlign: TextAlign.center,
+              ),
               Input(
                 initialValue: initValues["phone"].toString(),
                 type: TextInputType.phone,

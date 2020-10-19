@@ -31,7 +31,10 @@ class _CurrentDrivesScreenState extends State<CurrentDrivesScreen> {
     final drives = Provider.of<Drives>(context).drives;
     return Scaffold(
       appBar: AppBar(
-        title: Text("Current Drives"),
+        title: Text(
+          "Current Drives",
+          style: Theme.of(context).textTheme.headline1,
+        ),
       ),
       body: _loading
           ? Center(

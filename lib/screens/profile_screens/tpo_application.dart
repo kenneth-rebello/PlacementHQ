@@ -3,6 +3,8 @@ import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/colleges.dart';
 import 'package:placementhq/providers/officer.dart';
 import 'package:placementhq/widgets/input/input.dart';
+import 'package:placementhq/widgets/input/no_button.dart';
+import 'package:placementhq/widgets/input/yes_button.dart';
 import 'package:provider/provider.dart';
 
 class TPOApplication extends StatefulWidget {
@@ -39,23 +41,8 @@ class _TPOApplicationState extends State<TPOApplication> {
               content: Text(
                   "College Name:\t${values["collegeName"]}\nFull Name:\t${values["fullName"]}\nDesignation:\t${values["designation"]}\nPhone Number:\t${values["phone"].toString()}\nEmail:\t${values["email"]}"),
               actions: [
-                FlatButton(
-                  onPressed: () {
-                    Navigator.of(ctx).pop(false);
-                  },
-                  child: Text(
-                    "No",
-                    style: TextStyle(color: Colors.red),
-                  ),
-                ),
-                FlatButton(
-                  onPressed: () {
-                    Navigator.of(ctx).pop(true);
-                  },
-                  child: Text(
-                    "Yes",
-                  ),
-                ),
+                NoButton(ctx),
+                YesButton(ctx),
               ],
             )).then((res) {
       if (res) {
@@ -95,7 +82,10 @@ class _TPOApplicationState extends State<TPOApplication> {
     });
     return Scaffold(
       appBar: AppBar(
-        title: Text("Apply for TPO account"),
+        title: Text(
+          "Apply for TPO account",
+          style: Theme.of(context).textTheme.headline1,
+        ),
       ),
       body: _loading
           ? Center(

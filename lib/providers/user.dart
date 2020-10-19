@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:placementhq/models/drive.dart';
 import 'package:placementhq/models/registration.dart';
 import 'package:placementhq/models/user_profile.dart';
 
@@ -170,9 +172,40 @@ class User with ChangeNotifier {
     );
   }
 
-  void addNewRegistration(Registration newRegistration) {
-    userProfile.registrations.add(newRegistration);
-    notifyListeners();
+  Future<void> newRegistration(Profile user, Drive drive) async {
+    final existing = userProfile.registrations.firstWhere(
+      (reg) => reg.userId == user.id && reg.driveId == drive.id,
+      orElse: () => null,
+    );
+    if (collegeId != null && existing == null) {
+      final url =
+          "https://placementhq-777.firebaseio.com/collegeData/$collegeId/registrations.json?auth=$token";
+      await http.post(
+        url,
+        body: json.encode({
+          "userId": user.id,
+          "driveId": drive.id,
+          "rollNo": user.rollNo,
+          "candidate": user.fullNameWMid,
+          "company": drive.companyName,
+          "companyImageUrl": drive.companyImageUrl,
+          "registeredOn": DateTime.now().toIso8601String(),
+        }),
+      );
+
+      userProfile.registrations.add(Registration(
+        candidate: user.fullNameWMid,
+        company: drive.companyName,
+        rollNo: user.rollNo,
+        companyImageUrl: drive.companyImageUrl,
+        userId: user.id,
+        driveId: drive.id,
+        registeredOn: DateTime.now().toIso8601String(),
+      ));
+      notifyListeners();
+    } else {
+      throw HttpException("Registration Failed");
+    }
   }
 
   void getUsersRegistrations() async {

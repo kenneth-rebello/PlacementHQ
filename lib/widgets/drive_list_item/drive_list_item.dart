@@ -9,6 +9,9 @@ import 'package:placementhq/screens/drive_screens/drive_details.dart';
 import 'package:placementhq/widgets/drive_list_item/criteria.dart';
 import 'package:placementhq/widgets/drive_list_item/one_value.dart';
 import 'package:placementhq/widgets/drive_list_item/two_values.dart';
+import 'package:placementhq/widgets/input/no_button.dart';
+import 'package:placementhq/widgets/input/yes_button.dart';
+import 'package:placementhq/widgets/other/image_error.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -85,37 +88,22 @@ class _DriveListItemState extends State<DriveListItem> {
         context: context,
         builder: (ctx) => AlertDialog(
           title: Text("Register for ${drive.companyName}?"),
-          actions: [
-            FlatButton(
-              onPressed: () {
-                Navigator.of(ctx).pop(false);
-              },
-              child: Text(
-                "No",
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
-            FlatButton(
-              onPressed: () {
-                Navigator.of(ctx).pop(true);
-              },
-              child: Text(
-                "Yes",
-                style: TextStyle(color: Theme.of(context).primaryColor),
-              ),
-            ),
-          ],
+          actions: [NoButton(ctx), YesButton(ctx)],
         ),
       ).then((res) {
         if (res) {
-          Provider.of<Drives>(context, listen: false)
+          Provider.of<User>(context, listen: false)
               .newRegistration(profile, drive)
-              .then((newRegistration) {
-            Provider.of<User>(context, listen: false)
-                .addNewRegistration(newRegistration);
+              .then((_) {
             Scaffold.of(context).showSnackBar(
               SnackBar(
                 content: Text("Registration Done"),
+              ),
+            );
+          }).catchError((e) {
+            Scaffold.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Registration Failed"),
               ),
             );
           });
@@ -164,21 +152,8 @@ class _DriveListItemState extends State<DriveListItem> {
                     width: 80,
                     child: Image.network(
                       widget.drive.companyImageUrl,
-                      errorBuilder: (context, error, stackTrace) => Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            color: Colors.red,
-                          ),
-                          Text(
-                            "No Image",
-                            style: TextStyle(
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
+                      errorBuilder: (context, error, stackTrace) =>
+                          ImageError(),
                     ),
                   ),
                   subtitle: Row(
@@ -189,9 +164,10 @@ class _DriveListItemState extends State<DriveListItem> {
                         child: Text(
                           widget.drive.category,
                           style: TextStyle(
+                            fontFamily: 'Ubuntu',
                             fontWeight: FontWeight.bold,
                             fontStyle: FontStyle.italic,
-                            fontSize: 15,
+                            fontSize: 14,
                             color: Colors.black,
                           ),
                         ),
@@ -213,6 +189,8 @@ class _DriveListItemState extends State<DriveListItem> {
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.normal,
+                    fontSize: 12,
                   ),
                 ),
               if (_expanded)
@@ -276,7 +254,7 @@ class _DriveListItemState extends State<DriveListItem> {
                       if (eligible &&
                           widget.profile != null &&
                           DateTime.parse(widget.drive.regDeadline)
-                              .isBefore(DateTime.now()))
+                              .isAfter(DateTime.now()))
                         RaisedButton(
                           onPressed: () {
                             _confirm(widget.drive, widget.profile);

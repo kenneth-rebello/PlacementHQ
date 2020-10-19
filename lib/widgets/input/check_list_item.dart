@@ -14,6 +14,7 @@ class CheckListItem extends StatelessWidget {
         Checkbox(value: value, onChanged: onChanged),
         Text(
           label,
+          style: Theme.of(context).textTheme.bodyText1,
         ),
       ],
     );

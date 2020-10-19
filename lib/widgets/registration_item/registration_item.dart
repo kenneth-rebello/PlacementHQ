@@ -54,7 +54,7 @@ class RegistrationItem extends StatelessWidget {
           ),
           subtitle: Text(
             "Registered on: " + registeredOn,
-            style: TextStyle(color: Colors.black),
+            style: Theme.of(context).textTheme.bodyText1,
             textAlign: TextAlign.center,
           ),
         ),

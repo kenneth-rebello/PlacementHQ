@@ -51,6 +51,7 @@ class ListItem extends StatelessWidget {
                       child: Text(
                         value,
                         textAlign: valueAlign,
+                        style: Theme.of(context).textTheme.bodyText1,
                       ),
                     )
                   ],

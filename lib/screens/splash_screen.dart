@@ -20,6 +20,8 @@ class SplashScreen extends StatelessWidget {
           child: Text(
             "Welcome To PlacementHQ",
             style: TextStyle(
+              fontFamily: 'Exo',
+              fontSize: 20,
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),

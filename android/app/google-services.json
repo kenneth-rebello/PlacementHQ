@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "767992385623",
+    "firebase_url": "https://placementhq-777.firebaseio.com",
+    "project_id": "placementhq-777",
+    "storage_bucket": "placementhq-777.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:767992385623:android:ea4226cab65d4a16f91312",
+        "android_client_info": {
+          "package_name": "com.example.placementhq"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "767992385623-ikmpnodb1vj68g61g5trnf6ckatm6t9r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6IH0FubbdIgI41V-w5hhrWMCF3UrWAog"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "767992385623-ikmpnodb1vj68g61g5trnf6ckatm6t9r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

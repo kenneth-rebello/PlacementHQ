@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/screens/drive_screens/drive_notices_screen.dart';
 import 'package:placementhq/screens/drive_screens/drive_students.dart';
+import 'package:placementhq/widgets/other/image_error.dart';
 import 'package:placementhq/widgets/other/list_item.dart';
 import 'package:provider/provider.dart';
 
@@ -15,7 +17,10 @@ class DriveDetailsScreen extends StatelessWidget {
     final drive = Provider.of<Drives>(context).getById(driveId);
     return Scaffold(
       appBar: AppBar(
-        title: Text(drive.companyName),
+        title: Text(
+          drive.companyName,
+          style: Theme.of(context).textTheme.headline1,
+        ),
       ),
       body: Container(
         margin: EdgeInsets.all(10),
@@ -39,7 +44,10 @@ class DriveDetailsScreen extends StatelessWidget {
                         Container(
                           height: 130,
                           width: double.infinity,
-                          child: Image.network(drive.companyImageUrl),
+                          child: Image.network(
+                            drive.companyImageUrl,
+                            errorBuilder: (ctx, _, _2) => ImageError(),
+                          ),
                         ),
                         Text(
                           drive.companyName,
@@ -65,6 +73,7 @@ class DriveDetailsScreen extends StatelessWidget {
                     ),
                     Container(
                       margin: EdgeInsets.all(10),
+                      width: double.infinity,
                       child: RaisedButton(
                         onPressed: () {
                           Navigator.of(context).push(
@@ -83,7 +92,24 @@ class DriveDetailsScreen extends StatelessWidget {
                           style: Theme.of(context).textTheme.button,
                         ),
                       ),
-                    )
+                    ),
+                    Container(
+                      margin: EdgeInsets.all(10),
+                      width: double.infinity,
+                      child: RaisedButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (ctx) => DriveNoticesScreen(drive.id),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          "See All Notices",
+                          style: Theme.of(context).textTheme.button,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

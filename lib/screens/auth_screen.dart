@@ -61,6 +61,7 @@ class AuthScreen extends StatelessWidget {
                       child: Text(
                         Constants.title,
                         style: TextStyle(
+                          fontFamily: 'Exo',
                           fontSize: 24,
                           color: Colors.white,
                           fontWeight: FontWeight.bold,

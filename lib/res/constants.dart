@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:placementhq/screens/for_officers/current_drives_screen.dart';
 import 'package:placementhq/screens/for_officers/new_drive_screen.dart';
+import 'package:placementhq/screens/for_officers/new_notice_screen.dart';
 import 'package:placementhq/screens/for_officers/students_screen.dart';
 import 'package:placementhq/screens/for_students/drives_screen.dart';
 import 'package:placementhq/screens/for_students/notices_screen.dart';
@@ -50,7 +51,6 @@ abstract class Constants {
     ),
     HomeItem(
       label: "New Placement Drive",
-      icon: Icons.subscriptions,
       routeName: NewDriveScreen.routeName,
       imagePath: 'assets/images/companies.png',
       protected: false,
@@ -59,6 +59,12 @@ abstract class Constants {
       label: "Students",
       routeName: StudentsScreen.routeName,
       imagePath: 'assets/images/students.png',
+      protected: false,
+    ),
+    HomeItem(
+      label: "New Notice",
+      routeName: NewNoticeScreen.routeName,
+      imagePath: 'assets/images/notices.png',
       protected: false,
     ),
   ];

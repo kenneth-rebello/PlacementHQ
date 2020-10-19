@@ -5,6 +5,7 @@ import 'package:placementhq/providers/officer.dart';
 import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/screens/profile_screens/edit_profile.dart';
 import 'package:placementhq/screens/profile_screens/tpo_application.dart';
+import 'package:placementhq/widgets/other/image_error.dart';
 import 'package:placementhq/widgets/other/list_item.dart';
 import 'package:provider/provider.dart';
 
@@ -74,8 +75,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title:
-            Text(profile == null ? "Could not find profile" : profile.fullName),
+        title: Text(
+          profile == null ? "Could not find profile" : profile.fullName,
+          style: Theme.of(context).textTheme.headline1,
+        ),
         actions: [
           if (!isNotOwnProfile)
             IconButton(
@@ -148,11 +151,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    Container(
-                      height: 120,
-                      child: Image.network(profile.imageUrl),
-                      margin: EdgeInsets.all(10),
-                    ),
+                    if (profile.imageUrl != "" && profile.imageUrl != null)
+                      Container(
+                        height: 120,
+                        child: Image.network(profile.imageUrl,
+                            errorBuilder: (context, error, stackTrace) =>
+                                ImageError()),
+                        margin: EdgeInsets.all(10),
+                      ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -204,11 +210,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       label: "Phone No.",
                       value: profile.phone.toString(),
                     ),
-                    ListItem(
-                      label: "Date Of Birth",
-                      value:
-                          formatter.format(DateTime.parse(profile.dateOfBirth)),
-                    ),
+                    if (profile.dateOfBirth != null &&
+                        profile.dateOfBirth != "")
+                      ListItem(
+                        label: "Date Of Birth",
+                        value: formatter
+                            .format(DateTime.parse(profile.dateOfBirth)),
+                      ),
                     ListItem(
                       label: "Address",
                       value: profile.address,
@@ -245,7 +253,10 @@ class NameItem extends StatelessWidget {
       height: 80,
       padding: EdgeInsets.all(10),
       child: Column(children: [
-        Text(value),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyText1,
+        ),
         Container(
           color: Colors.grey[500],
           child: SizedBox(
@@ -255,9 +266,7 @@ class NameItem extends StatelessWidget {
         ),
         Text(
           label,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(context).textTheme.bodyText2,
         ),
       ]),
     );

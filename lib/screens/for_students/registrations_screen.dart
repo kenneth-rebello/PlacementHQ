@@ -32,7 +32,10 @@ class _RegistrationsScreenState extends State<RegistrationsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Registered Companies"),
+        title: Text(
+          "Registered Companies",
+          style: Theme.of(context).textTheme.headline1,
+        ),
       ),
       body: Container(
         margin: EdgeInsets.all(10),

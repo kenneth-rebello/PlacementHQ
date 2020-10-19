@@ -43,7 +43,10 @@ class _StudentsScreenState extends State<StudentsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Students List"),
+        title: Text(
+          "Students List",
+          style: Theme.of(context).textTheme.headline1,
+        ),
         actions: [
           PopupMenuButton(
             icon: Icon(Icons.more_vert),

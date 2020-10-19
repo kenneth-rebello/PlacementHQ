@@ -13,15 +13,19 @@ class HomeScreen extends StatelessWidget {
   static const routeName = "/";
   @override
   Widget build(BuildContext context) {
-    bool isOfficer = Provider.of<Auth>(context).isOfficer;
+    bool isOfficer = Provider.of<Auth>(context, listen: false).isOfficer;
     return Scaffold(
       appBar: AppBar(
-        title: Text(Constants.title),
+        title: Text(
+          Constants.title,
+          style: Theme.of(context).textTheme.headline1,
+        ),
         actions: [
           PopupMenuButton(
             onSelected: (Options value) {
               if (value == Options.Logout) {
-                Provider.of<Auth>(context, listen: false).logout();
+                final auth = Provider.of<Auth>(context, listen: false);
+                auth.logout();
               }
             },
             itemBuilder: (_) => [

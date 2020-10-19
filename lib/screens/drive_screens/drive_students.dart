@@ -7,6 +7,8 @@ import 'package:placementhq/providers/officer.dart';
 import 'package:placementhq/res/constants.dart';
 import 'package:placementhq/screens/drive_screens/drive_details.dart';
 import 'package:placementhq/screens/profile_screens/profile_screen.dart';
+import 'package:placementhq/widgets/input/no_button.dart';
+import 'package:placementhq/widgets/input/yes_button.dart';
 import 'package:provider/provider.dart';
 
 class DriveStudentsScreen extends StatefulWidget {
@@ -45,28 +47,8 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
           style: Theme.of(context).textTheme.headline3,
         ),
         actions: [
-          FlatButton(
-            onPressed: () {
-              Navigator.of(ctx).pop(false);
-            },
-            child: Text(
-              "No",
-              style: TextStyle(
-                color: Colors.red,
-              ),
-            ),
-          ),
-          FlatButton(
-            onPressed: () {
-              Navigator.of(ctx).pop(true);
-            },
-            child: Text(
-              "Yes",
-              style: TextStyle(
-                color: Colors.indigo[800],
-              ),
-            ),
-          ),
+          NoButton(ctx),
+          YesButton(ctx),
         ],
       ),
     ).then((res) {
@@ -95,11 +77,15 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
       registrations.sort((a, b) => a.registeredOn.compareTo(b.registeredOn));
     else if (sortBy == SortOptions.registrationDesc)
       registrations.sort((a, b) => b.registeredOn.compareTo(a.registeredOn));
+    if (sortBy == SortOptions.onlySelected)
+      registrations.retainWhere((a) => a.selected);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.args.companyName),
-      ),
+          title: Text(
+        widget.args.companyName,
+        style: Theme.of(context).textTheme.headline1,
+      )),
       body: Container(
         margin: EdgeInsets.all(10),
         child: _loading
@@ -136,7 +122,7 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
                     child: ListView.builder(
                       itemBuilder: (ctx, idx) => Card(
                         color: registrations[idx].selected
-                            ? Colors.green
+                            ? Colors.green[400]
                             : Colors.white,
                         child: ListTile(
                           leading: Container(
@@ -148,6 +134,7 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
                                   fontSize: 21,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.indigo[900],
+                                  fontFamily: 'Ubuntu',
                                 ),
                               ),
                             ),
@@ -158,12 +145,25 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
                               color: registrations[idx].selected
                                   ? Colors.white
                                   : Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              fontFamily: 'Merriweather',
                             ),
                           ),
                           subtitle: Text(
                             "Registered on: " +
-                                formatter.format(DateTime.parse(
-                                    registrations[idx].registeredOn)),
+                                formatter.format(
+                                  DateTime.parse(
+                                      registrations[idx].registeredOn),
+                                ),
+                            style: TextStyle(
+                              color: registrations[idx].selected
+                                  ? Colors.black
+                                  : Colors.grey,
+                              fontFamily: 'Ubuntu',
+                              fontSize: 13,
+                              fontWeight: FontWeight.normal,
+                            ),
                           ),
                           onTap: () {
                             Navigator.of(context).pushNamed(
