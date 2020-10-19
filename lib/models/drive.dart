@@ -1,4 +1,4 @@
-import 'package:placementshq/models/registration.dart';
+import 'package:placementhq/models/registration.dart';
 
 class Drive {
   final String id;

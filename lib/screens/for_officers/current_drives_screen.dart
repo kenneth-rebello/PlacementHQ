@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/providers/drives.dart';
-import 'package:placementshq/providers/officer.dart';
+import 'package:placementhq/providers/drives.dart';
+import 'package:placementhq/providers/officer.dart';
+import 'package:placementhq/screens/for_officers/new_drive_screen.dart';
+import 'package:placementhq/widgets/drive_list_item/drive_list_item.dart';
 import 'package:provider/provider.dart';
 
 class CurrentDrivesScreen extends StatefulWidget {
@@ -35,7 +37,35 @@ class _CurrentDrivesScreenState extends State<CurrentDrivesScreen> {
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : Container(),
+          : drives.length <= 0
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "You do not have any active placement drives at the moment.",
+                      textAlign: TextAlign.center,
+                    ),
+                    RaisedButton(
+                      child: Text(
+                        "Add New Drive",
+                        style: Theme.of(context).textTheme.button,
+                      ),
+                      onPressed: () {
+                        Navigator.of(context)
+                            .pushNamed(NewDriveScreen.routeName);
+                      },
+                    ),
+                  ],
+                )
+              : Container(
+                  margin: EdgeInsets.all(10),
+                  child: ListView.builder(
+                    itemBuilder: (ctx, idx) => DriveListItem(
+                      drive: drives[idx],
+                    ),
+                    itemCount: drives.length,
+                  ),
+                ),
     );
   }
 }

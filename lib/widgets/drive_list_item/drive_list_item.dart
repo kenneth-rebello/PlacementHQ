@@ -1,13 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:placementshq/models/drive.dart';
-import 'package:placementshq/providers/drives.dart';
-import 'package:placementshq/providers/user.dart';
-import 'package:placementshq/models/user_profile.dart';
-import 'package:placementshq/widgets/drive_list_item/criteria.dart';
-import 'package:placementshq/widgets/drive_list_item/one_value.dart';
-import 'package:placementshq/widgets/drive_list_item/two_values.dart';
+import 'package:placementhq/models/drive.dart';
+import 'package:placementhq/providers/drives.dart';
+import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/models/user_profile.dart';
+import 'package:placementhq/screens/drive_screens/drive_details.dart';
+import 'package:placementhq/widgets/drive_list_item/criteria.dart';
+import 'package:placementhq/widgets/drive_list_item/one_value.dart';
+import 'package:placementhq/widgets/drive_list_item/two_values.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -37,100 +38,109 @@ class _DriveListItemState extends State<DriveListItem> {
     if (profile.dateOfBirth == null && drive.requirements["age"])
       result += "Date of Birth\n";
     if (profile.gender == null && drive.requirements["gender"])
-      result += "Gender";
+      result += "Gender\n";
     if (profile.address == null &&
         profile.pincode == null &&
-        drive.requirements["address"]) result += "Address & Pincode";
-    if (profile.city == null && drive.requirements["city"]) result += "City";
-    if (profile.state == null && drive.requirements["state"]) result += "State";
+        drive.requirements["address"]) result += "Address & Pincode\n";
+    if (profile.city == null && drive.requirements["city"]) result += "City\n";
+    if (profile.state == null && drive.requirements["state"])
+      result += "State\n";
+
     return result;
   }
 
   void _confirm(Drive drive, Profile profile) {
-    String eval = detailsCheck(drive, profile);
-    if (eval.length > 1) {
-      showDialog(
-        context: context,
-        builder: (ctx) => SimpleDialog(
-          title: Text(
-            "You are missing some mandatory fields",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.indigo[800],
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          children: [
-            Text(
-              "Add these details to your profile to register for this placement drive",
-              textAlign: TextAlign.center,
-            ),
-            Text(
-              eval,
+    if (profile != null) {
+      String eval = detailsCheck(drive, profile);
+      if (eval.length > 1) {
+        showDialog(
+          context: context,
+          builder: (ctx) => SimpleDialog(
+            title: Text(
+              "You are missing some mandatory fields",
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.red,
+                color: Colors.indigo[800],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            children: [
+              Text(
+                "Add these details to your profile to register for this placement drive",
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                eval,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.red,
+                ),
+              ),
+            ],
+          ),
+        );
+        return;
+      }
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text("Register for ${drive.companyName}?"),
+          actions: [
+            FlatButton(
+              onPressed: () {
+                Navigator.of(ctx).pop(false);
+              },
+              child: Text(
+                "No",
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+            FlatButton(
+              onPressed: () {
+                Navigator.of(ctx).pop(true);
+              },
+              child: Text(
+                "Yes",
+                style: TextStyle(color: Theme.of(context).primaryColor),
               ),
             ),
           ],
         ),
-      );
-      return;
+      ).then((res) {
+        if (res) {
+          Provider.of<Drives>(context, listen: false)
+              .newRegistration(profile, drive)
+              .then((newRegistration) {
+            Provider.of<User>(context, listen: false)
+                .addNewRegistration(newRegistration);
+            Scaffold.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Registration Done"),
+              ),
+            );
+          });
+        }
+      });
     }
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text("Register for ${drive.companyName}?"),
-        actions: [
-          FlatButton(
-            onPressed: () {
-              Navigator.of(ctx).pop(false);
-            },
-            child: Text(
-              "No",
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-          FlatButton(
-            onPressed: () {
-              Navigator.of(ctx).pop(true);
-            },
-            child: Text(
-              "Yes",
-              style: TextStyle(color: Theme.of(context).primaryColor),
-            ),
-          ),
-        ],
-      ),
-    ).then((res) {
-      if (res) {
-        Provider.of<Drives>(context, listen: false)
-            .newRegistration(profile, drive)
-            .then((newRegistration) {
-          Provider.of<User>(context, listen: false)
-              .addNewRegistration(newRegistration);
-          Scaffold.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Registration Done"),
-            ),
-          );
-        });
-      }
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    bool eligible = ifEligible(widget.drive, widget.profile);
+    bool eligible = false;
+    if (widget.profile != null)
+      eligible = ifEligible(widget.drive, widget.profile);
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: GestureDetector(
         onTap: () {
-          setState(() {
-            _expanded = !_expanded;
-          });
-          // Provider.of<Drives>(context, listen: false)
-          //     .getDriveRegistrations(widget.drive.id);
+          widget.profile == null
+              ? Navigator.of(context).pushNamed(
+                  DriveDetailsScreen.routeName,
+                  arguments: widget.drive.id,
+                )
+              : setState(() {
+                  _expanded = !_expanded;
+                });
         },
         child: Card(
           elevation: 8,
@@ -186,11 +196,12 @@ class _DriveListItemState extends State<DriveListItem> {
                           ),
                         ),
                       ),
-                      CriteriaButton(
-                        drive: widget.drive,
-                        profile: widget.profile,
-                        eligibility: eligible,
-                      )
+                      if (widget.profile != null)
+                        CriteriaButton(
+                          drive: widget.drive,
+                          profile: widget.profile,
+                          eligibility: eligible,
+                        )
                     ],
                   ),
                 ),
@@ -262,7 +273,10 @@ class _DriveListItemState extends State<DriveListItem> {
                             ]),
                           ),
                         ),
-                      if (eligible)
+                      if (eligible &&
+                          widget.profile != null &&
+                          DateTime.parse(widget.drive.regDeadline)
+                              .isBefore(DateTime.now()))
                         RaisedButton(
                           onPressed: () {
                             _confirm(widget.drive, widget.profile);

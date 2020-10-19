@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/providers/auth.dart';
-import 'package:placementshq/res/constants.dart';
-import 'package:placementshq/widgets/home/tpo_home_grid.dart';
-import 'package:placementshq/widgets/home/home_grid.dart';
+import 'package:placementhq/providers/auth.dart';
+import 'package:placementhq/res/constants.dart';
+import 'package:placementhq/widgets/home/tpo_home_grid.dart';
+import 'package:placementhq/widgets/home/home_grid.dart';
 import 'package:provider/provider.dart';
 
 enum Options {
@@ -24,9 +24,6 @@ class HomeScreen extends StatelessWidget {
                 Provider.of<Auth>(context, listen: false).logout();
               }
             },
-            icon: Icon(
-              Icons.more_vert,
-            ),
             itemBuilder: (_) => [
               PopupMenuItem(
                 child: Text(

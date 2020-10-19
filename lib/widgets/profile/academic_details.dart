@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/providers/user.dart';
-import 'package:placementshq/res/constants.dart';
-import 'package:placementshq/models/user_profile.dart';
-import 'package:placementshq/providers/colleges.dart';
-import 'package:placementshq/widgets/input/input.dart';
+import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/res/constants.dart';
+import 'package:placementhq/models/user_profile.dart';
+import 'package:placementhq/providers/colleges.dart';
+import 'package:placementhq/widgets/input/input.dart';
 import 'package:provider/provider.dart';
 
 class AcademicDetails extends StatefulWidget {
@@ -18,6 +18,7 @@ class _AcademicDetailsState extends State<AcademicDetails> {
   final _form = GlobalKey<FormState>();
   TextEditingController cont = new TextEditingController();
 
+  final _sNode = FocusNode();
   final _hNode = FocusNode();
   final _pNode = FocusNode();
   final _dNode = FocusNode();
@@ -28,6 +29,7 @@ class _AcademicDetailsState extends State<AcademicDetails> {
     "collegeName": "",
     "collegeId": "",
     "specialization": Constants.branches[0],
+    "rollNo": "",
     "hasDiploma": false,
     "diplomaMarks": 0,
     "secMarks": 0,
@@ -46,6 +48,7 @@ class _AcademicDetailsState extends State<AcademicDetails> {
 
   @override
   void dispose() {
+    _sNode.dispose();
     _hNode.dispose();
     _dNode.dispose();
     _pNode.dispose();
@@ -64,6 +67,8 @@ class _AcademicDetailsState extends State<AcademicDetails> {
         initValues["collegeId"] = profile.collegeId;
         _showCollege = false;
       }
+      if (profile.rollNo != null && profile.rollNo != "")
+        initValues["rollNo"] = profile.rollNo;
       if (profile.specialization != null && profile.specialization != "")
         initValues["specialization"] = profile.specialization;
       if (profile.secMarks != null) initValues["secMarks"] = profile.secMarks;
@@ -170,6 +175,18 @@ class _AcademicDetailsState extends State<AcademicDetails> {
                 ),
               ]),
               Input(
+                initialValue: initValues["rollNo"],
+                label: "College UID/ Roll No.",
+                action: TextInputAction.next,
+                onSaved: (value) {
+                  initValues["rollNo"] = value;
+                },
+                onFieldSubmitted: (_) {
+                  FocusScope.of(context).requestFocus(_sNode);
+                },
+                requiredField: true,
+              ),
+              Input(
                 initialValue: initValues["secMarks"].toStringAsFixed(1),
                 type: TextInputType.numberWithOptions(decimal: true),
                 label: "Std. Xth %",
@@ -177,6 +194,7 @@ class _AcademicDetailsState extends State<AcademicDetails> {
                 onSaved: (value) {
                   initValues["secMarks"] = double.parse(value);
                 },
+                node: _sNode,
                 onFieldSubmitted: (_) {
                   FocusScope.of(context).requestFocus(_hNode);
                 },

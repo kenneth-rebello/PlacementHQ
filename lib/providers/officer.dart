@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:placementshq/models/user_profile.dart';
+import 'package:placementhq/models/user_profile.dart';
 
 class OfficerProfile {
   String fullName;
@@ -44,6 +44,10 @@ class Officer with ChangeNotifier {
       copy = null;
     }
     return copy;
+  }
+
+  List<Profile> get students {
+    return [..._students];
   }
 
   String get collegeId {
@@ -89,15 +93,17 @@ class Officer with ChangeNotifier {
     await http.patch(url, body: json.encode(profileData));
   }
 
-  Future<void> loadStudents() async {
+  Future<void> loadStudents({String cId}) async {
+    final colId = cId == null || cId == "" ? collegeId : cId;
     final url =
-        'https://placementhq-777.firebaseio.com/users.json?orderBy="collegeId"&equalTo="$collegeId"&auth=$token&print=pretty';
+        'https://placementhq-777.firebaseio.com/users.json?orderBy="collegeId"&equalTo="$colId"&auth=$token&print=pretty';
     final res = await http.get(url);
     final students = json.decode(res.body) as Map<String, dynamic>;
     List<Profile> newStudents = [];
     if (students != null) {
       students.forEach((key, student) {
         newStudents.add(Profile(
+          id: key,
           verified: student["verified"],
           firstName: student["firstName"],
           middleName: student["middleName"],
@@ -109,6 +115,7 @@ class Officer with ChangeNotifier {
           collegeId: student["collegeId"],
           collegeName: student["collegeName"],
           specialization: student["specialization"],
+          rollNo: student["rollNo"] == null ? "" : student["rollNo"],
           secMarks: student["secMarks"] == null
               ? null
               : student["secMarks"] is int
@@ -142,5 +149,12 @@ class Officer with ChangeNotifier {
       _students = newStudents;
       notifyListeners();
     }
+  }
+
+  Profile getProfileById(String id) {
+    return _students.firstWhere(
+      (student) => student.id == id,
+      orElse: () => null,
+    );
   }
 }

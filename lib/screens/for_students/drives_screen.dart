@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/providers/drives.dart';
-import 'package:placementshq/providers/user.dart';
-import 'package:placementshq/widgets/drive_list_item/drive_list_item.dart';
+import 'package:placementhq/providers/drives.dart';
+import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/widgets/drive_list_item/drive_list_item.dart';
 import 'package:provider/provider.dart';
 
 class DrivesScreen extends StatefulWidget {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:placementshq/models/registration.dart';
+import 'package:placementhq/models/registration.dart';
+import 'package:placementhq/screens/drive_screens/drive_details.dart';
 
 class RegistrationItem extends StatelessWidget {
   final Registration registration;
@@ -14,7 +15,12 @@ class RegistrationItem extends StatelessWidget {
     String registeredOn =
         formatter.format(DateTime.parse(registration.registeredOn));
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.of(context).pushNamed(
+          DriveDetailsScreen.routeName,
+          arguments: registration.driveId,
+        );
+      },
       child: Card(
         color: Colors.indigo[100],
         margin: EdgeInsets.symmetric(vertical: 5),

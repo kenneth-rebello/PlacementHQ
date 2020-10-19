@@ -1,4 +1,4 @@
-import 'package:placementshq/models/registration.dart';
+import 'package:placementhq/models/registration.dart';
 
 class Profile {
   //Personal
@@ -15,6 +15,7 @@ class Profile {
   String collegeName;
   String collegeId;
   String specialization;
+  String rollNo;
   double secMarks;
   double highSecMarks;
   bool hasDiploma;
@@ -46,6 +47,7 @@ class Profile {
     this.collegeName,
     this.collegeId,
     this.specialization,
+    this.rollNo,
     this.secMarks,
     this.highSecMarks,
     this.hasDiploma,

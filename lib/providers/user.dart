@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:placementshq/models/registration.dart';
-import 'package:placementshq/models/user_profile.dart';
+import 'package:placementhq/models/registration.dart';
+import 'package:placementhq/models/user_profile.dart';
 
 class User with ChangeNotifier {
   final String token;
@@ -29,6 +29,7 @@ class User with ChangeNotifier {
         collegeId: userProfile.collegeId,
         collegeName: userProfile.collegeName,
         specialization: userProfile.specialization,
+        rollNo: userProfile.rollNo,
         secMarks: userProfile.secMarks,
         highSecMarks: userProfile.highSecMarks,
         hasDiploma: userProfile.hasDiploma,
@@ -91,6 +92,7 @@ class User with ChangeNotifier {
         collegeId: profile["collegeId"],
         collegeName: profile["collegeName"],
         specialization: profile["specialization"],
+        rollNo: profile["rollNo"] == null ? "" : profile["rollNo"],
         secMarks: profile["secMarks"] == null
             ? null
             : profile["secMarks"] is int
@@ -136,12 +138,15 @@ class User with ChangeNotifier {
         final List<Registration> newReg = [];
         registrations.forEach((key, reg) {
           newReg.add(Registration(
+            id: key,
             company: reg["company"],
             candidate: reg["candidate"],
             companyImageUrl: reg["companyImageUrl"],
             userId: reg["userId"],
             driveId: reg["driveId"],
             registeredOn: reg["registeredOn"],
+            rollNo: reg["rollNo"] == null ? "" : reg["rollNo"],
+            selected: reg["selected"] == null ? false : reg["selected"],
           ));
         });
         userProfile.registrations = [...newReg];
@@ -201,6 +206,8 @@ class User with ChangeNotifier {
       userProfile.collegeId = profileData["collegeId"];
     if (profileData["specialization"] != null)
       userProfile.specialization = profileData["specialization"];
+    if (profileData["rollNo"] != null)
+      userProfile.rollNo = profileData["rollNo"];
     if (profileData["secMarks"] != null)
       userProfile.secMarks = profileData["secMarks"];
     if (profileData["highSecMarks"] != null)

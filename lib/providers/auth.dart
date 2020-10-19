@@ -100,7 +100,7 @@ class Auth with ChangeNotifier {
       _expiryDate = DateTime.now().add(
         Duration(seconds: int.parse(data['expiresIn'])),
       );
-      // autoLogout();
+      autoLogout();
 
       //Check if user is a TPO (and whether verified or not)
       final res = await http.get(
@@ -163,7 +163,7 @@ class Auth with ChangeNotifier {
     _userId = userData['userId'];
     _expiryDate = expiryDate;
     userEmail = userData["email"];
-    // autoLogout();
+    autoLogout();
     notifyListeners();
     return true;
   }

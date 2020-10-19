@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/providers/companies.dart';
-import 'package:placementshq/providers/drives.dart';
+import 'package:placementhq/providers/companies.dart';
+import 'package:placementhq/providers/drives.dart';
+import 'package:placementhq/screens/drive_screens/drive_details.dart';
 import 'package:provider/provider.dart';
-import 'package:placementshq/providers/auth.dart';
-import 'package:placementshq/providers/colleges.dart';
-import 'package:placementshq/providers/officer.dart';
-import 'package:placementshq/providers/user.dart';
-import 'package:placementshq/res/constants.dart';
-import 'package:placementshq/screens/auth_screen.dart';
-import 'package:placementshq/screens/splash_screen.dart';
-import 'package:placementshq/screens/home_screens/home_screen.dart';
-import 'package:placementshq/screens/profile_screens/edit_profile.dart';
-import 'package:placementshq/screens/profile_screens/profile_screen.dart';
-import 'package:placementshq/screens/profile_screens/tpo_application.dart';
-import 'package:placementshq/screens/for_students/notices_screen.dart';
-import 'package:placementshq/screens/for_students/registrations_screen.dart';
-import 'package:placementshq/screens/for_students/drives_screen.dart';
-import 'package:placementshq/screens/for_officers/current_drives_screen.dart';
-import 'package:placementshq/screens/for_officers/new_drive_screen.dart';
-import 'package:placementshq/screens/for_officers/students_screen.dart';
+import 'package:placementhq/providers/auth.dart';
+import 'package:placementhq/providers/colleges.dart';
+import 'package:placementhq/providers/officer.dart';
+import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/res/constants.dart';
+import 'package:placementhq/screens/auth_screen.dart';
+import 'package:placementhq/screens/splash_screen.dart';
+import 'package:placementhq/screens/home_screens/home_screen.dart';
+import 'package:placementhq/screens/profile_screens/edit_profile.dart';
+import 'package:placementhq/screens/profile_screens/profile_screen.dart';
+import 'package:placementhq/screens/profile_screens/tpo_application.dart';
+import 'package:placementhq/screens/for_students/notices_screen.dart';
+import 'package:placementhq/screens/for_students/registrations_screen.dart';
+import 'package:placementhq/screens/for_students/drives_screen.dart';
+import 'package:placementhq/screens/for_officers/current_drives_screen.dart';
+import 'package:placementhq/screens/for_officers/new_drive_screen.dart';
+import 'package:placementhq/screens/for_officers/students_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -112,6 +113,8 @@ class MyApp extends StatelessWidget {
                 auth.isAuth ? StudentsScreen() : AuthScreen(),
             CurrentDrivesScreen.routeName: (ctx) =>
                 auth.isAuth ? CurrentDrivesScreen() : AuthScreen(),
+            DriveDetailsScreen.routeName: (ctx) =>
+                auth.isAuth ? DriveDetailsScreen() : AuthScreen(),
           },
         ),
       ),

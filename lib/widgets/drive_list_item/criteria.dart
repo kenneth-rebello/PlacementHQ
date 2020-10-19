@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/models/drive.dart';
-import 'package:placementshq/models/user_profile.dart';
-import 'package:placementshq/widgets/drive_list_item/one_value.dart';
+import 'package:placementhq/models/drive.dart';
+import 'package:placementhq/models/user_profile.dart';
+import 'package:placementhq/widgets/drive_list_item/one_value.dart';
 
 class CriteriaButton extends StatelessWidget {
   final bool eligibility;

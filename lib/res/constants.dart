@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/screens/for_officers/current_drives_screen.dart';
-import 'package:placementshq/screens/for_officers/new_drive_screen.dart';
-import 'package:placementshq/screens/for_officers/students_screen.dart';
-import 'package:placementshq/screens/for_students/drives_screen.dart';
-import 'package:placementshq/screens/for_students/notices_screen.dart';
-import 'package:placementshq/screens/profile_screens/profile_screen.dart';
-import 'package:placementshq/screens/for_students/registrations_screen.dart';
+import 'package:placementhq/screens/for_officers/current_drives_screen.dart';
+import 'package:placementhq/screens/for_officers/new_drive_screen.dart';
+import 'package:placementhq/screens/for_officers/students_screen.dart';
+import 'package:placementhq/screens/for_students/drives_screen.dart';
+import 'package:placementhq/screens/for_students/notices_screen.dart';
+import 'package:placementhq/screens/profile_screens/profile_screen.dart';
+import 'package:placementhq/screens/for_students/registrations_screen.dart';
 
 abstract class Constants {
   static const title = "PlacementHQ";
@@ -86,6 +86,23 @@ abstract class Constants {
     "Dream",
     "Super Dream"
   ];
+
+  static const List<String> registrationSortOptions = [
+    SortOptions.uidAsc,
+    SortOptions.uidDesc,
+    SortOptions.nameAsc,
+    SortOptions.nameDesc,
+    SortOptions.registrationAsc,
+    SortOptions.registrationDesc,
+    SortOptions.onlySelected,
+  ];
+
+  static const List<String> studentSortOptions = [
+    SortOptions.uidAsc,
+    SortOptions.uidDesc,
+    SortOptions.nameAsc,
+    SortOptions.nameDesc,
+  ];
 }
 
 class HomeItem {
@@ -107,4 +124,14 @@ class HomeItem {
     this.imagePath,
     this.protected,
   });
+}
+
+class SortOptions {
+  static const uidAsc = "UID (asc.)";
+  static const uidDesc = "UID (desc.)";
+  static const nameAsc = "Name (asc.)";
+  static const nameDesc = "Name (desc.)";
+  static const registrationAsc = "Registration Date (asc.)";
+  static const registrationDesc = "Registration Date (desc.)";
+  static const onlySelected = "Only Selected";
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/providers/auth.dart';
-import 'package:placementshq/providers/officer.dart';
-import 'package:placementshq/res/constants.dart';
+import 'package:placementhq/providers/auth.dart';
+import 'package:placementhq/providers/officer.dart';
+import 'package:placementhq/res/constants.dart';
 import 'package:provider/provider.dart';
 
 class TPOHomeGrid extends StatefulWidget {

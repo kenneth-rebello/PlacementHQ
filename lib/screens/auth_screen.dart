@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:placementshq/res/constants.dart';
+import 'package:placementhq/res/constants.dart';
 import 'package:provider/provider.dart';
 import '../models/http_exception.dart';
 import '../providers/auth.dart';

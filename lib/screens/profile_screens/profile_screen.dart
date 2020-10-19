@@ -1,76 +1,265 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/providers/user.dart';
-import 'package:placementshq/screens/profile_screens/edit_profile.dart';
-import 'package:placementshq/screens/profile_screens/tpo_application.dart';
+import 'package:intl/intl.dart';
+import 'package:placementhq/models/user_profile.dart';
+import 'package:placementhq/providers/officer.dart';
+import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/screens/profile_screens/edit_profile.dart';
+import 'package:placementhq/screens/profile_screens/tpo_application.dart';
+import 'package:placementhq/widgets/other/list_item.dart';
 import 'package:provider/provider.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   static const routeName = "/profile";
+
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final DateFormat formatter = new DateFormat("dd-MM-yyyy");
+  void _showMarks(Profile profile) {
+    showDialog(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        contentPadding: EdgeInsets.all(10),
+        title: Text(
+          "Academic Details",
+          style: TextStyle(
+            color: Theme.of(context).primaryColor,
+          ),
+        ),
+        children: [
+          ListItem(
+            label: "Std Xth %",
+            value: profile.secMarks.toStringAsFixed(1),
+            shrink: true,
+          ),
+          ListItem(
+            label: "Std XIIth %",
+            value: profile.highSecMarks.toStringAsFixed(1),
+            shrink: true,
+          ),
+          if (profile.hasDiploma)
+            ListItem(
+              label: "Diploma %",
+              value: profile.diplomaMarks.toStringAsFixed(1),
+              shrink: true,
+            ),
+          ListItem(
+            label: "BE CGPA",
+            value: profile.cgpa.toStringAsFixed(1),
+            shrink: true,
+          ),
+          ListItem(
+            label: "BE %",
+            value: profile.beMarks.toStringAsFixed(1),
+            shrink: true,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final profile = Provider.of<User>(context).profile;
+    Profile profile;
+    bool isNotOwnProfile = false;
+    final profileId = ModalRoute.of(context).settings.arguments;
+    if (profileId == null) {
+      profile = Provider.of<User>(context).profile;
+    } else {
+      isNotOwnProfile = true;
+      profile = Provider.of<Officer>(context).getProfileById(profileId);
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("Profile"),
+        title:
+            Text(profile == null ? "Could not find profile" : profile.fullName),
         actions: [
-          IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () {
-              Navigator.of(context).pushNamed(EditProfile.routeName);
-            },
-          )
+          if (!isNotOwnProfile)
+            IconButton(
+              icon: Icon(Icons.edit),
+              onPressed: () {
+                Navigator.of(context).pushNamed(EditProfile.routeName);
+              },
+            )
         ],
       ),
       body: profile == null
           ? Container(
               alignment: Alignment.center,
               margin: EdgeInsets.all(10),
-              child: Container(
-                height: 200,
+              child: isNotOwnProfile
+                  ? Center(
+                      child: Column(children: [
+                        Text("Could not load profile, please try again"),
+                        RaisedButton(
+                          onPressed: () {},
+                          child: Text(
+                            "Retry",
+                            style: Theme.of(context).textTheme.button,
+                          ),
+                        )
+                      ]),
+                    )
+                  : Container(
+                      height: 200,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Text("You have not yet created a profile."),
+                          Text(
+                            "For students, click the below button to create your profile now in 3 quick and easy steps.",
+                            textAlign: TextAlign.center,
+                          ),
+                          RaisedButton(
+                            onPressed: () {
+                              Navigator.of(context)
+                                  .pushNamed(EditProfile.routeName);
+                            },
+                            child: Text(
+                              "Create Now",
+                              style: Theme.of(context).textTheme.button,
+                            ),
+                          ),
+                          Text(
+                            "--------OR--------",
+                            style: TextStyle(
+                                color: Colors.grey[350], fontSize: 20),
+                          ),
+                          Text('Apply for a TPO account?'),
+                          RaisedButton(
+                            child: Text(
+                              "Apply Now",
+                              style: Theme.of(context).textTheme.button,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context)
+                                  .pushNamed(TPOApplication.routeName);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+            )
+          : Container(
+              margin: EdgeInsets.all(10),
+              child: SingleChildScrollView(
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Text("You have not yet created a profile."),
-                    Text(
-                      "For students, click the below button to create your profile now in 3 quick and easy steps.",
-                      textAlign: TextAlign.center,
+                    Container(
+                      height: 120,
+                      child: Image.network(profile.imageUrl),
+                      margin: EdgeInsets.all(10),
                     ),
-                    RaisedButton(
-                      onPressed: () {
-                        Navigator.of(context).pushNamed(EditProfile.routeName);
-                      },
-                      child: Text(
-                        "Create Now",
-                        style: Theme.of(context).textTheme.button,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        NameItem(
+                          label: "First Name",
+                          value: profile.firstName,
+                        ),
+                        NameItem(
+                          label: "Middle Name",
+                          value: profile.middleName,
+                        ),
+                        NameItem(
+                          label: "Last Name",
+                          value: profile.lastName,
+                        ),
+                      ],
+                    ),
+                    ListItem(
+                      label: "College UID",
+                      value: profile.rollNo,
+                    ),
+                    ListItem(
+                      label: "College",
+                      value: profile.collegeName,
+                      flexibleHeight: true,
+                    ),
+                    ListItem(
+                      label: "Specialization",
+                      value: profile.specialization,
+                    ),
+                    Divider(),
+                    Center(
+                      child: FlatButton(
+                        child: Text(
+                          "Academic Details",
+                          style: TextStyle(
+                            decoration: TextDecoration.underline,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                        ),
+                        onPressed: () => _showMarks(profile),
                       ),
                     ),
-                    Text(
-                      "--------OR--------",
-                      style: TextStyle(color: Colors.grey[350], fontSize: 20),
+                    ListItem(
+                      label: "Email",
+                      value: profile.email,
                     ),
-                    Text('Apply for a TPO account?'),
-                    RaisedButton(
-                      child: Text(
-                        "Apply Now",
-                        style: Theme.of(context).textTheme.button,
-                      ),
-                      onPressed: () {
-                        Navigator.of(context)
-                            .pushNamed(TPOApplication.routeName);
-                      },
+                    ListItem(
+                      label: "Phone No.",
+                      value: profile.phone.toString(),
+                    ),
+                    ListItem(
+                      label: "Date Of Birth",
+                      value:
+                          formatter.format(DateTime.parse(profile.dateOfBirth)),
+                    ),
+                    ListItem(
+                      label: "Address",
+                      value: profile.address,
+                      flexibleHeight: true,
+                    ),
+                    ListItem(
+                      label: "City",
+                      value: profile.city,
+                    ),
+                    ListItem(
+                      label: "State",
+                      value: profile.state,
+                    ),
+                    ListItem(
+                      label: "Pincode",
+                      value: profile.pincode.toString(),
                     ),
                   ],
                 ),
               ),
-            )
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  Text(
-                      profile.firstName + profile.middleName + profile.lastName)
-                ],
-              ),
             ),
+    );
+  }
+}
+
+class NameItem extends StatelessWidget {
+  final String label;
+  final String value;
+
+  NameItem({this.label, this.value});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 80,
+      padding: EdgeInsets.all(10),
+      child: Column(children: [
+        Text(value),
+        Container(
+          color: Colors.grey[500],
+          child: SizedBox(
+            height: 1,
+            width: 50,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ]),
     );
   }
 }

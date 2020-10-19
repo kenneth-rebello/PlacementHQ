@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/providers/auth.dart';
-import 'package:placementshq/providers/colleges.dart';
-import 'package:placementshq/providers/officer.dart';
-import 'package:placementshq/widgets/input/input.dart';
+import 'package:placementhq/providers/auth.dart';
+import 'package:placementhq/providers/colleges.dart';
+import 'package:placementhq/providers/officer.dart';
+import 'package:placementhq/widgets/input/input.dart';
 import 'package:provider/provider.dart';
 
 class TPOApplication extends StatefulWidget {

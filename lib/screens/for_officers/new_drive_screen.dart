@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:placementshq/providers/companies.dart';
-import 'package:placementshq/providers/drives.dart';
-import 'package:placementshq/providers/officer.dart';
-import 'package:placementshq/res/constants.dart';
-import 'package:placementshq/widgets/input/check_list_item.dart';
-import 'package:placementshq/widgets/input/input.dart';
+import 'package:placementhq/providers/companies.dart';
+import 'package:placementhq/providers/drives.dart';
+import 'package:placementhq/providers/officer.dart';
+import 'package:placementhq/res/constants.dart';
+import 'package:placementhq/widgets/input/check_list_item.dart';
+import 'package:placementhq/widgets/input/input.dart';
 import 'package:provider/provider.dart';
 
 class NewDriveScreen extends StatefulWidget {

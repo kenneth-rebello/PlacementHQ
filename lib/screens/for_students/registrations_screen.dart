@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/providers/drives.dart';
-import 'package:placementshq/providers/user.dart';
-import 'package:placementshq/widgets/registration_item/registration_item.dart';
+import 'package:placementhq/providers/drives.dart';
+import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/widgets/registration_item/registration_item.dart';
 import 'package:provider/provider.dart';
 
 class RegistrationsScreen extends StatefulWidget {
@@ -16,6 +16,13 @@ class _RegistrationsScreenState extends State<RegistrationsScreen> {
 
   @override
   void initState() {
+    _loading = true;
+    final collegeId = Provider.of<User>(context, listen: false).collegeId;
+    Provider.of<Drives>(context, listen: false).loadDrives(collegeId).then((_) {
+      setState(() {
+        _loading = false;
+      });
+    });
     super.initState();
   }
 
@@ -29,10 +36,12 @@ class _RegistrationsScreenState extends State<RegistrationsScreen> {
       ),
       body: Container(
         margin: EdgeInsets.all(10),
-        child: ListView.builder(
-          itemBuilder: (ctx, idx) => RegistrationItem(registrations[idx]),
-          itemCount: registrations.length,
-        ),
+        child: _loading
+            ? Center(child: CircularProgressIndicator())
+            : ListView.builder(
+                itemBuilder: (ctx, idx) => RegistrationItem(registrations[idx]),
+                itemCount: registrations.length,
+              ),
       ),
     );
   }

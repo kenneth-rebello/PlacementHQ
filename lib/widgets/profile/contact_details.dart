@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/models/user_profile.dart';
-import 'package:placementshq/providers/auth.dart';
-import 'package:placementshq/providers/user.dart';
-import 'package:placementshq/widgets/input/input.dart';
+import 'package:placementhq/models/user_profile.dart';
+import 'package:placementhq/providers/auth.dart';
+import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/widgets/input/input.dart';
 import 'package:provider/provider.dart';
 
 class ContactDetails extends StatefulWidget {

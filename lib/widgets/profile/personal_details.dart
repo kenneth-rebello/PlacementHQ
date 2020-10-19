@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:placementshq/models/user_profile.dart';
-import 'package:placementshq/providers/user.dart';
-import 'package:placementshq/widgets/input/input.dart';
+import 'package:placementhq/models/user_profile.dart';
+import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/widgets/input/input.dart';
 import 'package:provider/provider.dart';
 
 class PersonalDetails extends StatefulWidget {
@@ -53,8 +53,10 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         initValues["middleName"] = profile.middleName;
       if (profile.dateOfBirth != null)
         initValues["dateOfBirth"] = profile.dateOfBirth;
-      if (profile.dateOfBirth != null)
+      if (profile.dateOfBirth != null) {
         dateToShow = formatter.format(DateTime.parse(profile.dateOfBirth));
+      }
+
       if (profile.gender != null) initValues["gender"] = profile.gender;
       if (profile.imageUrl != null) initValues["imageUrl"] = profile.imageUrl;
       if (profile.nationality != null)
@@ -69,7 +71,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
       context: context,
       initialDate: initValues["dateOfBirth"] == null
           ? DateTime.now()
-          : initValues["dateOfBirth"],
+          : DateTime.parse(initValues["dateOfBirth"]),
       firstDate: DateTime(1980),
       lastDate: DateTime.now(),
     ).then((pickedDate) {

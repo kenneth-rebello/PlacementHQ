@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:placementshq/providers/user.dart';
-import 'package:placementshq/widgets/profile/academic_details.dart';
-import 'package:placementshq/widgets/profile/contact_details.dart';
-import 'package:placementshq/widgets/profile/personal_details.dart';
+import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/widgets/profile/academic_details.dart';
+import 'package:placementhq/widgets/profile/contact_details.dart';
+import 'package:placementhq/widgets/profile/personal_details.dart';
 import 'package:provider/provider.dart';
 
 class EditProfile extends StatefulWidget {
