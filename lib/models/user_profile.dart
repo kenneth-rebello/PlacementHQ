@@ -11,6 +11,7 @@ class Profile {
   String gender;
   String nationality;
   String imageUrl;
+  String resumeUrl;
   //Academic
   String collegeName;
   String collegeId;
@@ -44,6 +45,7 @@ class Profile {
     this.gender,
     this.nationality,
     this.imageUrl,
+    this.resumeUrl,
     this.collegeName,
     this.collegeId,
     this.specialization,

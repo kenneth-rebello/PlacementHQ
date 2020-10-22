@@ -24,6 +24,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     "gender": "Prefer Not To Say",
     "nationality": "",
     "imageUrl": "",
+    "resumeUrl": "",
     "verified": false,
   };
   String dateToShow = "";
@@ -31,6 +32,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
   final _mNode = FocusNode();
   final _lNode = FocusNode();
   final _nNode = FocusNode();
+  final _rNode = FocusNode();
   final _iNode = FocusNode();
 
   @override
@@ -38,6 +40,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     _mNode.dispose();
     _lNode.dispose();
     _nNode.dispose();
+    _rNode.dispose();
     _iNode.dispose();
     super.dispose();
   }
@@ -56,7 +59,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
       if (profile.dateOfBirth != null) {
         dateToShow = formatter.format(DateTime.parse(profile.dateOfBirth));
       }
-
+      if (profile.resumeUrl != null)
+        initValues["resumeUrl"] = profile.resumeUrl;
       if (profile.gender != null) initValues["gender"] = profile.gender;
       if (profile.imageUrl != null) initValues["imageUrl"] = profile.imageUrl;
       if (profile.nationality != null)
@@ -130,7 +134,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 },
                 node: _lNode,
                 onFieldSubmitted: (_) {
-                  FocusScope.of(context).requestFocus(_iNode);
+                  FocusScope.of(context).requestFocus(_rNode);
                 },
                 requiredField: true,
               ),
@@ -176,6 +180,21 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                     child: Text("Open Calendar"),
                   ),
                 ],
+              ),
+              Input(
+                initialValue: initValues["resumeUrl"],
+                label: "Online Resume URL",
+                helper: "Tip: Use Google drive shareable link",
+                action: TextInputAction.next,
+                onChanged: (value) {
+                  setState(() {
+                    initValues["resumeUrl"] = value;
+                  });
+                },
+                node: _rNode,
+                onFieldSubmitted: (_) {
+                  FocusScope.of(context).requestFocus(_iNode);
+                },
               ),
               Row(children: [
                 Container(

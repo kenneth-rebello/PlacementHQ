@@ -2,15 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/screens/chat/chat.dart';
 import 'package:placementhq/screens/drive_screens/drive_notices_screen.dart';
 import 'package:placementhq/screens/drive_screens/drive_students.dart';
 import 'package:placementhq/widgets/other/image_error.dart';
 import 'package:placementhq/widgets/other/list_item.dart';
 import 'package:provider/provider.dart';
 
-class DriveDetailsScreen extends StatelessWidget {
-  final DateFormat formatter = new DateFormat("dd-MM-yyyy");
+class DriveDetailsScreen extends StatefulWidget {
   static const routeName = "/drive_details";
+
+  @override
+  _DriveDetailsScreenState createState() => _DriveDetailsScreenState();
+}
+
+class _DriveDetailsScreenState extends State<DriveDetailsScreen> {
+  final DateFormat formatter = new DateFormat("dd-MM-yyyy");
+
   @override
   Widget build(BuildContext context) {
     final driveId = ModalRoute.of(context).settings.arguments;
@@ -72,7 +80,7 @@ class DriveDetailsScreen extends StatelessWidget {
                       value: drive.ctc.toStringAsFixed(2),
                     ),
                     Container(
-                      margin: EdgeInsets.all(10),
+                      margin: EdgeInsets.all(4),
                       width: double.infinity,
                       child: RaisedButton(
                         onPressed: () {
@@ -94,7 +102,7 @@ class DriveDetailsScreen extends StatelessWidget {
                       ),
                     ),
                     Container(
-                      margin: EdgeInsets.all(10),
+                      margin: EdgeInsets.all(4),
                       width: double.infinity,
                       child: RaisedButton(
                         onPressed: () {
@@ -106,6 +114,22 @@ class DriveDetailsScreen extends StatelessWidget {
                         },
                         child: Text(
                           "See All Notices",
+                          style: Theme.of(context).textTheme.button,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.all(4),
+                      width: double.infinity,
+                      child: RaisedButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed(
+                            ChatScreen.routeName,
+                            arguments: drive.id,
+                          );
+                        },
+                        child: Text(
+                          "Q&A",
                           style: Theme.of(context).textTheme.button,
                         ),
                       ),

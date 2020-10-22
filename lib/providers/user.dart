@@ -28,6 +28,7 @@ class User with ChangeNotifier {
         gender: userProfile.gender,
         nationality: userProfile.nationality,
         imageUrl: userProfile.imageUrl,
+        resumeUrl: userProfile.resumeUrl,
         collegeId: userProfile.collegeId,
         collegeName: userProfile.collegeName,
         specialization: userProfile.specialization,
@@ -62,14 +63,12 @@ class User with ChangeNotifier {
 
   List<Registration> get userRegistrations {
     if (userProfile != null) {
-      return [
-        ...userProfile.registrations
-          ..sort((a, b) {
-            return DateTime.parse(a.registeredOn).compareTo(
-              DateTime.parse(b.registeredOn),
-            );
-          })
-      ];
+      return userProfile.registrations
+        ..sort((a, b) {
+          return DateTime.parse(a.registeredOn).compareTo(
+            DateTime.parse(b.registeredOn),
+          );
+        });
     } else
       return [];
   }
@@ -91,6 +90,7 @@ class User with ChangeNotifier {
         gender: profile["gender"],
         nationality: profile["nationality"],
         imageUrl: profile["imageUrl"],
+        resumeUrl: profile["resumeUrl"],
         collegeId: profile["collegeId"],
         collegeName: profile["collegeName"],
         specialization: profile["specialization"],
@@ -231,6 +231,8 @@ class User with ChangeNotifier {
       userProfile.dateOfBirth = profileData["dateOfBirth"];
     if (profileData["imageUrl"] != null)
       userProfile.imageUrl = profileData["imageUrl"];
+    if (profileData["resumeUrl"] != null)
+      userProfile.resumeUrl = profileData["resumeUrl"];
     if (profileData["nationality"] != null)
       userProfile.nationality = profileData["nationality"];
     if (profileData["collegeName"] != null)

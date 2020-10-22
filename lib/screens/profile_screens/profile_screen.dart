@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:placementhq/models/user_profile.dart';
@@ -8,6 +9,7 @@ import 'package:placementhq/screens/profile_screens/tpo_application.dart';
 import 'package:placementhq/widgets/other/image_error.dart';
 import 'package:placementhq/widgets/other/list_item.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
   static const routeName = "/profile";
@@ -34,27 +36,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
             label: "Std Xth %",
             value: profile.secMarks.toStringAsFixed(1),
             shrink: true,
+            ratio: 1 / 2,
           ),
           ListItem(
             label: "Std XIIth %",
             value: profile.highSecMarks.toStringAsFixed(1),
             shrink: true,
+            ratio: 1 / 2,
           ),
           if (profile.hasDiploma)
             ListItem(
               label: "Diploma %",
               value: profile.diplomaMarks.toStringAsFixed(1),
               shrink: true,
+              ratio: 1 / 2,
             ),
           ListItem(
             label: "BE CGPA",
             value: profile.cgpa.toStringAsFixed(1),
             shrink: true,
+            ratio: 1 / 2,
           ),
           ListItem(
             label: "BE %",
             value: profile.beMarks.toStringAsFixed(1),
             shrink: true,
+            ratio: 1 / 2,
           ),
         ],
       ),
@@ -216,6 +223,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         label: "Date Of Birth",
                         value: formatter
                             .format(DateTime.parse(profile.dateOfBirth)),
+                      ),
+                    if (profile.resumeUrl != null && profile.resumeUrl != "")
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: RichText(
+                          text: TextSpan(children: [
+                            TextSpan(
+                                text: "Resume URL",
+                                style: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  color: Colors.blue[900],
+                                ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () async {
+                                    if (await canLaunch(profile.resumeUrl)) {
+                                      await launch(profile.resumeUrl);
+                                    }
+                                  })
+                          ]),
+                        ),
                       ),
                     ListItem(
                       label: "Address",

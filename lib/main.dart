@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:placementhq/providers/companies.dart';
 import 'package:placementhq/providers/drives.dart';
+import 'package:placementhq/screens/chat/chat.dart';
 import 'package:placementhq/screens/drive_screens/drive_details.dart';
 import 'package:placementhq/screens/for_officers/new_notice_screen.dart';
 import 'package:provider/provider.dart';
@@ -144,6 +145,8 @@ class MyApp extends StatelessWidget {
                 auth.isAuth ? CurrentDrivesScreen() : AuthScreen(),
             DriveDetailsScreen.routeName: (ctx) =>
                 auth.isAuth ? DriveDetailsScreen() : AuthScreen(),
+            ChatScreen.routeName: (ctx) =>
+                auth.isAuth ? ChatScreen() : AuthScreen(),
           },
         ),
       ),
