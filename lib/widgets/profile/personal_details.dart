@@ -5,6 +5,8 @@ import 'package:placementhq/models/user_profile.dart';
 import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/widgets/input/input.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io'; // at beginning of file
 
 class PersonalDetails extends StatefulWidget {
   final Function nextPage;
@@ -15,6 +17,7 @@ class PersonalDetails extends StatefulWidget {
 
 class _PersonalDetailsState extends State<PersonalDetails> {
   final _form = GlobalKey<FormState>();
+
   DateFormat formatter = new DateFormat("dd-MM-yyyy");
   Map<String, dynamic> initValues = {
     "firstName": "",
@@ -28,6 +31,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
     "verified": false,
   };
   String dateToShow = "";
+  File _pickedImage;
 
   final _mNode = FocusNode();
   final _lNode = FocusNode();
@@ -84,6 +88,16 @@ class _PersonalDetailsState extends State<PersonalDetails> {
           initValues["dateOfBirth"] = pickedDate.toIso8601String();
           dateToShow = formatter.format(pickedDate);
         });
+    });
+  }
+
+  void _pickImage() async {
+    final picker = ImagePicker();
+    final pickedImage = await picker.getImage(
+        source: ImageSource.gallery, imageQuality: 40, maxWidth: 360);
+    final pickedImageFile = File(pickedImage.path);
+    setState(() {
+      _pickedImage = pickedImageFile;
     });
   }
 
@@ -228,6 +242,30 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   ),
                 )
               ]),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  RaisedButton.icon(
+                    onPressed: () {
+                      _pickImage();
+                    },
+                    icon: Icon(
+                      Icons.camera_alt_rounded,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      "Add Image",
+                      style: Theme.of(context).textTheme.button,
+                    ),
+                  ),
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.indigo[200],
+                    backgroundImage:
+                        _pickedImage == null ? null : FileImage(_pickedImage),
+                  ),
+                ],
+              ),
               Input(
                 initialValue: initValues["nationality"],
                 label: "Nationality",
@@ -244,7 +282,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                     onPressed: () {
                       if (_form.currentState.validate()) {
                         _form.currentState.save();
-                        widget.nextPage(initValues);
+                        widget.nextPage(initValues, image: _pickedImage);
                       }
                     },
                     child: Text("Submit"),

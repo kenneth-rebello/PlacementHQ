@@ -11,19 +11,6 @@ class HomeGrid extends StatefulWidget {
 class _HomeGridState extends State<HomeGrid> {
   bool _loading = false;
 
-  @override
-  void initState() {
-    _loading = true;
-    Provider.of<User>(context, listen: false)
-        .loadCurrentUserProfile()
-        .then((profile) {
-      setState(() {
-        _loading = false;
-      });
-    });
-    super.initState();
-  }
-
   Future<void> _refresh() async {
     setState(() {
       _loading = true;

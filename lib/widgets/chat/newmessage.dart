@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:placementhq/providers/auth.dart';
+import 'package:placementhq/providers/officer.dart';
 import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/widgets/input/input.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +23,12 @@ class _NewMessageState extends State<NewMessage> {
   @override
   void initState() {
     senderId = Provider.of<User>(context, listen: false).userId;
-    senderName = Provider.of<User>(context, listen: false).profile.fullName;
+    final isOfficer = Provider.of<Auth>(context, listen: false).isOfficer;
+    if (isOfficer) {
+      senderName =
+          Provider.of<Officer>(context, listen: false).profile.fullName;
+    } else
+      senderName = Provider.of<User>(context, listen: false).profile.fullName;
     super.initState();
   }
 

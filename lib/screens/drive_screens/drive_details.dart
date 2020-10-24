@@ -125,7 +125,10 @@ class _DriveDetailsScreenState extends State<DriveDetailsScreen> {
                         onPressed: () {
                           Navigator.of(context).pushNamed(
                             ChatScreen.routeName,
-                            arguments: drive.id,
+                            arguments: DriveArguments(
+                              id: drive.id,
+                              companyName: drive.companyName,
+                            ),
                           );
                         },
                         child: Text(

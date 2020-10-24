@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/widgets/profile/academic_details.dart';
@@ -25,12 +28,12 @@ class _EditProfileState extends State<EditProfile>
     super.initState();
   }
 
-  void nextPage(Map<String, dynamic> profileData) {
+  void nextPage(Map<String, dynamic> profileData, {File image = null}) {
     setState(() {
       _loading = true;
     });
     Provider.of<User>(context, listen: false)
-        .editProfile(profileData)
+        .editProfile(profileData, image: image)
         .then((_) {
       setState(() {
         _loading = false;

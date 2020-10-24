@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
@@ -12,6 +13,7 @@ class Auth with ChangeNotifier {
   String _token;
   DateTime _expiryDate;
   String _userId;
+  String _collegeId;
   bool isOfficer = false;
   bool isVerified = false;
   Timer authTimer;
@@ -24,6 +26,10 @@ class Auth with ChangeNotifier {
 
   String get userId {
     return _userId;
+  }
+
+  void setCollegeId(String id) {
+    _collegeId = id;
   }
 
   String get token {
@@ -177,6 +183,10 @@ class Auth with ChangeNotifier {
     _userId = null;
     _expiryDate = null;
     final prefs = await SharedPreferences.getInstance();
+    if (_collegeId != null) {
+      final fbm = FirebaseMessaging();
+      fbm.unsubscribeFromTopic("notices_" + _collegeId);
+    }
     prefs.remove('pHQuserData');
     notifyListeners();
   }

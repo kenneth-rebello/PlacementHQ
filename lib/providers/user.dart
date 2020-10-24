@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:placementhq/models/drive.dart';
@@ -160,7 +161,18 @@ class User with ChangeNotifier {
     return userProfile;
   }
 
-  Future<void> editProfile(Map<String, dynamic> profileData) async {
+  Future<void> editProfile(Map<String, dynamic> profileData,
+      {File image = null}) async {
+    if (image != null) {
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('profile_pictures')
+          .child(userId + ".jpeg");
+      await ref.putFile(image).onComplete;
+
+      final imageUrl = await ref.getDownloadURL();
+      profileData["imageUrl"] = imageUrl;
+    }
     final db =
         "https://placementhq-777.firebaseio.com/users/$userId.json?auth=$token";
     updateValues(profileData);

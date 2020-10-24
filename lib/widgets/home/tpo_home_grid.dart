@@ -12,19 +12,6 @@ class TPOHomeGrid extends StatefulWidget {
 class _TPOHomeGridState extends State<TPOHomeGrid> {
   bool _loading = false;
 
-  @override
-  void initState() {
-    _loading = true;
-    Provider.of<Officer>(context, listen: false)
-        .loadCurrentOfficerProfile()
-        .then((_) {
-      setState(() {
-        _loading = false;
-      });
-    });
-    super.initState();
-  }
-
   Future<void> _refresher() async {
     setState(() {
       _loading = true;

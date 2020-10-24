@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:placementhq/providers/auth.dart';
+import 'package:placementhq/screens/drive_screens/drive_details.dart';
 import 'package:placementhq/widgets/chat/message.dart';
 import 'package:placementhq/widgets/chat/newmessage.dart';
+import 'package:provider/provider.dart';
 
 class ChatScreen extends StatefulWidget {
   static const routeName = '/chat';
@@ -12,10 +15,13 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
-    final driveId = ModalRoute.of(context).settings.arguments;
+    final DriveArguments args = ModalRoute.of(context).settings.arguments;
+    final driveId = args.id;
+    final name = args.companyName;
+    final userId = Provider.of<Auth>(context).userId;
     final col = "chats/$driveId/messages";
     return Scaffold(
-      appBar: AppBar(title: Text("Test")),
+      appBar: AppBar(title: Text("$name QnA")),
       body: StreamBuilder(
         stream: Firestore.instance
             .collection(col)
@@ -45,6 +51,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               message: docs[idx]["text"],
                               sender: docs[idx]["senderName"],
                               senderId: docs[idx]["senderId"],
+                              isMe: docs[idx]["senderId"] == userId,
                               timestamp: docs[idx]["createdAt"],
                             ),
                           ),
