@@ -81,4 +81,12 @@ class Profile {
   String get fullName {
     return firstName + " " + lastName;
   }
+
+  String get fullAddress {
+    return address + ", " + city + ", " + state + ". " + pincode.toString();
+  }
+
+  String toString() {
+    return this.fullName;
+  }
 }

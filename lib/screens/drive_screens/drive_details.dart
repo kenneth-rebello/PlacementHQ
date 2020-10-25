@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/screens/chat/chat.dart';
 import 'package:placementhq/screens/drive_screens/drive_notices_screen.dart';
+import 'package:placementhq/screens/drive_screens/drive_report.dart';
 import 'package:placementhq/screens/drive_screens/drive_students.dart';
 import 'package:placementhq/widgets/other/image_error.dart';
 import 'package:placementhq/widgets/other/list_item.dart';
@@ -23,6 +25,8 @@ class _DriveDetailsScreenState extends State<DriveDetailsScreen> {
   Widget build(BuildContext context) {
     final driveId = ModalRoute.of(context).settings.arguments;
     final drive = Provider.of<Drives>(context).getById(driveId);
+    final isOfficer = Provider.of<Auth>(context).isOfficer;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -54,7 +58,7 @@ class _DriveDetailsScreenState extends State<DriveDetailsScreen> {
                           width: double.infinity,
                           child: Image.network(
                             drive.companyImageUrl,
-                            errorBuilder: (ctx, _, _2) => ImageError(),
+                            errorBuilder: (ctx, _, _a) => ImageError(),
                           ),
                         ),
                         Text(
@@ -137,6 +141,29 @@ class _DriveDetailsScreenState extends State<DriveDetailsScreen> {
                         ),
                       ),
                     ),
+                    if (isOfficer)
+                      Container(
+                        margin: EdgeInsets.all(4),
+                        width: double.infinity,
+                        child: RaisedButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => DriveReport(
+                                  DriveArguments(
+                                    id: drive.id,
+                                    companyName: drive.companyName,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Generate Report",
+                            style: Theme.of(context).textTheme.button,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),

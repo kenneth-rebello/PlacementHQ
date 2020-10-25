@@ -109,7 +109,7 @@ class _AcademicDetailsState extends State<AcademicDetails> {
       child: SingleChildScrollView(
         child: Form(
           key: _form,
-          autovalidate: true,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -213,6 +213,7 @@ class _AcademicDetailsState extends State<AcademicDetails> {
                       10.0) {
                     return "Invalid entry";
                   }
+                  return null;
                 },
               ),
               Input(
@@ -233,6 +234,7 @@ class _AcademicDetailsState extends State<AcademicDetails> {
                       10.0) {
                     return "Invalid entry";
                   }
+                  return null;
                 },
               ),
               Row(
@@ -266,6 +268,7 @@ class _AcademicDetailsState extends State<AcademicDetails> {
                           10.0) {
                         return "Invalid entry";
                       }
+                      return null;
                     },
                   ),
                 ],
@@ -291,6 +294,7 @@ class _AcademicDetailsState extends State<AcademicDetails> {
                       10.0) {
                     return "Invalid entry";
                   }
+                  return null;
                 },
               ),
               Input(

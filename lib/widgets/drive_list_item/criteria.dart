@@ -55,6 +55,19 @@ class CriteriaButton extends StatelessWidget {
                 ),
                 OneValue(
                   padding: 3,
+                  label: "Minimum Diploma %",
+                  value: drive.minDiplomaMarks.toStringAsFixed(1),
+                ),
+                OneValue(
+                  padding: 3,
+                  label: "Your Diploma %",
+                  value: profile.diplomaMarks.toStringAsFixed(1),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                OneValue(
+                  padding: 3,
                   label: "Minimum CGPA",
                   value: drive.minCGPA.toStringAsFixed(1),
                 ),

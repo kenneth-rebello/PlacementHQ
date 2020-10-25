@@ -96,7 +96,7 @@ class _TPOApplicationState extends State<TPOApplication> {
               child: SingleChildScrollView(
                 child: Form(
                   key: _form,
-                  autovalidate: true,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -183,6 +183,7 @@ class _TPOApplicationState extends State<TPOApplication> {
                           if (val.length > 10) {
                             return "Too long";
                           }
+                          return null;
                         },
                       ),
                       Input(
@@ -198,6 +199,7 @@ class _TPOApplicationState extends State<TPOApplication> {
                           if (val != email) {
                             return "You must use your registered email";
                           }
+                          return null;
                         },
                       ),
                       Padding(

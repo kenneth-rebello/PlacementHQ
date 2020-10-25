@@ -70,6 +70,14 @@ class Auth with ChangeNotifier {
       throw HttpException(data['error']['message']);
     }
 
+    final db =
+        "https://placementhq-777.firebaseio.com/users/${data["idToken"]}.json?auth=$token";
+    await http.patch(
+      db,
+      body: json.encode({
+        "email": email,
+      }),
+    );
     throw HttpException("VERIFY_EMAIL");
   }
 

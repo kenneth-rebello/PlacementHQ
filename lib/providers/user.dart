@@ -162,7 +162,7 @@ class User with ChangeNotifier {
   }
 
   Future<void> editProfile(Map<String, dynamic> profileData,
-      {File image = null}) async {
+      {File image}) async {
     if (image != null) {
       final ref = FirebaseStorage.instance
           .ref()

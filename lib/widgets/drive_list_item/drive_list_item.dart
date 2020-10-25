@@ -2,7 +2,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:placementhq/models/drive.dart';
-import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/models/user_profile.dart';
 import 'package:placementhq/screens/drive_screens/drive_details.dart';
@@ -28,6 +27,9 @@ class _DriveListItemState extends State<DriveListItem> {
   DateFormat formatter = new DateFormat("dd-MM-yy");
 
   bool ifEligible(Drive drive, Profile profile) {
+    if (drive.minSecMarks > profile.secMarks) return false;
+    if (drive.minHighSecMarks > profile.highSecMarks) return false;
+    if (drive.minBEMarks > profile.beMarks) return false;
     if (drive.minCGPA > profile.cgpa) return false;
     if (profile.numOfGapYears > drive.maxGapYears) return false;
     if (profile.numOfKTs > drive.maxKTs) return false;
@@ -36,6 +38,13 @@ class _DriveListItemState extends State<DriveListItem> {
 
   String detailsCheck(Drive drive, Profile profile) {
     String result = "";
+    if (profile.rollNo == null) result += "UID/Roll no.\n";
+    if (profile.email == null) result += "Email\n";
+    if (profile.phone == null) result += "Phone number\n";
+    if (profile.specialization == null) result += "Specialization\n";
+    if (profile.secMarks == null) result += "Std Xth Marks\n";
+    if (profile.highSecMarks == null) result += "Std XIIth Marks\n";
+    if (profile.cgpa == null) result += "CGPA\n";
     if (profile.nationality == null && drive.requirements["nationality"])
       result += "Nationality\n";
     if (profile.dateOfBirth == null && drive.requirements["age"])

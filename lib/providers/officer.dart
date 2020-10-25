@@ -98,7 +98,10 @@ class Officer with ChangeNotifier {
   }
 
   Future<void> loadStudents({String cId}) async {
-    final colId = cId == null || cId == "" ? collegeId : cId;
+    String colId = collegeId;
+    if (cId != null && cId != "") {
+      colId = cId;
+    }
     final url =
         'https://placementhq-777.firebaseio.com/users.json?orderBy="collegeId"&equalTo="$colId"&auth=$token&print=pretty';
     final res = await http.get(url);
@@ -106,6 +109,7 @@ class Officer with ChangeNotifier {
     List<Profile> newStudents = [];
     if (students != null) {
       students.forEach((key, student) {
+        print(key + ": " + student["firstName"] + "\n");
         newStudents.add(Profile(
           id: key,
           verified: student["verified"],
@@ -125,16 +129,23 @@ class Officer with ChangeNotifier {
               : student["secMarks"] is int
                   ? student["secMarks"].toDouble()
                   : student["secMarks"],
-          beMarks: student["beMarks"] == null
-              ? null
-              : student["beMarks"] is int
-                  ? student["beMarks"].toDouble()
-                  : student["beMarks"],
           highSecMarks: student["highSecMarks"] == null
               ? null
               : student["highSecMarks"] is int
                   ? student["highSecMarks"].toDouble()
                   : student["highSecMarks"],
+          beMarks: student["beMarks"] == null
+              ? null
+              : student["beMarks"] is int
+                  ? student["beMarks"].toDouble()
+                  : student["beMarks"],
+          diplomaMarks: student["diplomaMarks"] == null
+              ? null
+              : student["diplomaMarks"] is int
+                  ? student["diplomaMarks"].toDouble()
+                  : student["diplomaMarks"],
+          hasDiploma:
+              student["hasDiploma"] == null ? false : student["hasDiploma"],
           cgpa: student["cgpa"] == null
               ? null
               : student["cgpa"] is int
@@ -150,6 +161,7 @@ class Officer with ChangeNotifier {
           pincode: student["pincode"],
         ));
       });
+      print(newStudents);
       _students = newStudents;
       notifyListeners();
     }

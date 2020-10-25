@@ -59,7 +59,7 @@ class _ContactDetailsState extends State<ContactDetails> {
       child: SingleChildScrollView(
         child: Form(
           key: _form,
-          autovalidate: true,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             children: [
               Text(
@@ -82,6 +82,7 @@ class _ContactDetailsState extends State<ContactDetails> {
                   if (val.length < 10) {
                     return "Phone number should have 10 digits";
                   }
+                  return null;
                 },
               ),
               Input(
@@ -96,6 +97,7 @@ class _ContactDetailsState extends State<ContactDetails> {
                   if (val != email) {
                     return "You must use your registered email";
                   }
+                  return null;
                 },
                 node: _eNode,
                 onFieldSubmitted: (_) {

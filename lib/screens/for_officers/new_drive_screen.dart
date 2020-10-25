@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:placementhq/providers/companies.dart';
 import 'package:placementhq/providers/drives.dart';
@@ -54,6 +57,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
   };
   bool _loading = false;
   bool newCompany = true;
+  File _pickedImage;
 
   chooseDate(String fieldName) {
     showDatePicker(
@@ -93,7 +97,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
             _loading = true;
           });
           Provider.of<Drives>(context, listen: false)
-              .createNewDrive(values, collegeId, company)
+              .createNewDrive(values, collegeId, company, _pickedImage)
               .then((_) {
             setState(() {
               _loading = false;
@@ -117,6 +121,16 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
       });
     });
     super.initState();
+  }
+
+  void _pickImage() async {
+    final picker = ImagePicker();
+    final pickedImage = await picker.getImage(
+        source: ImageSource.gallery, imageQuality: 20, maxWidth: 100);
+    final pickedImageFile = File(pickedImage.path);
+    setState(() {
+      _pickedImage = pickedImageFile;
+    });
   }
 
   @override
@@ -147,7 +161,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
               child: SingleChildScrollView(
                 child: Form(
                   key: _form,
-                  autovalidate: true,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     children: [
                       Input(
@@ -201,15 +215,30 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                             ),
                           ),
                         ),
-                      Input(
-                        label: "Image URL for company logo",
-                        controller: contImage,
-                        onSaved: (val) {
-                          setState(() {
-                            values["companyImageUrl"] = val;
-                          });
-                        },
-                        enabled: newCompany,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          RaisedButton.icon(
+                            onPressed: () {
+                              _pickImage();
+                            },
+                            icon: Icon(
+                              Icons.camera_alt_rounded,
+                              color: Colors.white,
+                            ),
+                            label: Text(
+                              "Add Image",
+                              style: Theme.of(context).textTheme.button,
+                            ),
+                          ),
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundColor: Colors.indigo[200],
+                            backgroundImage: _pickedImage == null
+                                ? null
+                                : FileImage(_pickedImage),
+                          ),
+                        ],
                       ),
                       Input(
                         initialValue: values["companyMessage"],

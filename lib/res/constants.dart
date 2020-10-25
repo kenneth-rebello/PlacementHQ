@@ -20,7 +20,7 @@ abstract class Constants {
       protected: true,
     ),
     HomeItem(
-      label: "Registrations",
+      label: "Registered Drives",
       icon: Icons.subscriptions,
       routeName: RegistrationsScreen.routeName,
       imagePath: 'assets/images/registrations.png',

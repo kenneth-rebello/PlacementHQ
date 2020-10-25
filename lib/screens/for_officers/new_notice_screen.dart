@@ -157,6 +157,7 @@ class _NewNoticeState extends State<NewNotice> {
                     validator: (val) {
                       if (val.length < 10)
                         return "Notice should be at least 10 characters long";
+                      return null;
                     },
                     minLines: 5,
                   ),

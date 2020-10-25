@@ -8,7 +8,7 @@ class RegistrationItem extends StatelessWidget {
 
   RegistrationItem(this.registration);
 
-  DateFormat formatter = new DateFormat("dd-MM-yy");
+  final DateFormat formatter = new DateFormat("dd-MM-yy");
 
   @override
   Widget build(BuildContext context) {

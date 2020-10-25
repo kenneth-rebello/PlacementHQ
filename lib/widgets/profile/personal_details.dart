@@ -236,7 +236,7 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   width: 100,
                   child: Image.network(
                     initValues["imageUrl"],
-                    errorBuilder: (_, _2, _3) => Center(
+                    errorBuilder: (_, _a, _b) => Center(
                       child: Icon(Icons.error_outline, color: Colors.red),
                     ),
                   ),

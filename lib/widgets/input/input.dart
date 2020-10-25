@@ -19,8 +19,8 @@ class Input extends StatelessWidget {
   final int minLines;
   final int maxLines;
   final int helperLines;
-  bool requiredField;
-  bool disabled;
+  final bool requiredField;
+  final bool disabled;
 
   Input({
     this.initialValue,
@@ -45,7 +45,6 @@ class Input extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (requiredField == null) requiredField = false;
     return Container(
       padding: const EdgeInsets.all(8.0),
       width: fixedWidth,
@@ -85,6 +84,7 @@ class Input extends StatelessWidget {
             if (validator != null) {
               return validator(val);
             }
+            return null;
           },
           maxLines: maxLines,
           minLines: minLines,

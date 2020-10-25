@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:placementhq/models/drive.dart';
 import 'package:http/http.dart' as http;
@@ -35,7 +37,7 @@ class Drives with ChangeNotifier {
   Future<void> loadDrives(String collegeId) async {
     if (collegeId != null && collegeId != "") {
       final url =
-          "https://placementhq-777.firebaseio.com/collegeData/${collegeId}/drives.json?auth=$token";
+          "https://placementhq-777.firebaseio.com/collegeData/$collegeId/drives.json?auth=$token";
       final res = await http.get(url);
       final drives = json.decode(res.body) as Map<String, dynamic>;
       List<Drive> newDrives = [];
@@ -83,9 +85,23 @@ class Drives with ChangeNotifier {
   }
 
   Future<void> createNewDrive(
-      Map<String, dynamic> driveData, String collegeId, Company company) async {
+    Map<String, dynamic> driveData,
+    String collegeId,
+    Company company,
+    File image,
+  ) async {
     final year = DateTime.now().year;
     if (collegeId != null && collegeId != "") {
+      //Add image to storage
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('company_logos')
+          .child(driveData["companyName"] + ".jpeg");
+      await ref.putFile(image).onComplete;
+
+      final imageUrl = await ref.getDownloadURL();
+      driveData["companyImageUrl"] = imageUrl;
+
       //Add Company to PlacementHQ database
       if (company == null) {
         final urlComp =
@@ -103,7 +119,7 @@ class Drives with ChangeNotifier {
       //Update or Create College historical data about company
       if (company != null) {
         final urlRecord =
-            "https://placementhq-777.firebaseio.com/collegeData/${collegeId}/companies/${company.id}.json?auth=$token";
+            "https://placementhq-777.firebaseio.com/collegeData/$collegeId/companies/${company.id}.json?auth=$token";
         await http.patch(
           urlRecord,
           body: json.encode({
@@ -118,7 +134,7 @@ class Drives with ChangeNotifier {
         );
       } else {
         final urlRecord =
-            "https://placementhq-777.firebaseio.com/collegeData/${collegeId}/companies/${driveData["companyId"]}.json?auth=$token";
+            "https://placementhq-777.firebaseio.com/collegeData/$collegeId/companies/${driveData["companyId"]}.json?auth=$token";
         await http.patch(
           urlRecord,
           body: json.encode({
@@ -179,6 +195,7 @@ class Drives with ChangeNotifier {
         issuedOn: notice["issuedOn"],
       ));
     });
+    newNotices.sort((a, b) => b.issuedOn.compareTo(a.issuedOn));
     _notices = newNotices;
     notifyListeners();
   }
@@ -200,6 +217,7 @@ class Drives with ChangeNotifier {
         issuedOn: notice["issuedOn"],
       ));
     });
+    newNotices.sort((a, b) => b.issuedOn.compareTo(a.issuedOn));
     _notices = newNotices;
     notifyListeners();
   }
