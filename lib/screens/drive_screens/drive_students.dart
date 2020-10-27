@@ -6,6 +6,7 @@ import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/providers/officer.dart';
 import 'package:placementhq/res/constants.dart';
 import 'package:placementhq/screens/drive_screens/drive_details.dart';
+import 'package:placementhq/screens/drive_screens/drive_report.dart';
 import 'package:placementhq/screens/profile_screens/profile_screen.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
 import 'package:placementhq/widgets/input/yes_button.dart';
@@ -22,7 +23,9 @@ class DriveStudentsScreen extends StatefulWidget {
 class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
   final DateFormat formatter = new DateFormat("dd-MM-yyyy hh:mm");
   bool _loading = false;
+  bool _pickable = false;
   String sortBy = SortOptions.uidAsc;
+  List<bool> picked = List.filled(1000, false);
 
   @override
   void initState() {
@@ -43,9 +46,18 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(
-          "Confirm selection of ${reg.candidate} for ${reg.company}?",
+          "Confirm selection of ${reg.candidate} for placement at ${reg.company}?",
           style: Theme.of(context).textTheme.headline3,
         ),
+        content: Text(
+          "Only click yes if student will receive an offer from the company. This cannot be undone.",
+          style: TextStyle(
+            fontFamily: "Ubuntu",
+            fontWeight: FontWeight.normal,
+            color: Colors.red,
+          ),
+        ),
+        contentPadding: EdgeInsets.all(10),
         actions: [
           NoButton(ctx),
           YesButton(ctx),
@@ -82,10 +94,84 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-          title: Text(
-        widget.args.companyName,
-        style: Theme.of(context).textTheme.headline1,
-      )),
+        title: Text(
+          widget.args.companyName,
+          style: Theme.of(context).textTheme.headline1,
+        ),
+        actions: [
+          if (isOfficer && !_pickable)
+            PopupMenuButton(
+              itemBuilder: (ctx) => [
+                PopupMenuItem(
+                  child: FlatButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => DriveReport(
+                            DriveArguments(
+                              id: widget.args.id,
+                              companyName: widget.args.companyName,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "Generate Report",
+                      style: TextStyle(fontFamily: "Ubuntu"),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          if (_pickable)
+            PopupMenuButton(
+              itemBuilder: (ctx) => [
+                PopupMenuItem(
+                  child: FlatButton(
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          title: Text(
+                            "Are you sure?",
+                            style: Theme.of(context).textTheme.headline3,
+                          ),
+                          content: Text(
+                            "These students will be removed from this drive and their candidature for the same will be considered rejected.",
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontFamily: "Ubuntu",
+                            ),
+                          ),
+                          contentPadding: EdgeInsets.all(10),
+                          actions: [NoButton(ctx), YesButton(ctx)],
+                        ),
+                      ).then((res) {
+                        if (res) {
+                          List<String> idsToRemove = [];
+                          for (int i = 0; i < registrations.length; i++) {
+                            if (picked[i]) {
+                              idsToRemove.add(registrations[i].id);
+                            }
+                          }
+                          Provider.of<Drives>(context, listen: false)
+                              .removeRegistrations(
+                            idsToRemove,
+                          );
+                        }
+                      });
+                    },
+                    child: Text(
+                      "Remove Students",
+                      style: TextStyle(fontFamily: "Ubuntu"),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
       body: Container(
         margin: EdgeInsets.all(10),
         child: _loading
@@ -165,30 +251,51 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
                               fontWeight: FontWeight.normal,
                             ),
                           ),
-                          onTap: () {
-                            Navigator.of(context).pushNamed(
-                              ProfileScreen.routeName,
-                              arguments: registrations[idx].userId,
-                            );
+                          onTap: _pickable
+                              ? () {}
+                              : () {
+                                  Navigator.of(context).pushNamed(
+                                    ProfileScreen.routeName,
+                                    arguments: registrations[idx].userId,
+                                  );
+                                },
+                          onLongPress: () {
+                            setState(() {
+                              _pickable = true;
+                              picked[idx] = true;
+                            });
                           },
-                          trailing: isOfficer == true
-                              ? Container(
-                                  width: 50,
-                                  child: PopupMenuButton(
-                                    itemBuilder: (ctx1) => [
-                                      PopupMenuItem(
-                                          child: FlatButton(
-                                        onPressed: () async {
-                                          await _confirm(registrations[idx]);
-                                          Navigator.of(ctx1).pop();
-                                        },
-                                        child: Text("Confirm Selection"),
-                                      )),
-                                    ],
-                                    icon: Icon(Icons.more_vert),
-                                  ),
-                                )
-                              : null,
+                          trailing: _pickable && !registrations[idx].selected
+                              ? Checkbox(
+                                  value: picked[idx],
+                                  onChanged: (val) {
+                                    setState(() {
+                                      picked[idx] = val;
+                                      if (!picked.any((element) => element)) {
+                                        _pickable = false;
+                                      }
+                                    });
+                                  })
+                              : isOfficer == true &&
+                                      !registrations[idx].selected
+                                  ? Container(
+                                      width: 50,
+                                      child: PopupMenuButton(
+                                        itemBuilder: (ctx1) => [
+                                          PopupMenuItem(
+                                              child: FlatButton(
+                                            onPressed: () async {
+                                              await _confirm(
+                                                  registrations[idx]);
+                                              Navigator.of(ctx1).pop();
+                                            },
+                                            child: Text("Confirm Selection"),
+                                          )),
+                                        ],
+                                        icon: Icon(Icons.more_vert),
+                                      ),
+                                    )
+                                  : null,
                         ),
                       ),
                       itemCount: registrations.length,

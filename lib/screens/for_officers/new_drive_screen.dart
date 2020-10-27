@@ -11,6 +11,7 @@ import 'package:placementhq/widgets/input/check_list_item.dart';
 import 'package:placementhq/widgets/input/input.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
 import 'package:placementhq/widgets/input/yes_button.dart';
+import 'package:placementhq/widgets/other/image_error.dart';
 import 'package:provider/provider.dart';
 
 class NewDriveScreen extends StatefulWidget {
@@ -215,31 +216,39 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                             ),
                           ),
                         ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          RaisedButton.icon(
-                            onPressed: () {
-                              _pickImage();
-                            },
-                            icon: Icon(
-                              Icons.camera_alt_rounded,
-                              color: Colors.white,
+                      (values["companyImageUrl"] == null ||
+                              values["companyImageUrl"] == "")
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                RaisedButton.icon(
+                                  onPressed: () {
+                                    _pickImage();
+                                  },
+                                  icon: Icon(
+                                    Icons.camera_alt_rounded,
+                                    color: Colors.white,
+                                  ),
+                                  label: Text(
+                                    "Add Image",
+                                    style: Theme.of(context).textTheme.button,
+                                  ),
+                                ),
+                                CircleAvatar(
+                                  radius: 50,
+                                  backgroundColor: Colors.indigo[200],
+                                  backgroundImage: _pickedImage == null
+                                      ? null
+                                      : FileImage(_pickedImage),
+                                ),
+                              ],
+                            )
+                          : Center(
+                              child: Image.network(
+                                values["companyImageUrl"],
+                                errorBuilder: (ctx, e, s) => ImageError(),
+                              ),
                             ),
-                            label: Text(
-                              "Add Image",
-                              style: Theme.of(context).textTheme.button,
-                            ),
-                          ),
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundColor: Colors.indigo[200],
-                            backgroundImage: _pickedImage == null
-                                ? null
-                                : FileImage(_pickedImage),
-                          ),
-                        ],
-                      ),
                       Input(
                         initialValue: values["companyMessage"],
                         label: "Message from company",

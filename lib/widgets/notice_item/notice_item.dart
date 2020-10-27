@@ -1,5 +1,7 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:placementhq/models/notice.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class NoticeItem extends StatelessWidget {
   final Notice notice;
@@ -73,6 +75,26 @@ class NoticeItem extends StatelessWidget {
                   ),
                 ),
               ),
+              if (notice.fileUrl != null)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: RichText(
+                    text: TextSpan(children: [
+                      TextSpan(
+                          text: "Attachements",
+                          style: TextStyle(
+                            decoration: TextDecoration.underline,
+                            color: Colors.blue[900],
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () async {
+                              if (await canLaunch(notice.fileUrl)) {
+                                await launch(notice.fileUrl);
+                              }
+                            })
+                    ]),
+                  ),
+                ),
               Text(
                 "Issued by: ${notice.issuedBy}",
                 textAlign: TextAlign.right,

@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:placementhq/models/user_profile.dart';
@@ -24,13 +27,17 @@ class OfficerProfile {
 }
 
 class Officer with ChangeNotifier {
-  final String token;
-  final String userId;
-  final String emailId;
+  String token;
+  String userId;
+  String emailId;
   OfficerProfile _profile;
   List<Profile> _students = [];
 
-  Officer(this.token, this.userId, this.emailId);
+  void update(token, userId, emailId) {
+    this.token = token;
+    this.userId = userId;
+    this.emailId = emailId;
+  }
 
   OfficerProfile get profile {
     OfficerProfile copy;
@@ -72,7 +79,11 @@ class Officer with ChangeNotifier {
         collegeId: profile["collegeId"],
         fullName: profile["fullName"],
         designation: profile["designation"],
-        phone: profile["phone"],
+        phone: profile["phone"] == null || profile["phone"] == ""
+            ? null
+            : profile["phone"] is int
+                ? profile["phone"]
+                : int.parse(profile["phone"]),
         email: profile["email"],
       );
       notifyListeners();
@@ -109,7 +120,6 @@ class Officer with ChangeNotifier {
     List<Profile> newStudents = [];
     if (students != null) {
       students.forEach((key, student) {
-        print(key + ": " + student["firstName"] + "\n");
         newStudents.add(Profile(
           id: key,
           verified: student["verified"],
@@ -161,7 +171,6 @@ class Officer with ChangeNotifier {
           pincode: student["pincode"],
         ));
       });
-      print(newStudents);
       _students = newStudents;
       notifyListeners();
     }
@@ -174,13 +183,46 @@ class Officer with ChangeNotifier {
     );
   }
 
-  Future<void> addNewNotice(Map<String, dynamic> data) async {
+  Future<void> addNewNotice(
+      Map<String, dynamic> data, FilePickerResult file) async {
     if (collegeId != null) {
+      if (file != null) {
+        File upload = File(file.files.single.path);
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('notice_documents')
+            .child(file.files.single.name);
+        await ref.putFile(upload).onComplete;
+
+        final downloadLink = await ref.getDownloadURL();
+        data["fileUrl"] = downloadLink;
+      }
       data["issuedBy"] = _profile.fullName;
       data["issuerId"] = _profile.id;
       final url =
           'https://placementhq-777.firebaseio.com/collegeData/$collegeId/notices.json?auth=$token';
       await http.post(url, body: json.encode(data));
     }
+  }
+
+  Future<void> editProfile(Map<String, dynamic> profileData) async {
+    final db =
+        "https://placementhq-777.firebaseio.com/officers/$userId.json?auth=$token";
+
+    await http.patch(
+      db,
+      body: json.encode(
+        profileData,
+      ),
+    );
+
+    if (profileData["email"] != null && profileData["email"] != "")
+      _profile.email = profileData["email"];
+    if (profileData["phone"] != null && profileData["phone"] != "") {
+      _profile.phone = profileData["phone"] is int
+          ? profileData["phone"]
+          : int.parse(profileData["phone"]);
+    }
+    notifyListeners();
   }
 }

@@ -12,6 +12,7 @@ import '../models/http_exception.dart';
 class Auth with ChangeNotifier {
   String _token;
   DateTime _expiryDate;
+  String _refreshToken;
   String _userId;
   String _collegeId;
   bool isOfficer = false;
@@ -28,14 +29,17 @@ class Auth with ChangeNotifier {
     return _userId;
   }
 
+  String get collegeId {
+    return _collegeId;
+  }
+
   void setCollegeId(String id) {
     _collegeId = id;
+    notifyListeners();
   }
 
   String get token {
-    if (_token != null &&
-        _expiryDate != null &&
-        _expiryDate.isAfter(DateTime.now())) {
+    if (_token != null) {
       return _token;
     } else
       return null;
@@ -70,14 +74,6 @@ class Auth with ChangeNotifier {
       throw HttpException(data['error']['message']);
     }
 
-    final db =
-        "https://placementhq-777.firebaseio.com/users/${data["idToken"]}.json?auth=$token";
-    await http.patch(
-      db,
-      body: json.encode({
-        "email": email,
-      }),
-    );
     throw HttpException("VERIFY_EMAIL");
   }
 
@@ -111,21 +107,26 @@ class Auth with ChangeNotifier {
     } else {
       _token = data['idToken'];
       _userId = data['localId'];
+      _refreshToken = data['refreshToken'];
       _expiryDate = DateTime.now().add(
         Duration(seconds: int.parse(data['expiresIn'])),
       );
-      autoLogout();
+      autoRefreshToken();
 
       //Check if user is a TPO (and whether verified or not)
-      final res = await http.get(
-          "https://placementhq-777.firebaseio.com/officers/${data['localId']}.json?auth=${data['idToken']}");
-      final officer = json.decode(res.body);
-      if (officer != null) {
-        isOfficer = true;
-        isVerified = officer["verified"];
-      } else {
-        isOfficer = false;
-        isVerified = false;
+      try {
+        final res = await http.get(
+            "https://placementhq-777.firebaseio.com/officers/${data['localId']}.json?auth=${data['idToken']}");
+        final officer = json.decode(res.body);
+        if (officer != null) {
+          isOfficer = true;
+          isVerified = officer["verified"];
+        } else {
+          isOfficer = false;
+          isVerified = false;
+        }
+      } catch (e) {
+        print(e);
       }
 
       notifyListeners();
@@ -133,8 +134,10 @@ class Auth with ChangeNotifier {
       final userData = json.encode({
         'token': _token,
         'userId': _userId,
+        'refreshToken': _refreshToken,
         'expiryDate': _expiryDate.toIso8601String(),
         'email': email,
+        "collegeId": _collegeId,
         "isOfficer": isOfficer,
         "isVerified": isVerified,
       });
@@ -170,15 +173,16 @@ class Auth with ChangeNotifier {
     final userData =
         json.decode(prefs.getString('pHQuserData')) as Map<String, dynamic>;
     final expiryDate = DateTime.parse(userData['expiryDate']);
-    if (expiryDate.isBefore(DateTime.now())) return false;
     isVerified = userData["isVerified"];
     isOfficer = userData["isOfficer"];
     _token = userData['token'];
     _userId = userData['userId'];
+    _collegeId = userData["collegeId"];
+    _refreshToken = userData["refreshToken"];
     _expiryDate = expiryDate;
     userEmail = userData["email"];
-    autoLogout();
     notifyListeners();
+    autoRefreshToken();
     return true;
   }
 
@@ -190,23 +194,71 @@ class Auth with ChangeNotifier {
     _token = null;
     _userId = null;
     _expiryDate = null;
+    _collegeId = null;
+    _refreshToken = null;
+
     final prefs = await SharedPreferences.getInstance();
+    prefs.remove('pHQuserData');
+
     if (_collegeId != null) {
       final fbm = FirebaseMessaging();
-      fbm.unsubscribeFromTopic("notices_" + _collegeId);
+      fbm.unsubscribeFromTopic("college" + _collegeId);
+      fbm.unsubscribeFromTopic("user" + userId);
     }
-    prefs.remove('pHQuserData');
     notifyListeners();
   }
 
-  void autoLogout() {
+  void refreshToken() async {
+    if (_refreshToken == null) return;
+    final url =
+        "https://securetoken.googleapis.com/v1/token?key=AIzaSyB0UuBOWbFOR5nTFaLRq2TSTk0F7VS6wMU";
+    final res = await http.post(
+      url,
+      body: json.encode({
+        "grant_type": "refresh_token",
+        "refresh_token": _refreshToken,
+      }),
+    );
+    final data = json.decode(res.body);
+    _token = data["id_token"];
+    _expiryDate = DateTime.now().add(
+      Duration(seconds: int.parse(data['expires_in'])),
+    );
+    _refreshToken = data["refresh_token"];
+    autoRefreshToken();
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey('pHQuserData')) return;
+    final cachedData =
+        json.decode(prefs.getString('pHQuserData')) as Map<String, dynamic>;
+    final userData = json.encode({
+      'token': _token,
+      'userId': cachedData["userId"],
+      'refreshToken': _refreshToken,
+      'expiryDate': _expiryDate.toIso8601String(),
+      'email': cachedData["email"],
+      "collegeId": cachedData["collegeId"],
+      "isOfficer": cachedData["isOfficer"],
+      "isVerified": cachedData["isVerified"],
+    });
+    prefs.setString('pHQuserData', userData);
+  }
+
+  void autoRefreshToken() {
     if (authTimer != null) {
       authTimer.cancel();
     }
+
+    if (_expiryDate.isBefore(DateTime.now())) {
+      refreshToken();
+      return;
+    }
+
     DateFormat formatter = new DateFormat("dd-MM-yyyy hh:mm");
     print(formatter.format(_expiryDate));
     final timeToExpire = _expiryDate.difference(DateTime.now()).inSeconds;
-    authTimer = Timer(Duration(seconds: timeToExpire), logout);
+    authTimer = Timer(Duration(seconds: timeToExpire - 300), refreshToken);
   }
 
   void markAsTPO() {

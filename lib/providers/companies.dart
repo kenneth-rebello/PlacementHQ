@@ -27,7 +27,11 @@ class Companies with ChangeNotifier {
   List<Company> _companies = [];
   String _token;
 
-  Companies(this._token);
+  Companies();
+
+  void update(token) {
+    this._token = token;
+  }
 
   List<Company> get companies {
     return [..._companies];

@@ -6,6 +6,7 @@ class Notice {
   final String issuedBy;
   final String issuerId;
   final String issuedOn;
+  final String fileUrl;
 
   Notice({
     this.companyName,
@@ -15,5 +16,6 @@ class Notice {
     this.notice,
     this.issuerId,
     this.issuedOn,
+    this.fileUrl,
   });
 }

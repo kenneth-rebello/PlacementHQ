@@ -1,6 +1,9 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/res/constants.dart';
+import 'package:placementhq/screens/for_students/notices_screen.dart';
 import 'package:provider/provider.dart';
 
 class HomeGrid extends StatefulWidget {
@@ -11,13 +14,91 @@ class HomeGrid extends StatefulWidget {
 class _HomeGridState extends State<HomeGrid> {
   bool _loading = false;
 
+  void initState() {
+    final fbm = FirebaseMessaging();
+    fbm.configure(
+      onMessage: (msg) {
+        print(msg);
+        if (msg["notification"] != null)
+          showDialog(
+            context: context,
+            builder: (ctx) => SimpleDialog(
+              contentPadding: EdgeInsets.all(16),
+              backgroundColor: Colors.orange[200],
+              title: Text(
+                msg["notification"]["title"],
+                style: TextStyle(
+                  fontFamily: 'Ubuntu',
+                  color: Colors.indigo[700],
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              children: [
+                Text(
+                  msg["notification"]["body"],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Ubuntu',
+                    fontWeight: FontWeight.normal,
+                  ),
+                ),
+                RaisedButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop(true);
+                  },
+                  child: Text(
+                    "Open Notices",
+                    style: TextStyle(
+                      fontFamily: 'Ubuntu',
+                      color: Colors.white,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ).then((value) {
+            if (value != null) {
+              if (value)
+                Navigator.of(context).pushNamed(NoticesScreen.routeName);
+            }
+          });
+        return;
+      },
+      onLaunch: (msg) {
+        print(msg);
+        return;
+      },
+      onResume: (msg) {
+        print(msg);
+        return;
+      },
+    );
+    Provider.of<User>(context, listen: false)
+        .loadCurrentUserProfile()
+        .then((_) {
+      String collegeId = Provider.of<User>(context, listen: false).collegeId;
+      String userId = Provider.of<Auth>(context, listen: false).userId;
+      final topic1 = "user" + userId;
+      fbm.subscribeToTopic(topic1);
+      if (collegeId != null) {
+        Provider.of<Auth>(context, listen: false).setCollegeId(collegeId);
+        final topic2 = "college_" + collegeId;
+        fbm.subscribeToTopic(topic2);
+      }
+      setState(() {
+        _loading = false;
+      });
+    });
+    super.initState();
+  }
+
   Future<void> _refresh() async {
     setState(() {
       _loading = true;
     });
     Provider.of<User>(context, listen: false)
         .loadCurrentUserProfile()
-        .then((profile) {
+        .then((_) {
       setState(() {
         _loading = false;
       });

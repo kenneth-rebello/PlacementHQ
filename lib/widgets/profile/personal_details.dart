@@ -210,38 +210,6 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                   FocusScope.of(context).requestFocus(_iNode);
                 },
               ),
-              Row(children: [
-                Container(
-                  width: 200,
-                  child: Input(
-                    initialValue: initValues["imageUrl"],
-                    label: "Online Image URL",
-                    helper:
-                        "Tip: Copy and paste image URL of your LinkedIn profile picture",
-                    helperLines: 2,
-                    action: TextInputAction.next,
-                    onChanged: (value) {
-                      setState(() {
-                        initValues["imageUrl"] = value;
-                      });
-                    },
-                    node: _iNode,
-                    onFieldSubmitted: (_) {
-                      FocusScope.of(context).requestFocus(_nNode);
-                    },
-                  ),
-                ),
-                Container(
-                  height: 100,
-                  width: 100,
-                  child: Image.network(
-                    initValues["imageUrl"],
-                    errorBuilder: (_, _a, _b) => Center(
-                      child: Icon(Icons.error_outline, color: Colors.red),
-                    ),
-                  ),
-                )
-              ]),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [

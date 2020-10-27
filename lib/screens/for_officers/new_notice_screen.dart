@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/providers/officer.dart';
@@ -29,6 +30,7 @@ class NewNotice extends StatefulWidget {
 
 class _NewNoticeState extends State<NewNotice> {
   bool _loading = false;
+  FilePickerResult file;
   TextEditingController cont = new TextEditingController();
   Map<String, dynamic> values = {
     "driveId": "",
@@ -49,6 +51,30 @@ class _NewNoticeState extends State<NewNotice> {
       });
     });
     super.initState();
+  }
+
+  void _addFile() async {
+    FilePickerResult result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: [
+        'jpg',
+        'pdf',
+        'doc',
+        'xlsx',
+        'csv',
+        'docx',
+        'jpeg',
+        'png'
+      ],
+      allowCompression: true,
+    );
+
+    if (result != null) {
+      print(result.files.single.extension);
+      setState(() {
+        file = result;
+      });
+    }
   }
 
   _publish() {
@@ -87,8 +113,9 @@ class _NewNoticeState extends State<NewNotice> {
               )).then((res) {
         if (res == true) {
           Provider.of<Officer>(context, listen: false)
-              .addNewNotice(values)
+              .addNewNotice(values, file)
               .then((_) {
+            FilePicker.platform.clearTemporaryFiles();
             setState(() {
               values["notice"] = "";
             });
@@ -110,6 +137,7 @@ class _NewNoticeState extends State<NewNotice> {
       driveCompanies.add(drive.companyName);
       mapDriveCompanyToId[drive.companyName] = drive.id;
     });
+
     return _loading
         ? Center(
             child: CircularProgressIndicator(),
@@ -160,6 +188,19 @@ class _NewNoticeState extends State<NewNotice> {
                       return null;
                     },
                     minLines: 5,
+                  ),
+                  Container(
+                    width: double.infinity,
+                    margin: EdgeInsets.all(10),
+                    child: RaisedButton(
+                      onPressed: () {
+                        _addFile();
+                      },
+                      child: Text(
+                        "Add File",
+                        style: Theme.of(context).textTheme.button,
+                      ),
+                    ),
                   ),
                   Container(
                     width: double.infinity,

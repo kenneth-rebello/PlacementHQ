@@ -20,7 +20,6 @@ class DriveReport extends StatefulWidget {
 }
 
 class _DriveReportState extends State<DriveReport> {
-  bool _loading = true;
   bool _generating = false;
   Map<String, bool> columns = {
     "firstName": false,
@@ -43,23 +42,6 @@ class _DriveReportState extends State<DriveReport> {
     "regDate": false,
   };
   final DateFormat formatter = new DateFormat("dd-MM-yyyy hh:mm");
-
-  @override
-  void initState() {
-    _loading = true;
-    Provider.of<Drives>(context, listen: false)
-        .getDriveRegistrations(widget.args.id)
-        .then((collegeId) {
-      Provider.of<Officer>(context, listen: false)
-          .loadStudents(cId: collegeId)
-          .then((_) {
-        setState(() {
-          _loading = false;
-        });
-      });
-    });
-    super.initState();
-  }
 
   void generateReport() async {
     setState(() {
@@ -193,7 +175,9 @@ class _DriveReportState extends State<DriveReport> {
           ],
           contentPadding: EdgeInsets.all(15),
         ),
-      );
+      ).then((_) {
+        Navigator.of(context).pop();
+      });
   }
 
   @override
@@ -204,224 +188,220 @@ class _DriveReportState extends State<DriveReport> {
         "Generate Report",
         style: Theme.of(context).textTheme.headline1,
       )),
-      body: _loading
-          ? Center(
-              child: CircularProgressIndicator(),
-            )
-          : Container(
-              margin: EdgeInsets.all(10),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Pick columns to include in report",
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headline3,
-                    ),
-                    CheckListItem(
-                      label: "First Name",
-                      value: columns["firstName"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["firstName"] = val;
+      body: Container(
+        margin: EdgeInsets.all(10),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "Pick columns to include in report",
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headline3,
+              ),
+              CheckListItem(
+                label: "First Name",
+                value: columns["firstName"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["firstName"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Middle Name",
+                value: columns["middleName"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["middleName"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Last Name",
+                value: columns["lastName"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["lastName"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Full Name",
+                value: columns["fullName"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["fullName"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "UID",
+                value: columns["uid"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["uid"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Email",
+                value: columns["email"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["email"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Contact Number",
+                value: columns["phone"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["phone"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Date Of Birth",
+                value: columns["dob"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["dob"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Gender",
+                value: columns["gender"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["gender"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Address",
+                value: columns["address"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["address"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Std X Marks",
+                value: columns["secMarks"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["secMarks"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Std XII Marks",
+                value: columns["highSecMarks"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["highSecMarks"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Diploma Marks",
+                value: columns["diplomaMarks"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["diplomaMarks"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "BE CGPA",
+                value: columns["cgpa"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["cgpa"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "BE %",
+                value: columns["beMarks"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["beMarks"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Number of KTs",
+                value: columns["numOfKTs"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["numOfKTs"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Number of gap years",
+                value: columns["numOfGapYears"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["numOfGapYears"] = val;
+                  });
+                },
+              ),
+              CheckListItem(
+                label: "Registration Date",
+                value: columns["regDate"],
+                onChanged: (val) {
+                  setState(() {
+                    columns["regDate"] = val;
+                  });
+                },
+              ),
+              RaisedButton(
+                onPressed: _generating
+                    ? null
+                    : () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: Text(
+                              "Are you sure?",
+                              style: TextStyle(
+                                fontFamily: 'Ubuntu',
+                                color: Colors.indigo[800],
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.all(20),
+                            content: Text(
+                              "If you have generated a report before, it will be deleted and replaced with a new report. Continue?",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontFamily: 'Ubuntu',
+                              ),
+                            ),
+                            actions: [NoButton(ctx), YesButton(ctx)],
+                          ),
+                        ).then((res) {
+                          if (res) {
+                            generateReport();
+                          }
                         });
                       },
-                    ),
-                    CheckListItem(
-                      label: "Middle Name",
-                      value: columns["middleName"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["middleName"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Last Name",
-                      value: columns["lastName"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["lastName"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Full Name",
-                      value: columns["fullName"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["fullName"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "UID",
-                      value: columns["uid"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["uid"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Email",
-                      value: columns["email"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["email"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Contact Number",
-                      value: columns["phone"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["phone"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Date Of Birth",
-                      value: columns["dob"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["dob"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Gender",
-                      value: columns["gender"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["gender"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Address",
-                      value: columns["address"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["address"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Std X Marks",
-                      value: columns["secMarks"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["secMarks"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Std XII Marks",
-                      value: columns["highSecMarks"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["highSecMarks"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Diploma Marks",
-                      value: columns["diplomaMarks"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["diplomaMarks"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "BE CGPA",
-                      value: columns["cgpa"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["cgpa"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "BE %",
-                      value: columns["beMarks"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["beMarks"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Number of KTs",
-                      value: columns["numOfKTs"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["numOfKTs"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Number of gap years",
-                      value: columns["numOfGapYears"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["numOfGapYears"] = val;
-                        });
-                      },
-                    ),
-                    CheckListItem(
-                      label: "Registration Date",
-                      value: columns["regDate"],
-                      onChanged: (val) {
-                        setState(() {
-                          columns["regDate"] = val;
-                        });
-                      },
-                    ),
-                    RaisedButton(
-                      onPressed: _generating
-                          ? null
-                          : () {
-                              showDialog(
-                                context: context,
-                                builder: (ctx) => AlertDialog(
-                                  title: Text(
-                                    "Are you sure?",
-                                    style: TextStyle(
-                                      fontFamily: 'Ubuntu',
-                                      color: Colors.indigo[800],
-                                    ),
-                                  ),
-                                  contentPadding: EdgeInsets.all(20),
-                                  content: Text(
-                                    "If you have generated a report before, it will be deleted and replaced with a new report. Continue?",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontFamily: 'Ubuntu',
-                                    ),
-                                  ),
-                                  actions: [NoButton(ctx), YesButton(ctx)],
-                                ),
-                              ).then((res) {
-                                if (res) {
-                                  generateReport();
-                                }
-                              });
-                            },
-                      disabledColor: Colors.grey,
-                      child: Text(
-                        "Generate",
-                        style: Theme.of(context).textTheme.button,
-                      ),
-                    ),
-                  ],
+                disabledColor: Colors.grey,
+                child: Text(
+                  "Generate",
+                  style: Theme.of(context).textTheme.button,
                 ),
               ),
-            ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

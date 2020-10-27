@@ -16,7 +16,12 @@ class Drives with ChangeNotifier {
   List<Registration> _registrations = [];
   List<Notice> _notices = [];
 
-  Drives(this.token);
+  Drives();
+
+  void update(token, collegeId) {
+    this.token = token;
+    this._collegeId = collegeId;
+  }
 
   List<Drive> get drives {
     return [..._drives];
@@ -75,6 +80,7 @@ class Drives with ChangeNotifier {
             location: drive["location"],
             requirements: drive["requirements"],
             registered: [],
+            placed: drive["placed"] == null ? 0 : drive["placed"],
           ));
         });
       }
@@ -92,15 +98,17 @@ class Drives with ChangeNotifier {
   ) async {
     final year = DateTime.now().year;
     if (collegeId != null && collegeId != "") {
-      //Add image to storage
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('company_logos')
-          .child(driveData["companyName"] + ".jpeg");
-      await ref.putFile(image).onComplete;
+      if (image != null) {
+        //Add image to storage
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('company_logos')
+            .child(driveData["companyName"] + ".jpeg");
+        await ref.putFile(image).onComplete;
 
-      final imageUrl = await ref.getDownloadURL();
-      driveData["companyImageUrl"] = imageUrl;
+        final imageUrl = await ref.getDownloadURL();
+        driveData["companyImageUrl"] = imageUrl;
+      }
 
       //Add Company to PlacementHQ database
       if (company == null) {
@@ -177,6 +185,16 @@ class Drives with ChangeNotifier {
     return _collegeId;
   }
 
+  Future<void> removeRegistrations(List<String> ids) async {
+    ids.forEach((id) async {
+      var url =
+          "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/registrations/$id.json?auth=$token";
+      await http.delete(url);
+    });
+    _registrations.removeWhere((reg) => ids.contains(reg.id));
+    notifyListeners();
+  }
+
   Future<void> getDriveNotices(String driveId) async {
     final url =
         'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/notices.json?orderBy="driveId"&equalTo="$driveId"&auth=$token';
@@ -193,6 +211,7 @@ class Drives with ChangeNotifier {
         issuedBy: notice["issuedBy"],
         issuerId: notice["issuerId"],
         issuedOn: notice["issuedOn"],
+        fileUrl: notice["fileUrl"],
       ));
     });
     newNotices.sort((a, b) => b.issuedOn.compareTo(a.issuedOn));
@@ -215,6 +234,7 @@ class Drives with ChangeNotifier {
         issuedBy: notice["issuedBy"],
         issuerId: notice["issuerId"],
         issuedOn: notice["issuedOn"],
+        fileUrl: notice["fileUrl"],
       ));
     });
     newNotices.sort((a, b) => b.issuedOn.compareTo(a.issuedOn));
@@ -226,6 +246,37 @@ class Drives with ChangeNotifier {
     final url =
         "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/registrations/${reg.id}.json?auth=$token";
     await http.patch(url, body: json.encode({"selected": true}));
+
+    final urlDrive =
+        "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/drives/${reg.driveId}.json?auth=$token";
+    final res = await http.get(urlDrive);
+    final driveData = json.decode(res.body);
+    final int placed = driveData["placed"] == null ? 0 : driveData["placed"];
+    await http.patch(
+      urlDrive,
+      body: json.encode({
+        "placed": placed + 1,
+      }),
+    );
+
+    final thisYear = DateTime.now().year;
+    final urlUser =
+        "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$thisYear.json?auth=$token";
+    await http.post(
+      urlUser,
+      body: json.encode({
+        "userId": reg.userId,
+        "candidate": reg.candidate,
+        "rollNo": reg.rollNo,
+        "driveId": reg.driveId,
+        "companyId": reg.companyId,
+        "companyName": reg.company,
+        "companyImageUrl": reg.companyImageUrl,
+        "selectedOn": DateTime.now().toIso8601String(),
+        "ctc": driveData["ctc"],
+      }),
+    );
+
     final student = _registrations.firstWhere((r) => r.id == reg.id);
     student.selected = true;
     notifyListeners();

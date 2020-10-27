@@ -20,6 +20,7 @@ class Drive {
   final String companyMessage;
   final String expectedDate;
   final String regDeadline;
+  int placed;
   List<Registration> registered;
   Map<String, dynamic> requirements;
 
@@ -43,6 +44,7 @@ class Drive {
     this.category,
     this.expectedDate,
     this.regDeadline,
+    this.placed,
     this.registered,
     this.requirements,
   });

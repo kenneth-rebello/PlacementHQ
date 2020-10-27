@@ -18,10 +18,14 @@ class College {
 }
 
 class Colleges with ChangeNotifier {
-  final String _token;
+  String _token;
   List<College> _colleges = [];
 
-  Colleges(this._token);
+  Colleges();
+
+  void update(token){
+    this._token = token;
+  }
 
   List<College> get colleges {
     return [..._colleges];

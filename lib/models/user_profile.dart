@@ -1,4 +1,5 @@
 import 'package:placementhq/models/registration.dart';
+import 'package:placementhq/models/offer.dart';
 
 class Profile {
   //Personal
@@ -34,6 +35,7 @@ class Profile {
   int pincode;
 
   List<Registration> registrations;
+  List<Offer> offers;
 
   Profile({
     this.verified,
@@ -65,6 +67,7 @@ class Profile {
     this.state,
     this.pincode,
     this.registrations,
+    this.offers,
   });
 
   List<String> get hasRegistered {

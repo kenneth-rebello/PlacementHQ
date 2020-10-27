@@ -165,9 +165,14 @@ class _AuthCardState extends State<AuthCard> {
           errorMsg += " Not a valid email address";
         } else if (error.toString().contains('WEAK_PASSWORD')) {
           errorMsg += " This password is too weak";
+        } else if (error.toString().contains('WRONG_PASSWORD')) {
+          errorMsg += " This password you entered is incorrect";
         } else if (error.toString().contains('EMAIL_NOT_FOUND')) {
           errorMsg += " Could not find a user with that email";
         } else if (error.toString().contains('NOT_VERIFIED')) {
+          setState(() {
+            _attempted = true;
+          });
           errorMsg += " Email not verified.";
         } else {
           errorMsg += error.toString();
@@ -176,7 +181,6 @@ class _AuthCardState extends State<AuthCard> {
       }
 
       setState(() {
-        _attempted = true;
         _isLoading = false;
       });
     } catch (error) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:placementhq/models/registration.dart';
 import 'package:placementhq/screens/drive_screens/drive_details.dart';
+import 'package:placementhq/widgets/other/image_error.dart';
 
 class RegistrationItem extends StatelessWidget {
   final Registration registration;
@@ -30,21 +31,7 @@ class RegistrationItem extends StatelessWidget {
             width: 80,
             child: Image.network(
               registration.companyImageUrl,
-              errorBuilder: (context, error, stackTrace) => Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    color: Colors.red,
-                  ),
-                  Text(
-                    "No Image",
-                    style: TextStyle(
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
+              errorBuilder: (context, error, stackTrace) => ImageError(),
             ),
           ),
           title: Text(

@@ -27,14 +27,14 @@ abstract class Constants {
       protected: true,
     ),
     HomeItem(
-      label: "Notices",
+      label: "Noticeboard",
       icon: Icons.subscriptions,
       routeName: NoticesScreen.routeName,
       imagePath: 'assets/images/notices.png',
       protected: true,
     ),
     HomeItem(
-      label: "Profile",
+      label: "My Profile",
       icon: Icons.subscriptions,
       routeName: ProfileScreen.routeName,
       imagePath: 'assets/images/profile.png',
@@ -56,15 +56,15 @@ abstract class Constants {
       protected: false,
     ),
     HomeItem(
-      label: "Students",
-      routeName: StudentsScreen.routeName,
-      imagePath: 'assets/images/students.png',
-      protected: false,
-    ),
-    HomeItem(
       label: "New Notice",
       routeName: NewNoticeScreen.routeName,
       imagePath: 'assets/images/notices.png',
+      protected: false,
+    ),
+    HomeItem(
+      label: "All Students",
+      routeName: StudentsScreen.routeName,
+      imagePath: 'assets/images/students.png',
       protected: false,
     ),
   ];

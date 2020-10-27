@@ -5,16 +5,23 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:placementhq/models/drive.dart';
+import 'package:placementhq/models/offer.dart';
 import 'package:placementhq/models/registration.dart';
 import 'package:placementhq/models/user_profile.dart';
 
 class User with ChangeNotifier {
-  final String token;
-  final String userId;
-  final String emailId;
+  String token;
+  String userId;
+  String emailId;
   Profile userProfile;
 
-  User(this.token, this.userId, this.emailId);
+  User();
+
+  void update(token, userId, emailId) {
+    this.token = token;
+    this.userId = userId;
+    this.emailId = emailId;
+  }
 
   Profile get profile {
     Profile copy;
@@ -132,8 +139,35 @@ class User with ChangeNotifier {
         state: profile["state"],
         pincode: profile["pincode"],
         registrations: [],
+        offers: [],
       );
+      notifyListeners();
+
       if (profile["collegeId"] != null && profile["collegeId"] != "") {
+        final thisYear = DateTime.now().year;
+        final urlOffer =
+            'https://placementhq-777.firebaseio.com/collegeData/${profile["collegeId"]}/offers/$thisYear.json?orderBy="userId"&equalTo="$userId"&auth=$token';
+        final dataOffer = await http.get(urlOffer);
+        final offers = json.decode(dataOffer.body) as Map<String, dynamic>;
+        List<Offer> newOffers = [];
+        if (profile["offers"] != null)
+          offers.forEach((key, offer) {
+            newOffers.add(
+              new Offer(
+                userId: offer["userId"],
+                candidate: offer["candidate"],
+                rollNo: offer["rollNo"],
+                companyId: offer["companyId"],
+                companyName: offer["companyName"],
+                companyImageUrl: offer["companyImageUrl"],
+                ctc: offer["ctc"],
+                selectedOn: offer["selectedOn"],
+                accepted: offer["accepted"] == null ? false : offer["accepted"],
+              ),
+            );
+          });
+        userProfile.offers = newOffers;
+
         final urlReg =
             'https://placementhq-777.firebaseio.com/collegeData/${profile["collegeId"]}/registrations.json?orderBy="userId"&equalTo="$userId"&print=pretty&auth=$token';
         final dataReg = await http.get(urlReg);
@@ -144,6 +178,7 @@ class User with ChangeNotifier {
             id: key,
             company: reg["company"],
             candidate: reg["candidate"],
+            companyId: reg["companyId"],
             companyImageUrl: reg["companyImageUrl"],
             userId: reg["userId"],
             driveId: reg["driveId"],
@@ -158,6 +193,7 @@ class User with ChangeNotifier {
       userProfile = null;
     }
     notifyListeners();
+
     return userProfile;
   }
 
@@ -200,6 +236,7 @@ class User with ChangeNotifier {
           "rollNo": user.rollNo,
           "candidate": user.fullNameWMid,
           "company": drive.companyName,
+          "companyId": drive.companyId,
           "companyImageUrl": drive.companyImageUrl,
           "registeredOn": DateTime.now().toIso8601String(),
         }),
