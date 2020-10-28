@@ -191,6 +191,12 @@ class Auth with ChangeNotifier {
       authTimer.cancel();
       authTimer = null;
     }
+
+    if (_collegeId != null) {
+      final fbm = FirebaseMessaging();
+      fbm.unsubscribeFromTopic("college" + _collegeId);
+      fbm.unsubscribeFromTopic("user" + userId);
+    }
     _token = null;
     _userId = null;
     _expiryDate = null;
@@ -200,11 +206,6 @@ class Auth with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     prefs.remove('pHQuserData');
 
-    if (_collegeId != null) {
-      final fbm = FirebaseMessaging();
-      fbm.unsubscribeFromTopic("college" + _collegeId);
-      fbm.unsubscribeFromTopic("user" + userId);
-    }
     notifyListeners();
   }
 

@@ -6,13 +6,8 @@ import 'package:placementhq/widgets/chat/message.dart';
 import 'package:placementhq/widgets/chat/newmessage.dart';
 import 'package:provider/provider.dart';
 
-class ChatScreen extends StatefulWidget {
-  static const routeName = '/chat';
-  @override
-  _ChatScreenState createState() => _ChatScreenState();
-}
-
-class _ChatScreenState extends State<ChatScreen> {
+class ChatScreen extends StatelessWidget {
+  static const routeName = "/chat";
   @override
   Widget build(BuildContext context) {
     final DriveArguments args = ModalRoute.of(context).settings.arguments;

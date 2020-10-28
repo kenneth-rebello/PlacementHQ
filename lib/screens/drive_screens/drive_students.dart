@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:placementhq/models/drive.dart';
 import 'package:placementhq/models/registration.dart';
 import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/drives.dart';
@@ -10,6 +11,7 @@ import 'package:placementhq/screens/drive_screens/drive_report.dart';
 import 'package:placementhq/screens/profile_screens/profile_screen.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
 import 'package:placementhq/widgets/input/yes_button.dart';
+import 'package:placementhq/widgets/other/list_item.dart';
 import 'package:provider/provider.dart';
 
 class DriveStudentsScreen extends StatefulWidget {
@@ -24,6 +26,7 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
   final DateFormat formatter = new DateFormat("dd-MM-yyyy hh:mm");
   bool _loading = false;
   bool _pickable = false;
+  bool _selecting = false;
   String sortBy = SortOptions.uidAsc;
   List<bool> picked = List.filled(1000, false);
 
@@ -34,11 +37,35 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
         .getDriveRegistrations(widget.args.id)
         .then((collegeId) {
       Provider.of<Officer>(context, listen: false).loadStudents(cId: collegeId);
-      setState(() {
-        _loading = false;
-      });
+      if (mounted)
+        setState(() {
+          _loading = false;
+        });
     });
     super.initState();
+  }
+
+  void _showInfo(Drive drive) {
+    showDialog(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        contentPadding: EdgeInsets.all(5),
+        children: [
+          ListItem(
+            label: "Registered",
+            value: drive.registered.toString(),
+            shrink: true,
+            ratio: 1 / 2,
+          ),
+          ListItem(
+            label: "Selected",
+            value: drive.placed.toString(),
+            shrink: true,
+            ratio: 1 / 2,
+          )
+        ],
+      ),
+    );
   }
 
   Future<void> _confirm(Registration reg) async {
@@ -65,7 +92,16 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
       ),
     ).then((res) {
       if (res) {
-        Provider.of<Drives>(context, listen: false).confirmSelection(reg);
+        setState(() {
+          _selecting = true;
+        });
+        Provider.of<Drives>(context, listen: false)
+            .confirmSelection(reg)
+            .then((_) {
+          setState(() {
+            _selecting = false;
+          });
+        });
       }
     });
   }
@@ -73,18 +109,24 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
   @override
   Widget build(BuildContext context) {
     final isOfficer = Provider.of<Auth>(context, listen: false).isOfficer;
+
     final deviceHeight = MediaQuery.of(context).size.height -
         MediaQuery.of(context).padding.top -
         MediaQuery.of(context).padding.bottom;
+
     final registrations = Provider.of<Drives>(context).registrations;
+    final drive = Provider.of<Drives>(context).getById(widget.args.id);
+
     if (sortBy == SortOptions.uidAsc)
       registrations.sort((a, b) => a.rollNo.compareTo(b.rollNo));
     else if (sortBy == SortOptions.uidDesc)
       registrations.sort((a, b) => b.rollNo.compareTo(a.rollNo));
     else if (sortBy == SortOptions.nameAsc)
-      registrations.sort((a, b) => a.candidate.compareTo(b.candidate));
+      registrations.sort((a, b) =>
+          a.candidate.toLowerCase().compareTo(b.candidate.toLowerCase()));
     else if (sortBy == SortOptions.nameDesc)
-      registrations.sort((a, b) => b.candidate.compareTo(a.candidate));
+      registrations.sort((a, b) =>
+          b.candidate.toLowerCase().compareTo(a.candidate.toLowerCase()));
     else if (sortBy == SortOptions.registrationAsc)
       registrations.sort((a, b) => a.registeredOn.compareTo(b.registeredOn));
     else if (sortBy == SortOptions.registrationDesc)
@@ -99,6 +141,9 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
           style: Theme.of(context).textTheme.headline1,
         ),
         actions: [
+          IconButton(
+              icon: Icon(Icons.info_outline),
+              onPressed: () => _showInfo(drive)),
           if (isOfficer && !_pickable)
             PopupMenuButton(
               itemBuilder: (ctx) => [
@@ -124,7 +169,7 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
                 ),
               ],
             ),
-          if (_pickable)
+          if (isOfficer && _pickable)
             PopupMenuButton(
               itemBuilder: (ctx) => [
                 PopupMenuItem(
@@ -195,9 +240,10 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
                               )
                               .toList(),
                           onChanged: (val) {
-                            setState(() {
-                              sortBy = val;
-                            });
+                            if (mounted)
+                              setState(() {
+                                sortBy = val;
+                              });
                           },
                         )
                       ],
@@ -260,42 +306,48 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
                                   );
                                 },
                           onLongPress: () {
-                            setState(() {
-                              _pickable = true;
-                              picked[idx] = true;
-                            });
+                            if (!registrations[idx].selected && mounted)
+                              setState(() {
+                                _pickable = true;
+                                picked[idx] = true;
+                              });
                           },
-                          trailing: _pickable && !registrations[idx].selected
-                              ? Checkbox(
-                                  value: picked[idx],
-                                  onChanged: (val) {
-                                    setState(() {
-                                      picked[idx] = val;
-                                      if (!picked.any((element) => element)) {
-                                        _pickable = false;
-                                      }
-                                    });
-                                  })
-                              : isOfficer == true &&
-                                      !registrations[idx].selected
-                                  ? Container(
-                                      width: 50,
-                                      child: PopupMenuButton(
-                                        itemBuilder: (ctx1) => [
-                                          PopupMenuItem(
-                                              child: FlatButton(
-                                            onPressed: () async {
-                                              await _confirm(
-                                                  registrations[idx]);
-                                              Navigator.of(ctx1).pop();
-                                            },
-                                            child: Text("Confirm Selection"),
-                                          )),
-                                        ],
-                                        icon: Icon(Icons.more_vert),
-                                      ),
-                                    )
-                                  : null,
+                          trailing: _selecting
+                              ? CircularProgressIndicator()
+                              : _pickable && !registrations[idx].selected
+                                  ? Checkbox(
+                                      value: picked[idx],
+                                      onChanged: (val) {
+                                        if (mounted)
+                                          setState(() {
+                                            picked[idx] = val;
+                                            if (!picked
+                                                .any((element) => element)) {
+                                              _pickable = false;
+                                            }
+                                          });
+                                      })
+                                  : isOfficer == true &&
+                                          !registrations[idx].selected
+                                      ? Container(
+                                          width: 50,
+                                          child: PopupMenuButton(
+                                            itemBuilder: (ctx1) => [
+                                              PopupMenuItem(
+                                                  child: FlatButton(
+                                                onPressed: () async {
+                                                  await _confirm(
+                                                      registrations[idx]);
+                                                  Navigator.of(ctx1).pop();
+                                                },
+                                                child:
+                                                    Text("Confirm Selection"),
+                                              )),
+                                            ],
+                                            icon: Icon(Icons.more_vert),
+                                          ),
+                                        )
+                                      : null,
                         ),
                       ),
                       itemCount: registrations.length,

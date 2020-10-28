@@ -81,6 +81,13 @@ class User with ChangeNotifier {
       return [];
   }
 
+  List<Offer> get userOffers {
+    if (userProfile != null) {
+      return [...userProfile.offers];
+    } else
+      return [];
+  }
+
   Future<Profile> loadCurrentUserProfile() async {
     final url =
         "https://placementhq-777.firebaseio.com/users/$userId.json?auth=$token";
@@ -150,43 +157,46 @@ class User with ChangeNotifier {
         final dataOffer = await http.get(urlOffer);
         final offers = json.decode(dataOffer.body) as Map<String, dynamic>;
         List<Offer> newOffers = [];
-        if (profile["offers"] != null)
+        if (offers != null)
           offers.forEach((key, offer) {
             newOffers.add(
               new Offer(
+                id: key,
                 userId: offer["userId"],
                 candidate: offer["candidate"],
                 rollNo: offer["rollNo"],
+                driveId: offer["driveId"],
                 companyId: offer["companyId"],
                 companyName: offer["companyName"],
                 companyImageUrl: offer["companyImageUrl"],
                 ctc: offer["ctc"],
                 selectedOn: offer["selectedOn"],
-                accepted: offer["accepted"] == null ? false : offer["accepted"],
+                accepted: offer["accepted"],
               ),
             );
           });
-        userProfile.offers = newOffers;
+        userProfile.offers = [...newOffers];
 
         final urlReg =
             'https://placementhq-777.firebaseio.com/collegeData/${profile["collegeId"]}/registrations.json?orderBy="userId"&equalTo="$userId"&print=pretty&auth=$token';
         final dataReg = await http.get(urlReg);
         final registrations = json.decode(dataReg.body) as Map<String, dynamic>;
         final List<Registration> newReg = [];
-        registrations.forEach((key, reg) {
-          newReg.add(Registration(
-            id: key,
-            company: reg["company"],
-            candidate: reg["candidate"],
-            companyId: reg["companyId"],
-            companyImageUrl: reg["companyImageUrl"],
-            userId: reg["userId"],
-            driveId: reg["driveId"],
-            registeredOn: reg["registeredOn"],
-            rollNo: reg["rollNo"] == null ? "" : reg["rollNo"],
-            selected: reg["selected"] == null ? false : reg["selected"],
-          ));
-        });
+        if (registrations != null)
+          registrations.forEach((key, reg) {
+            newReg.add(Registration(
+              id: key,
+              company: reg["company"],
+              candidate: reg["candidate"],
+              companyId: reg["companyId"],
+              companyImageUrl: reg["companyImageUrl"],
+              userId: reg["userId"],
+              driveId: reg["driveId"],
+              registeredOn: reg["registeredOn"],
+              rollNo: reg["rollNo"] == null ? "" : reg["rollNo"],
+              selected: reg["selected"] == null ? false : reg["selected"],
+            ));
+          });
         userProfile.registrations = [...newReg];
       }
     } else {
@@ -257,12 +267,27 @@ class User with ChangeNotifier {
     }
   }
 
-  void getUsersRegistrations() async {
+  Future<void> respondToOffer(String id, bool value) async {
+    final thisYear = DateTime.now().year;
     final url =
-        'https://placementhq-777.firebaseio.com/collegeData/${profile.collegeId}/registrations.json?orderBy="userId"&equalTo="$userId"&auth=$token';
-    final res = await http.get(url);
-    print(res);
+        'https://placementhq-777.firebaseio.com/collegeData/${profile.collegeId}/offers/$thisYear/$id.json?auth=$token';
+    await http.patch(
+      url,
+      body: json.encode({
+        "accepted": value,
+      }),
+    );
+    final offer = userProfile.offers.firstWhere((e) => e.id == id);
+    offer.accepted = value;
+    notifyListeners();
   }
+
+  // void getUsersRegistrations() async {
+  //   final url =
+  //       'https://placementhq-777.firebaseio.com/collegeData/${profile.collegeId}/registrations.json?orderBy="userId"&equalTo="$userId"&auth=$token';
+  //   final res = await http.get(url);
+  //   print(res);
+  // }
 
   void updateValues(Map<String, dynamic> profileData) {
     if (userProfile == null) userProfile = new Profile();

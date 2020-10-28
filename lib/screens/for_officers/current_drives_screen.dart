@@ -19,9 +19,10 @@ class _CurrentDrivesScreenState extends State<CurrentDrivesScreen> {
     _loading = true;
     String collegeId = Provider.of<Officer>(context, listen: false).collegeId;
     Provider.of<Drives>(context, listen: false).loadDrives(collegeId).then((_) {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted)
+        setState(() {
+          _loading = false;
+        });
     });
     super.initState();
   }

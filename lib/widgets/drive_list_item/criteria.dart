@@ -30,12 +30,16 @@ class CriteriaButton extends StatelessWidget {
                 OneValue(
                   padding: 3,
                   label: "Minimum Xth %",
-                  value: drive.minSecMarks.toStringAsFixed(1),
+                  value: drive.minSecMarks == null
+                      ? "N/A"
+                      : drive.minSecMarks.toStringAsFixed(1),
                 ),
                 OneValue(
                   padding: 3,
                   label: "Your Xth %",
-                  value: profile.secMarks.toStringAsFixed(1),
+                  value: profile.secMarks == null
+                      ? "N/A"
+                      : profile.secMarks.toStringAsFixed(1),
                 ),
                 SizedBox(
                   height: 10,
@@ -43,38 +47,52 @@ class CriteriaButton extends StatelessWidget {
                 OneValue(
                   padding: 3,
                   label: "Minimum XIIth %",
-                  value: drive.minHighSecMarks.toStringAsFixed(1),
+                  value: drive.minHighSecMarks == null
+                      ? "N/A"
+                      : drive.minHighSecMarks.toStringAsFixed(1),
                 ),
                 OneValue(
                   padding: 3,
                   label: "Your XIIth %",
-                  value: profile.highSecMarks.toStringAsFixed(1),
+                  value: profile.highSecMarks == null
+                      ? "N/A"
+                      : profile.highSecMarks.toStringAsFixed(1),
                 ),
                 SizedBox(
                   height: 10,
                 ),
-                OneValue(
-                  padding: 3,
-                  label: "Minimum Diploma %",
-                  value: drive.minDiplomaMarks.toStringAsFixed(1),
-                ),
-                OneValue(
-                  padding: 3,
-                  label: "Your Diploma %",
-                  value: profile.diplomaMarks.toStringAsFixed(1),
-                ),
+                if (profile.hasDiploma)
+                  OneValue(
+                    padding: 3,
+                    label: "Minimum Diploma %",
+                    value: drive.minDiplomaMarks == null
+                        ? "N/A"
+                        : drive.minDiplomaMarks.toStringAsFixed(1),
+                  ),
+                if (profile.hasDiploma)
+                  OneValue(
+                    padding: 3,
+                    label: "Your Diploma %",
+                    value: profile.diplomaMarks == null
+                        ? "N/A"
+                        : profile.diplomaMarks.toStringAsFixed(1),
+                  ),
                 SizedBox(
                   height: 10,
                 ),
                 OneValue(
                   padding: 3,
                   label: "Minimum CGPA",
-                  value: drive.minCGPA.toStringAsFixed(1),
+                  value: drive.minCGPA == null
+                      ? "N/A"
+                      : drive.minCGPA.toStringAsFixed(1),
                 ),
                 OneValue(
                   padding: 3,
                   label: "Your CGPA",
-                  value: profile.cgpa.toStringAsFixed(1),
+                  value: profile.cgpa == null
+                      ? "N/A"
+                      : profile.cgpa.toStringAsFixed(1),
                 ),
                 SizedBox(
                   height: 10,
@@ -82,12 +100,14 @@ class CriteriaButton extends StatelessWidget {
                 OneValue(
                   padding: 3,
                   label: "Maximum no. of *live* KTs allowed",
-                  value: drive.maxKTs.toString(),
+                  value: drive.maxKTs == null ? "N/A" : drive.maxKTs.toString(),
                 ),
                 OneValue(
                   padding: 3,
                   label: "Your no. *live* KTs",
-                  value: profile.numOfKTs.toString(),
+                  value: profile.numOfKTs == null
+                      ? "N/A"
+                      : profile.numOfKTs.toString(),
                 ),
                 SizedBox(
                   height: 10,
@@ -95,12 +115,16 @@ class CriteriaButton extends StatelessWidget {
                 OneValue(
                   padding: 3,
                   label: "Maximum no. of gap years allowed",
-                  value: drive.maxGapYears.toString(),
+                  value: drive.maxGapYears == null
+                      ? "N/A"
+                      : drive.maxGapYears.toString(),
                 ),
                 OneValue(
                   padding: 3,
                   label: "Your no. of gap years",
-                  value: profile.numOfGapYears.toString(),
+                  value: profile.numOfGapYears == null
+                      ? "N/A"
+                      : profile.numOfGapYears.toString(),
                 ),
               ],
             ),

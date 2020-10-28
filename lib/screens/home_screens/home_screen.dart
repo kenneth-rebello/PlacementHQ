@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/res/constants.dart';
 import 'package:placementhq/screens/for_officers/account_screen.dart';
+import 'package:placementhq/screens/for_students/offers_screen.dart';
 import 'package:placementhq/widgets/home/tpo_home_grid.dart';
 import 'package:placementhq/widgets/home/home_grid.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,14 @@ class HomeScreen extends StatelessWidget {
           style: Theme.of(context).textTheme.headline1,
         ),
         actions: [
+          if (!isOfficer)
+            IconButton(
+              icon: Icon(Icons.all_inbox),
+              onPressed: () {
+                Navigator.of(context).pushNamed(OffersScreen.routeName);
+              },
+              tooltip: "Your Offers",
+            ),
           if (isOfficer)
             IconButton(
               icon: Icon(Icons.person),

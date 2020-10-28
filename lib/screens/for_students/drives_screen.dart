@@ -47,7 +47,7 @@ class _DrivesScreenState extends State<DrivesScreen> {
           : drives.length <= 0
               ? Center(
                   child: Text(
-                    "You do not have any active placement drives at the moment.",
+                    "You do not have any new placement drives at the moment.",
                     textAlign: TextAlign.center,
                   ),
                 )

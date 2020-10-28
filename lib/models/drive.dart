@@ -1,5 +1,3 @@
-import 'package:placementhq/models/registration.dart';
-
 class Drive {
   final String id;
   final String companyName;
@@ -20,8 +18,8 @@ class Drive {
   final String companyMessage;
   final String expectedDate;
   final String regDeadline;
-  int placed;
-  List<Registration> registered;
+  int placed = 0;
+  int registered = 0;
   Map<String, dynamic> requirements;
 
   Drive({
@@ -44,8 +42,8 @@ class Drive {
     this.category,
     this.expectedDate,
     this.regDeadline,
-    this.placed,
-    this.registered,
     this.requirements,
+    this.registered,
+    this.placed,
   });
 }

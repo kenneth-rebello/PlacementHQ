@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:placementhq/models/drive.dart';
 import 'package:http/http.dart' as http;
 import 'package:placementhq/models/notice.dart';
+import 'package:placementhq/models/offer.dart';
 import 'package:placementhq/models/registration.dart';
 import 'package:placementhq/providers/companies.dart';
 
@@ -15,6 +16,7 @@ class Drives with ChangeNotifier {
   String _collegeId;
   List<Registration> _registrations = [];
   List<Notice> _notices = [];
+  List<Offer> _offers = [];
 
   Drives();
 
@@ -33,6 +35,10 @@ class Drives with ChangeNotifier {
 
   List<Notice> get notices {
     return [..._notices];
+  }
+
+  List<Offer> get offers {
+    return [..._offers];
   }
 
   Drive getById(String id) {
@@ -79,8 +85,6 @@ class Drives with ChangeNotifier {
             maxKTs: drive["maxKTs"],
             location: drive["location"],
             requirements: drive["requirements"],
-            registered: [],
-            placed: drive["placed"] == null ? 0 : drive["placed"],
           ));
         });
       }
@@ -161,18 +165,66 @@ class Drives with ChangeNotifier {
     }
   }
 
+  Future<void> closeDrive(String driveId) async {
+    final url =
+        "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/drives/$driveId.json?auth=$token";
+    await http.delete(url);
+    await getDriveRegistrations(driveId);
+    await getDriveNotices(driveId);
+    await getDriveOffers(driveId);
+
+    _registrations.forEach((reg) async {
+      var url =
+          "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/registrations/${reg.id}.json?auth=$token";
+      await http.delete(url);
+    });
+
+    _notices.forEach((notice) async {
+      var url2 =
+          "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/notices/${notice.id}.json?auth=$token";
+      await http.delete(url2);
+      if (notice.fileName != null && notice.fileName != "") {
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('notice_documents')
+            .child(notice.fileName);
+        await ref.delete();
+      }
+    });
+
+    final thisYear = DateTime.now().year;
+    _offers.forEach((offer) async {
+      var url3 =
+          "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$thisYear/${offer.id}.json?auth=$token";
+      if (offer.accepted == null)
+        await http.patch(url3, body: json.encode({"accepted": false}));
+    });
+  }
+
+  void removeDriveFromMemory(String id) {
+    _drives.removeWhere((drive) => drive.id == id);
+    notifyListeners();
+  }
+
   Future<String> getDriveRegistrations(String driveId) async {
     final urlReg =
         'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/registrations.json?orderBy="driveId"&equalTo="$driveId"&auth=$token';
     final res = await http.get(urlReg);
     final registrations = json.decode(res.body) as Map<String, dynamic>;
     List<Registration> newReg = [];
+    int count = 0;
+    int count2 = 0;
     registrations.forEach((key, reg) {
+      count++;
+      if (reg["selected"] == true) {
+        count2++;
+      }
       newReg.add(Registration(
         id: key,
         company: reg["company"],
         candidate: reg["candidate"],
         companyImageUrl: reg["companyImageUrl"],
+        companyId: reg["companyId"],
         userId: reg["userId"],
         driveId: reg["driveId"],
         rollNo: reg["rollNo"] == null ? "" : reg["rollNo"],
@@ -181,6 +233,9 @@ class Drives with ChangeNotifier {
       ));
     });
     _registrations = newReg;
+    Drive currentDrive = _drives.firstWhere((e) => e.id == driveId);
+    currentDrive.registered = count;
+    currentDrive.placed = count2;
     notifyListeners();
     return _collegeId;
   }
@@ -200,7 +255,6 @@ class Drives with ChangeNotifier {
         'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/notices.json?orderBy="driveId"&equalTo="$driveId"&auth=$token';
     final res = await http.get(url);
     final notices = json.decode(res.body) as Map<String, dynamic>;
-
     List<Notice> newNotices = [];
     notices.forEach((key, notice) {
       newNotices.add(Notice(
@@ -212,6 +266,7 @@ class Drives with ChangeNotifier {
         issuerId: notice["issuerId"],
         issuedOn: notice["issuedOn"],
         fileUrl: notice["fileUrl"],
+        fileName: notice["fileName"],
       ));
     });
     newNotices.sort((a, b) => b.issuedOn.compareTo(a.issuedOn));
@@ -235,10 +290,38 @@ class Drives with ChangeNotifier {
         issuerId: notice["issuerId"],
         issuedOn: notice["issuedOn"],
         fileUrl: notice["fileUrl"],
+        fileName: notice["fileName"],
       ));
     });
     newNotices.sort((a, b) => b.issuedOn.compareTo(a.issuedOn));
     _notices = newNotices;
+    notifyListeners();
+  }
+
+  Future<void> getDriveOffers(String driveId) async {
+    final thisYear = DateTime.now().year;
+    final url =
+        'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$thisYear.json?orderBy="driveId"&equalTo="$driveId"&auth=$token';
+    final res = await http.get(url);
+    final offers = json.decode(res.body) as Map<String, dynamic>;
+    List<Offer> newOffers = [];
+    offers.forEach((key, offer) {
+      newOffers.add(Offer(
+        id: key,
+        userId: offers["userId"],
+        candidate: offers["candidate"],
+        driveId: offers["driveId"],
+        rollNo: offers["rollNo"],
+        companyId: offers["companyId"],
+        companyName: offers["companyName"],
+        companyImageUrl: offers["companyImageUrl"],
+        ctc: offers["ctc"],
+        selectedOn: offers["selectedOn"],
+        accepted: offers["accepted"],
+      ));
+    });
+    // newOffers.sort((a, b) => b.issuedOn.compareTo(a.issuedOn));
+    _offers = newOffers;
     notifyListeners();
   }
 
@@ -260,10 +343,10 @@ class Drives with ChangeNotifier {
     );
 
     final thisYear = DateTime.now().year;
-    final urlUser =
+    final urlOffer =
         "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$thisYear.json?auth=$token";
     await http.post(
-      urlUser,
+      urlOffer,
       body: json.encode({
         "userId": reg.userId,
         "candidate": reg.candidate,

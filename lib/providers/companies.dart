@@ -26,8 +26,7 @@ class Company {
 class Companies with ChangeNotifier {
   List<Company> _companies = [];
   String _token;
-
-  Companies();
+  String collegeName = "";
 
   void update(token) {
     this._token = token;
@@ -50,14 +49,30 @@ class Companies with ChangeNotifier {
             name: company["name"],
             id: key,
             imageUrl: company["imageUrl"],
-            lowestPackage: company["lowestPackage"],
-            highestPackage: company["highestPackage"],
-            lastVisitedYear: company["lastVisitedYear"],
+            lowestPackage:
+                company["lowestPackage"] == null ? 0 : company["lowestPackage"],
+            highestPackage: company["highestPackage"] == null
+                ? 0
+                : company["highestPackage"],
+            lastVisitedYear: company["lastVisitedYear"] == null
+                ? 0
+                : company["lastVisitedYear"],
+            numOfStudents:
+                company["numOfStudents"] == null ? 0 : company["numOfStudents"],
           ),
         );
       });
     }
     _companies = newCompanies;
+
+    final collegeUrl =
+        "https://placementhq-777.firebaseio.com/colleges/$collegeId.json?auth=$_token";
+    final collegeRes = await http.get(collegeUrl);
+    final collegeData = json.decode(collegeRes.body) as Map<String, dynamic>;
+    if (collegeData != null) {
+      collegeName = collegeData["name"];
+    }
+
     notifyListeners();
   }
 

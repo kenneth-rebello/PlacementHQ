@@ -42,26 +42,9 @@ class _HomeGridState extends State<HomeGrid> {
                     fontWeight: FontWeight.normal,
                   ),
                 ),
-                RaisedButton(
-                  onPressed: () {
-                    Navigator.of(ctx).pop(true);
-                  },
-                  child: Text(
-                    "Open Notices",
-                    style: TextStyle(
-                      fontFamily: 'Ubuntu',
-                      color: Colors.white,
-                    ),
-                  ),
-                )
               ],
             ),
-          ).then((value) {
-            if (value != null) {
-              if (value)
-                Navigator.of(context).pushNamed(NoticesScreen.routeName);
-            }
-          });
+          );
         return;
       },
       onLaunch: (msg) {

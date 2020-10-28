@@ -38,8 +38,20 @@ class _TPOApplicationState extends State<TPOApplication> {
         context: context,
         builder: (ctx) => AlertDialog(
               title: Text("Submit Application?"),
-              content: Text(
-                  "College Name:\t${values["collegeName"]}\nFull Name:\t${values["fullName"]}\nDesignation:\t${values["designation"]}\nPhone Number:\t${values["phone"].toString()}\nEmail:\t${values["email"]}"),
+              content: Column(
+                children: [
+                  Text(
+                    "College Name:\t${values["collegeName"]}\nFull Name:\t${values["fullName"]}\nDesignation:\t${values["designation"]}\nPhone Number:\t${values["phone"].toString()}\nEmail:\t${values["email"]}",
+                  ),
+                  if (newCollege)
+                    Text(
+                      "You are creating a new college entry for ${values["collegeName"]}\nIf another TPO has already create one, you must search and join the same.\nIf not, click yes to continue.",
+                      style: TextStyle(
+                        color: Theme.of(context).errorColor,
+                      ),
+                    )
+                ],
+              ),
               actions: [
                 NoButton(ctx),
                 YesButton(ctx),
@@ -64,9 +76,10 @@ class _TPOApplicationState extends State<TPOApplication> {
     email = Provider.of<Auth>(context, listen: false).userEmail;
     values["email"] = email;
     Provider.of<Colleges>(context, listen: false).loadColleges().then((value) {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted)
+        setState(() {
+          _loading = false;
+        });
     });
     super.initState();
   }

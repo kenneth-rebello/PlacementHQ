@@ -5,6 +5,8 @@ import 'package:placementhq/screens/chat/chat.dart';
 import 'package:placementhq/screens/drive_screens/drive_details.dart';
 import 'package:placementhq/screens/for_officers/account_screen.dart';
 import 'package:placementhq/screens/for_officers/new_notice_screen.dart';
+import 'package:placementhq/screens/for_students/offers_screen.dart';
+import 'package:placementhq/screens/past_data_screens/archives_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/colleges.dart';
@@ -106,6 +108,12 @@ class MyApp extends StatelessWidget {
                   fontFamily: 'Ubuntu',
                   fontSize: 17,
                 ),
+                headline5: TextStyle(
+                  color: Colors.indigo[800],
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'Ubuntu',
+                  fontSize: 16,
+                ),
                 bodyText1: TextStyle(
                   fontFamily: 'Ubuntu',
                   fontSize: 14,
@@ -137,10 +145,14 @@ class MyApp extends StatelessWidget {
                   auth.isAuth ? RegistrationsScreen() : AuthScreen(),
               NoticesScreen.routeName: (ctx) =>
                   auth.isAuth ? NoticesScreen() : AuthScreen(),
+              OffersScreen.routeName: (ctx) =>
+                  auth.isAuth ? OffersScreen() : AuthScreen(),
               ProfileScreen.routeName: (ctx) =>
                   auth.isAuth ? ProfileScreen() : AuthScreen(),
               EditProfile.routeName: (ctx) =>
                   auth.isAuth ? EditProfile() : AuthScreen(),
+              ArchivesScreen.routeName: (ctx) =>
+                  auth.isAuth ? ArchivesScreen() : AuthScreen(),
               TPOApplication.routeName: (ctx) =>
                   auth.isAuth ? TPOApplication() : AuthScreen(),
               AccountScreen.routeName: (ctx) =>

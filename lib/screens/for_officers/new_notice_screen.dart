@@ -46,9 +46,10 @@ class _NewNoticeState extends State<NewNotice> {
     _loading = true;
     final collegeId = Provider.of<Officer>(context, listen: false).collegeId;
     Provider.of<Drives>(context, listen: false).loadDrives(collegeId).then((_) {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted)
+        setState(() {
+          _loading = false;
+        });
     });
     super.initState();
   }
@@ -69,8 +70,7 @@ class _NewNoticeState extends State<NewNotice> {
       allowCompression: true,
     );
 
-    if (result != null) {
-      print(result.files.single.extension);
+    if (result != null && mounted) {
       setState(() {
         file = result;
       });
@@ -116,9 +116,10 @@ class _NewNoticeState extends State<NewNotice> {
               .addNewNotice(values, file)
               .then((_) {
             FilePicker.platform.clearTemporaryFiles();
-            setState(() {
-              values["notice"] = "";
-            });
+            if (mounted)
+              setState(() {
+                values["notice"] = "";
+              });
             cont.clear();
             Scaffold.of(context)
                 .showSnackBar(SnackBar(content: Text("Published Notice")));
@@ -134,8 +135,10 @@ class _NewNoticeState extends State<NewNotice> {
     List<String> driveCompanies = [""];
     Map<String, String> mapDriveCompanyToId = {};
     drives.forEach((drive) {
-      driveCompanies.add(drive.companyName);
-      mapDriveCompanyToId[drive.companyName] = drive.id;
+      if (!driveCompanies.contains(drive.companyName)) {
+        driveCompanies.add(drive.companyName);
+        mapDriveCompanyToId[drive.companyName] = drive.id;
+      }
     });
 
     return _loading
@@ -178,9 +181,10 @@ class _NewNoticeState extends State<NewNotice> {
                     label: "Notice",
                     controller: cont,
                     onChanged: (val) {
-                      setState(() {
-                        values["notice"] = val;
-                      });
+                      if (mounted)
+                        setState(() {
+                          values["notice"] = val;
+                        });
                     },
                     validator: (val) {
                       if (val.length < 10)
@@ -202,6 +206,11 @@ class _NewNoticeState extends State<NewNotice> {
                       ),
                     ),
                   ),
+                  if (file != null)
+                    Padding(
+                      padding: EdgeInsets.all(10),
+                      child: Text("File added: ${file.files.single.name}"),
+                    ),
                   Container(
                     width: double.infinity,
                     margin: EdgeInsets.all(10),

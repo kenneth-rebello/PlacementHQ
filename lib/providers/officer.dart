@@ -196,6 +196,7 @@ class Officer with ChangeNotifier {
 
         final downloadLink = await ref.getDownloadURL();
         data["fileUrl"] = downloadLink;
+        data["fileName"] = file.files.single.name;
       }
       data["issuedBy"] = _profile.fullName;
       data["issuerId"] = _profile.id;

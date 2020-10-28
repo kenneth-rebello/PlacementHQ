@@ -23,7 +23,7 @@ class TwoValues extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyText2,
                 ),
                 TextSpan(
-                  text: value1,
+                  text: value1 == null || value1 == "" ? "N/A" : value1,
                   style: Theme.of(context).textTheme.bodyText1,
                 ),
               ],
@@ -38,7 +38,7 @@ class TwoValues extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyText2,
                 ),
                 TextSpan(
-                  text: value2,
+                  text: value2 == null || value2 == "" ? "N/A" : value2,
                   style: Theme.of(context).textTheme.bodyText1,
                 ),
               ],

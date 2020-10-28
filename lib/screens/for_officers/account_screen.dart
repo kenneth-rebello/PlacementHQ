@@ -45,23 +45,26 @@ class _AccountScreenState extends State<AccountScreen> {
             onPressed: editable
                 ? () {
                     if (_form.currentState.validate()) {
-                      setState(() {
-                        _loading = true;
-                      });
+                      if (mounted)
+                        setState(() {
+                          _loading = true;
+                        });
                       Provider.of<Officer>(context, listen: false)
                           .editProfile(values)
                           .then((_) {
-                        setState(() {
-                          editable = false;
-                          _loading = false;
-                        });
+                        if (mounted)
+                          setState(() {
+                            editable = false;
+                            _loading = false;
+                          });
                       });
                     }
                   }
                 : () {
-                    setState(() {
-                      editable = true;
-                    });
+                    if (mounted)
+                      setState(() {
+                        editable = true;
+                      });
                   },
           )
         ],
@@ -90,9 +93,10 @@ class _AccountScreenState extends State<AccountScreen> {
                           ? Input(
                               initialValue: values["email"],
                               onChanged: (val) {
-                                setState(() {
-                                  values["email"] = val;
-                                });
+                                if (mounted)
+                                  setState(() {
+                                    values["email"] = val;
+                                  });
                               },
                               label: "Email",
                               type: TextInputType.emailAddress,
@@ -113,9 +117,10 @@ class _AccountScreenState extends State<AccountScreen> {
                           ? Input(
                               initialValue: values["phone"].toString(),
                               onChanged: (val) {
-                                setState(() {
-                                  values["phone"] = int.parse(val);
-                                });
+                                if (mounted)
+                                  setState(() {
+                                    values["phone"] = int.parse(val);
+                                  });
                               },
                               label: "Phone Number",
                               type: TextInputType.phone,

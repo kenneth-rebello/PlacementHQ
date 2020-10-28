@@ -52,6 +52,7 @@ class _NewMessageState extends State<NewMessage> {
       children: [
         Expanded(
           child: Input(
+            label: "Enter message here...",
             controller: msgCont,
             onChanged: (val) {
               setState(() {

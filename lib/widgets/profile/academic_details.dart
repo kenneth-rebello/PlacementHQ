@@ -336,6 +336,14 @@ class _AcademicDetailsState extends State<AcademicDetails> {
                       onPressed: () {
                         if (_form.currentState.validate()) {
                           _form.currentState.save();
+                          if (initValues["collegeId"] == null ||
+                              initValues["collegeId"] == "") {
+                            Scaffold.of(context).showSnackBar(SnackBar(
+                              content: Text(
+                                  "Please pick a valid college to subscribe to."),
+                            ));
+                            return;
+                          }
                           widget.nextPage(initValues);
                         }
                       },

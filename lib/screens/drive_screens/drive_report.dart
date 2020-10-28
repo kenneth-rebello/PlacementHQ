@@ -44,9 +44,10 @@ class _DriveReportState extends State<DriveReport> {
   final DateFormat formatter = new DateFormat("dd-MM-yyyy hh:mm");
 
   void generateReport() async {
-    setState(() {
-      _generating = true;
-    });
+    if (mounted)
+      setState(() {
+        _generating = true;
+      });
     final registrations =
         Provider.of<Drives>(context, listen: false).registrations;
     List<List<dynamic>> toFile = new List();
@@ -124,9 +125,10 @@ class _DriveReportState extends State<DriveReport> {
 
     String csv = const ListToCsvConverter().convert(toFile);
     File newFile = await f.writeAsString(csv);
-    setState(() {
-      _generating = false;
-    });
+    if (mounted)
+      setState(() {
+        _generating = false;
+      });
     if (newFile != null)
       showDialog(
         context: context,
@@ -204,162 +206,180 @@ class _DriveReportState extends State<DriveReport> {
                 label: "First Name",
                 value: columns["firstName"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["firstName"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["firstName"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Middle Name",
                 value: columns["middleName"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["middleName"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["middleName"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Last Name",
                 value: columns["lastName"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["lastName"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["lastName"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Full Name",
                 value: columns["fullName"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["fullName"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["fullName"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "UID",
                 value: columns["uid"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["uid"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["uid"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Email",
                 value: columns["email"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["email"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["email"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Contact Number",
                 value: columns["phone"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["phone"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["phone"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Date Of Birth",
                 value: columns["dob"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["dob"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["dob"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Gender",
                 value: columns["gender"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["gender"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["gender"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Address",
                 value: columns["address"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["address"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["address"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Std X Marks",
                 value: columns["secMarks"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["secMarks"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["secMarks"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Std XII Marks",
                 value: columns["highSecMarks"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["highSecMarks"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["highSecMarks"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Diploma Marks",
                 value: columns["diplomaMarks"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["diplomaMarks"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["diplomaMarks"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "BE CGPA",
                 value: columns["cgpa"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["cgpa"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["cgpa"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "BE %",
                 value: columns["beMarks"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["beMarks"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["beMarks"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Number of KTs",
                 value: columns["numOfKTs"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["numOfKTs"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["numOfKTs"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Number of gap years",
                 value: columns["numOfGapYears"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["numOfGapYears"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["numOfGapYears"] = val;
+                    });
                 },
               ),
               CheckListItem(
                 label: "Registration Date",
                 value: columns["regDate"],
                 onChanged: (val) {
-                  setState(() {
-                    columns["regDate"] = val;
-                  });
+                  if (mounted)
+                    setState(() {
+                      columns["regDate"] = val;
+                    });
                 },
               ),
               RaisedButton(

@@ -22,7 +22,7 @@ class OneValue extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyText2,
                 ),
                 TextSpan(
-                  text: value,
+                  text: value == null || value == "" ? "N/A" : value,
                   style: Theme.of(context).textTheme.bodyText1,
                 ),
               ],

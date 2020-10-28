@@ -30,6 +30,9 @@ class _DriveListItemState extends State<DriveListItem> {
     if (drive.minSecMarks > profile.secMarks) return false;
     if (drive.minHighSecMarks > profile.highSecMarks) return false;
     if (drive.minBEMarks > profile.beMarks) return false;
+    if (profile.hasDiploma) {
+      if (drive.minDiplomaMarks > profile.diplomaMarks) return false;
+    }
     if (drive.minCGPA > profile.cgpa) return false;
     if (profile.numOfGapYears > drive.maxGapYears) return false;
     if (profile.numOfKTs > drive.maxKTs) return false;

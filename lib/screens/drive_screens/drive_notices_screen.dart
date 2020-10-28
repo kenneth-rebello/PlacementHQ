@@ -20,9 +20,10 @@ class _DriveNoticesScreenState extends State<DriveNoticesScreen> {
       Provider.of<Drives>(context, listen: false)
           .getDriveNotices(widget.driveId)
           .then((value) {
-        setState(() {
-          _loading = false;
-        });
+        if (mounted)
+          setState(() {
+            _loading = false;
+          });
       });
     }
     super.initState();

@@ -22,7 +22,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
         .getAllNotices(collegeId)
         .then((value) {
       setState(() {
-        _loading = false;
+        if (mounted) _loading = false;
       });
     });
 
@@ -45,10 +45,12 @@ class _NoticesScreenState extends State<NoticesScreen> {
             ? Center(
                 child: CircularProgressIndicator(),
               )
-            : ListView.builder(
-                itemBuilder: (ctx, idx) => NoticeItem(notices[idx]),
-                itemCount: notices.length,
-              ),
+            : notices.length <= 0
+                ? Center(child: Text("There are no notices to show"))
+                : ListView.builder(
+                    itemBuilder: (ctx, idx) => NoticeItem(notices[idx]),
+                    itemCount: notices.length,
+                  ),
       ),
     );
   }

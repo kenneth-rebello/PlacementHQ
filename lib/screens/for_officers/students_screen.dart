@@ -37,9 +37,11 @@ class _StudentsScreenState extends State<StudentsScreen> {
     else if (sortBy == SortOptions.uidDesc)
       students.sort((a, b) => b.rollNo.compareTo(a.rollNo));
     else if (sortBy == SortOptions.nameAsc)
-      students.sort((a, b) => a.fullName.compareTo(b.fullName));
+      students.sort((a, b) =>
+          a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase()));
     else if (sortBy == SortOptions.nameDesc)
-      students.sort((a, b) => b.fullName.compareTo(a.fullName));
+      students.sort((a, b) =>
+          b.fullName.toLowerCase().compareTo(a.fullName.toLowerCase()));
 
     return Scaffold(
       appBar: AppBar(
@@ -55,10 +57,11 @@ class _StudentsScreenState extends State<StudentsScreen> {
                   child: FlatButton(
                 child: Text(_filterable ? "Disable Filter" : "Enable Filter"),
                 onPressed: () {
-                  setState(() {
-                    _filterable = !_filterable;
-                    Navigator.of(ctx).pop();
-                  });
+                  if (mounted)
+                    setState(() {
+                      _filterable = !_filterable;
+                      Navigator.of(ctx).pop();
+                    });
                 },
               ))
             ],
@@ -88,9 +91,10 @@ class _StudentsScreenState extends State<StudentsScreen> {
                               )
                               .toList(),
                           onChanged: (val) {
-                            setState(() {
-                              sortBy = val;
-                            });
+                            if (mounted)
+                              setState(() {
+                                sortBy = val;
+                              });
                           },
                         )
                       ],
@@ -114,9 +118,10 @@ class _StudentsScreenState extends State<StudentsScreen> {
                                 )
                                 .toList(),
                             onChanged: (val) {
-                              setState(() {
-                                filterBy = val;
-                              });
+                              if (mounted)
+                                setState(() {
+                                  filterBy = val;
+                                });
                             },
                           )
                         ],
@@ -124,7 +129,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
                     ),
                   Container(
                     height:
-                        _filterable ? 0.7 * deviceHeight : 0.75 * deviceHeight,
+                        _filterable ? 0.7 * deviceHeight : 0.78 * deviceHeight,
                     child: ListView.builder(
                       itemBuilder: (ctx, idx) => Card(
                         child: ListTile(

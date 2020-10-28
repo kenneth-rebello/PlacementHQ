@@ -27,23 +27,26 @@ class _EditProfileState extends State<EditProfile>
   }
 
   void nextPage(Map<String, dynamic> profileData, {File image}) {
-    setState(() {
-      _loading = true;
-    });
+    if (mounted)
+      setState(() {
+        _loading = true;
+      });
     Provider.of<User>(context, listen: false)
         .editProfile(profileData, image: image)
         .then((_) {
-      setState(() {
-        _loading = false;
-        _tabIndex = (_tabIndex + 1) % 3;
-      });
+      if (mounted)
+        setState(() {
+          _loading = false;
+          _tabIndex = (_tabIndex + 1) % 3;
+        });
     });
   }
 
   void prevPage() {
-    setState(() {
-      _tabIndex = _tabIndex - 1 == -1 ? 2 : (_tabIndex - 1);
-    });
+    if (mounted)
+      setState(() {
+        _tabIndex = _tabIndex - 1 == -1 ? 2 : (_tabIndex - 1);
+      });
   }
 
   @override

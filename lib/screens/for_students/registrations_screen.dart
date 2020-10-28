@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/screens/for_students/drives_screen.dart';
 import 'package:placementhq/widgets/registration_item/registration_item.dart';
 import 'package:provider/provider.dart';
 
@@ -41,10 +42,24 @@ class _RegistrationsScreenState extends State<RegistrationsScreen> {
         margin: EdgeInsets.all(10),
         child: _loading
             ? Center(child: CircularProgressIndicator())
-            : ListView.builder(
-                itemBuilder: (ctx, idx) => RegistrationItem(registrations[idx]),
-                itemCount: registrations.length,
-              ),
+            : registrations.length <= 0
+                ? Column(children: [
+                    Text("You have not yet registered for a placement drive"),
+                    RaisedButton(
+                      child: Text(
+                        "See Latest Drives",
+                        style: Theme.of(context).textTheme.button,
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(DrivesScreen.routeName);
+                      },
+                    )
+                  ])
+                : ListView.builder(
+                    itemBuilder: (ctx, idx) =>
+                        RegistrationItem(registrations[idx]),
+                    itemCount: registrations.length,
+                  ),
       ),
     );
   }

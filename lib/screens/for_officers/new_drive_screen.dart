@@ -54,7 +54,9 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
       "address": false,
       "city": false,
       "state": false,
-    }
+    },
+    "registered": 0,
+    "placed": 0,
   };
   bool _loading = false;
   bool newCompany = true;
@@ -67,7 +69,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(Duration(days: 365)),
     ).then((pickedDate) {
-      if (pickedDate != null)
+      if (pickedDate != null && mounted)
         setState(() {
           values[fieldName] = pickedDate.toIso8601String();
         });
@@ -93,7 +95,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
           actions: [NoButton(ctx), YesButton(ctx)],
         ),
       ).then((res) {
-        if (res) {
+        if (res && mounted) {
           setState(() {
             _loading = true;
           });
@@ -117,9 +119,10 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
     Provider.of<Companies>(context, listen: false)
         .loadCompaniesForList(collegeId)
         .then((value) {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted)
+        setState(() {
+          _loading = false;
+        });
     });
     super.initState();
   }
@@ -129,9 +132,10 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
     final pickedImage = await picker.getImage(
         source: ImageSource.gallery, imageQuality: 20, maxWidth: 100);
     final pickedImageFile = File(pickedImage.path);
-    setState(() {
-      _pickedImage = pickedImageFile;
-    });
+    if (mounted)
+      setState(() {
+        _pickedImage = pickedImageFile;
+      });
   }
 
   @override
@@ -174,19 +178,20 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         enabled: newCompany,
                         requiredField: true,
                         onChanged: (val) {
-                          setState(() {
-                            values["companyName"] = val;
-                            values["companyId"] = "";
-                            values["companyImageUrl"] = "";
-                            if (val.length > 3) {
-                              suggestions = [];
-                              suggestions = companiesList
-                                  .where((company) => company
-                                      .toLowerCase()
-                                      .contains(val.toLowerCase()))
-                                  .toList();
-                            }
-                          });
+                          if (mounted)
+                            setState(() {
+                              values["companyName"] = val;
+                              values["companyId"] = "";
+                              values["companyImageUrl"] = "";
+                              if (val.length > 3) {
+                                suggestions = [];
+                                suggestions = companiesList
+                                    .where((company) => company
+                                        .toLowerCase()
+                                        .contains(val.toLowerCase()))
+                                    .toList();
+                              }
+                            });
                         },
                       ),
                       if (suggestions.length > 0)
@@ -203,15 +208,16 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                                 cont.text = suggestions[idx];
                                 contImage.text =
                                     mapCompanyToId[suggestions[idx]]["url"];
-                                setState(() {
-                                  values["companyName"] = suggestions[idx];
-                                  values["companyId"] =
-                                      mapCompanyToId[suggestions[idx]]["id"];
-                                  values["companyImageUrl"] =
-                                      mapCompanyToId[suggestions[idx]]["url"];
-                                  newCompany = false;
-                                  suggestions = [];
-                                });
+                                if (mounted)
+                                  setState(() {
+                                    values["companyName"] = suggestions[idx];
+                                    values["companyId"] =
+                                        mapCompanyToId[suggestions[idx]]["id"];
+                                    values["companyImageUrl"] =
+                                        mapCompanyToId[suggestions[idx]]["url"];
+                                    newCompany = false;
+                                    suggestions = [];
+                                  });
                               },
                             ),
                           ),
@@ -253,9 +259,10 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         initialValue: values["companyMessage"],
                         label: "Message from company",
                         onSaved: (val) {
-                          setState(() {
-                            values["companyMessage"] = val;
-                          });
+                          if (mounted)
+                            setState(() {
+                              values["companyMessage"] = val;
+                            });
                         },
                         maxLines: null,
                         minLines: 2,
@@ -265,7 +272,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         helper: "Defaults to 0.0",
                         type: TextInputType.number,
                         onSaved: (val) {
-                          if (val != null && val != "")
+                          if (val != null && val != "" && mounted)
                             setState(() {
                               values["minSecMarks"] = double.parse(val);
                             });
@@ -276,7 +283,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         helper: "Defaults to 0.0",
                         type: TextInputType.number,
                         onSaved: (val) {
-                          if (val != null && val != "")
+                          if (val != null && val != "" && mounted)
                             setState(() {
                               values["minHighSecMarks"] = double.parse(val);
                             });
@@ -287,7 +294,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         helper: "Defaults to 0.0",
                         type: TextInputType.number,
                         onSaved: (val) {
-                          if (val != null && val != "")
+                          if (val != null && val != "" && mounted)
                             setState(() {
                               values["minDiplomaMarks"] = double.parse(val);
                             });
@@ -298,7 +305,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         helper: "Default adjusts to minimum CGPA",
                         type: TextInputType.number,
                         onSaved: (val) {
-                          if (val != null && val != "")
+                          if (val != null && val != "" && mounted)
                             setState(() {
                               values["minBEMarks"] = double.parse(val);
                             });
@@ -309,7 +316,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         helper: "Defaults to 0.0",
                         type: TextInputType.number,
                         onSaved: (val) {
-                          if (val != null && val != "")
+                          if (val != null && val != "" && mounted)
                             setState(() {
                               double cgpa = double.parse(val);
                               values["minCGPA"] = cgpa;
@@ -327,7 +334,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         helper: "Defaults to 1",
                         type: TextInputType.number,
                         onSaved: (val) {
-                          if (val != null && val != "")
+                          if (val != null && val != "" && mounted)
                             setState(() {
                               values["maxGapYears"] = int.parse(val);
                             });
@@ -338,7 +345,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         helper: "Defaults to 4",
                         type: TextInputType.number,
                         onSaved: (val) {
-                          if (val != null && val != "")
+                          if (val != null && val != "" && mounted)
                             setState(() {
                               values["maxKTs"] = int.parse(val);
                             });
@@ -349,25 +356,28 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         helper:
                             "Only if company requires registration on a seperate website",
                         onSaved: (val) {
-                          setState(() {
-                            values["externalLink"] = val;
-                          });
+                          if (mounted)
+                            setState(() {
+                              values["externalLink"] = val;
+                            });
                         },
                       ),
                       Input(
                         label: "Job Description",
                         onSaved: (val) {
-                          setState(() {
-                            values["jobDesc"] = val;
-                          });
+                          if (mounted)
+                            setState(() {
+                              values["jobDesc"] = val;
+                            });
                         },
                       ),
                       Input(
                         label: "Location",
                         onSaved: (val) {
-                          setState(() {
-                            values["location"] = val;
-                          });
+                          if (mounted)
+                            setState(() {
+                              values["location"] = val;
+                            });
                         },
                       ),
                       Input(
@@ -376,13 +386,15 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                         type: TextInputType.number,
                         requiredField: true,
                         onChanged: (val) {
-                          setState(() {
-                            double ctc = double.parse(val);
-                            values["ctc"] = ctc;
-                            if (ctc <= 5.0) values["category"] = "Normal";
-                            if (ctc > 5.0) values["category"] = "Dream";
-                            if (ctc > 10.0) values["category"] = "Super Dream";
-                          });
+                          if (val != "" && val != null && mounted)
+                            setState(() {
+                              double ctc = double.parse(val);
+                              values["ctc"] = ctc;
+                              if (ctc <= 5.0) values["category"] = "Normal";
+                              if (ctc > 5.0) values["category"] = "Dream";
+                              if (ctc > 10.0)
+                                values["category"] = "Super Dream";
+                            });
                         },
                       ),
                       Row(
@@ -407,9 +419,10 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                                 )
                                 .toList(),
                             onChanged: (val) {
-                              setState(() {
-                                values["category"] = val;
-                              });
+                              if (mounted)
+                                setState(() {
+                                  values["category"] = val;
+                                });
                             },
                           ),
                         ],
@@ -478,63 +491,70 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                       CheckListItem(
                         value: values["requirements"]["middleName"],
                         onChanged: (val) {
-                          setState(() {
-                            values["requirements"]["middleName"] = val;
-                          });
+                          if (mounted)
+                            setState(() {
+                              values["requirements"]["middleName"] = val;
+                            });
                         },
                         label: "Middle Name",
                       ),
                       CheckListItem(
                         value: values["requirements"]["gender"],
                         onChanged: (val) {
-                          setState(() {
-                            values["requirements"]["gender"] = val;
-                          });
+                          if (mounted)
+                            setState(() {
+                              values["requirements"]["gender"] = val;
+                            });
                         },
                         label: "Gender",
                       ),
                       CheckListItem(
                         value: values["requirements"]["age"],
                         onChanged: (val) {
-                          setState(() {
-                            values["requirements"]["age"] = val;
-                          });
+                          if (mounted)
+                            setState(() {
+                              values["requirements"]["age"] = val;
+                            });
                         },
                         label: "Age",
                       ),
                       CheckListItem(
                         value: values["requirements"]["nationality"],
                         onChanged: (val) {
-                          setState(() {
-                            values["requirements"]["nationality"] = val;
-                          });
+                          if (mounted)
+                            setState(() {
+                              values["requirements"]["nationality"] = val;
+                            });
                         },
                         label: "Nationality",
                       ),
                       CheckListItem(
                         value: values["requirements"]["address"],
                         onChanged: (val) {
-                          setState(() {
-                            values["requirements"]["address"] = val;
-                          });
+                          if (mounted)
+                            setState(() {
+                              values["requirements"]["address"] = val;
+                            });
                         },
                         label: "Address",
                       ),
                       CheckListItem(
                         value: values["requirements"]["city"],
                         onChanged: (val) {
-                          setState(() {
-                            values["requirements"]["city"] = val;
-                          });
+                          if (mounted)
+                            setState(() {
+                              values["requirements"]["city"] = val;
+                            });
                         },
                         label: "City",
                       ),
                       CheckListItem(
                         value: values["requirements"]["state"],
                         onChanged: (val) {
-                          setState(() {
-                            values["requirements"]["state"] = val;
-                          });
+                          if (mounted)
+                            setState(() {
+                              values["requirements"]["state"] = val;
+                            });
                         },
                         label: "State",
                       ),

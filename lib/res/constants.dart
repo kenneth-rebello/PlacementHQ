@@ -5,6 +5,7 @@ import 'package:placementhq/screens/for_officers/new_notice_screen.dart';
 import 'package:placementhq/screens/for_officers/students_screen.dart';
 import 'package:placementhq/screens/for_students/drives_screen.dart';
 import 'package:placementhq/screens/for_students/notices_screen.dart';
+import 'package:placementhq/screens/past_data_screens/archives_screen.dart';
 import 'package:placementhq/screens/profile_screens/profile_screen.dart';
 import 'package:placementhq/screens/for_students/registrations_screen.dart';
 
@@ -14,31 +15,33 @@ abstract class Constants {
   static List<HomeItem> homeItems = [
     HomeItem(
       label: "Latest Placement Drives",
-      icon: Icons.business_center,
       routeName: DrivesScreen.routeName,
       imagePath: 'assets/images/companies.png',
       protected: true,
     ),
     HomeItem(
       label: "Registered Drives",
-      icon: Icons.subscriptions,
       routeName: RegistrationsScreen.routeName,
       imagePath: 'assets/images/registrations.png',
       protected: true,
     ),
     HomeItem(
       label: "Noticeboard",
-      icon: Icons.subscriptions,
       routeName: NoticesScreen.routeName,
       imagePath: 'assets/images/notices.png',
       protected: true,
     ),
     HomeItem(
       label: "My Profile",
-      icon: Icons.subscriptions,
       routeName: ProfileScreen.routeName,
       imagePath: 'assets/images/profile.png',
       protected: false,
+    ),
+    HomeItem(
+      label: "Placement Archives",
+      routeName: ArchivesScreen.routeName,
+      imagePath: 'assets/images/history.png',
+      protected: true,
     ),
   ];
 
@@ -65,6 +68,12 @@ abstract class Constants {
       label: "All Students",
       routeName: StudentsScreen.routeName,
       imagePath: 'assets/images/students.png',
+      protected: false,
+    ),
+    HomeItem(
+      label: "Placement Archives",
+      routeName: ArchivesScreen.routeName,
+      imagePath: 'assets/images/history.png',
       protected: false,
     ),
   ];
@@ -115,8 +124,6 @@ class HomeItem {
   @required
   final String label;
   @required
-  final IconData icon;
-  @required
   final String routeName;
   @required
   final String imagePath;
@@ -125,7 +132,6 @@ class HomeItem {
 
   HomeItem({
     this.label,
-    this.icon,
     this.routeName,
     this.imagePath,
     this.protected,

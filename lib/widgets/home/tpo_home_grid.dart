@@ -17,6 +17,8 @@ class _TPOHomeGridState extends State<TPOHomeGrid> {
     Provider.of<Officer>(context, listen: false)
         .loadCurrentOfficerProfile()
         .then((_) {
+      final collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+      Provider.of<Auth>(context, listen: false).setCollegeId(collegeId);
       setState(() {
         _loading = false;
       });
