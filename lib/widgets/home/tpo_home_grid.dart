@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/officer.dart';
 import 'package:placementhq/res/constants.dart';
+import 'package:placementhq/widgets/other/error.dart';
 import 'package:provider/provider.dart';
 
 class TPOHomeGrid extends StatefulWidget {
@@ -11,6 +12,7 @@ class TPOHomeGrid extends StatefulWidget {
 
 class _TPOHomeGridState extends State<TPOHomeGrid> {
   bool _loading = false;
+  bool _error = false;
 
   void initState() {
     _loading = true;
@@ -21,6 +23,12 @@ class _TPOHomeGridState extends State<TPOHomeGrid> {
       Provider.of<Auth>(context, listen: false).setCollegeId(collegeId);
       setState(() {
         _loading = false;
+        _error = false;
+      });
+    }).catchError((e) {
+      setState(() {
+        _loading = false;
+        _error = true;
       });
     });
     super.initState();
@@ -35,6 +43,12 @@ class _TPOHomeGridState extends State<TPOHomeGrid> {
         .then((_) {
       setState(() {
         _loading = false;
+        _error = false;
+      });
+    }).catchError((e) {
+      setState(() {
+        _loading = false;
+        _error = true;
       });
     });
   }
@@ -60,44 +74,49 @@ class _TPOHomeGridState extends State<TPOHomeGrid> {
             ? Center(
                 child: CircularProgressIndicator(),
               )
-            : RefreshIndicator(
-                onRefresh: _refresher,
-                child: Container(
-                  child: GridView.builder(
-                    padding: const EdgeInsets.all(10),
-                    itemCount: items.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 1,
-                      childAspectRatio: 9 / 4,
-                      mainAxisSpacing: 15,
-                    ),
-                    itemBuilder: (ctx, idx) => GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pushNamed(items[idx].routeName);
-                      },
-                      child: GridTile(
-                        child: Container(
-                          color: idx % 2 != 0
-                              ? theme.primaryColor
-                              : theme.accentColor,
-                          child: Container(
-                            padding: EdgeInsets.all(10),
-                            child: Image.asset(items[idx].imagePath,
-                                color: Colors.white70),
-                          ),
+            : _error
+                ? Error(
+                    refresher: _refresher,
+                  )
+                : RefreshIndicator(
+                    onRefresh: _refresher,
+                    child: Container(
+                      child: GridView.builder(
+                        padding: const EdgeInsets.all(10),
+                        itemCount: items.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 1,
+                          childAspectRatio: 9 / 4,
+                          mainAxisSpacing: 15,
                         ),
-                        footer: GridTileBar(
-                          title: Text(
-                            items[idx].label,
-                            style: Theme.of(context).textTheme.headline4,
-                            textAlign: TextAlign.center,
+                        itemBuilder: (ctx, idx) => GestureDetector(
+                          onTap: () {
+                            Navigator.of(context)
+                                .pushNamed(items[idx].routeName);
+                          },
+                          child: GridTile(
+                            child: Container(
+                              color: idx % 2 != 0
+                                  ? theme.primaryColor
+                                  : theme.accentColor,
+                              child: Container(
+                                padding: EdgeInsets.all(10),
+                                child: Image.asset(items[idx].imagePath,
+                                    color: Colors.white70),
+                              ),
+                            ),
+                            footer: GridTileBar(
+                              title: Text(
+                                items[idx].label,
+                                style: Theme.of(context).textTheme.headline4,
+                                textAlign: TextAlign.center,
+                              ),
+                              backgroundColor: Colors.black45,
+                            ),
                           ),
-                          backgroundColor: Colors.black45,
                         ),
                       ),
                     ),
-                  ),
-                ),
-              );
+                  );
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:placementhq/screens/for_officers/current_drives_screen.dart';
 import 'package:placementhq/screens/for_officers/new_drive_screen.dart';
-import 'package:placementhq/screens/for_officers/new_notice_screen.dart';
 import 'package:placementhq/screens/for_officers/students_screen.dart';
 import 'package:placementhq/screens/for_students/drives_screen.dart';
 import 'package:placementhq/screens/for_students/notices_screen.dart';
@@ -59,10 +58,10 @@ abstract class Constants {
       protected: false,
     ),
     HomeItem(
-      label: "New Notice",
-      routeName: NewNoticeScreen.routeName,
+      label: "Noticeboard",
+      routeName: NoticesScreen.routeName,
       imagePath: 'assets/images/notices.png',
-      protected: false,
+      protected: true,
     ),
     HomeItem(
       label: "All Students",
@@ -118,6 +117,13 @@ abstract class Constants {
     SortOptions.nameAsc,
     SortOptions.nameDesc,
   ];
+
+  static const List<String> offersSortOptions = [
+    SortOptions.uidAsc,
+    SortOptions.uidDesc,
+    SortOptions.ctcAsc,
+    SortOptions.ctcDesc,
+  ];
 }
 
 class HomeItem {
@@ -146,4 +152,6 @@ class SortOptions {
   static const registrationAsc = "Registration Date (asc.)";
   static const registrationDesc = "Registration Date (desc.)";
   static const onlySelected = "Only Selected";
+  static const ctcAsc = "CTC (asc.)";
+  static const ctcDesc = "CTC (desc.)";
 }

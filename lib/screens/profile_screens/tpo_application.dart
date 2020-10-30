@@ -84,6 +84,20 @@ class _TPOApplicationState extends State<TPOApplication> {
     super.initState();
   }
 
+  Future<void> _refresher() async {
+    setState(() {
+      _loading = true;
+    });
+    email = Provider.of<Auth>(context, listen: false).userEmail;
+    values["email"] = email;
+    Provider.of<Colleges>(context, listen: false).loadColleges().then((value) {
+      if (mounted)
+        setState(() {
+          _loading = false;
+        });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final colleges = Provider.of<Colleges>(context).colleges;
@@ -104,130 +118,133 @@ class _TPOApplicationState extends State<TPOApplication> {
           ? Center(
               child: CircularProgressIndicator(),
             )
-          : Container(
-              margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-              child: SingleChildScrollView(
-                child: Form(
-                  key: _form,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Input(
-                        controller: cont,
-                        label: "College Name",
-                        helperLines: 6,
-                        helper:
-                            "\u2022Suggested to use full name displayed on official college website.\n\u2022Avoid making acronyms.\nIf your college name shows in the space below this, please click it.",
-                        disabled: !newCollege,
-                        onChanged: (val) {
-                          setState(() {
-                            values["collegeName"] = val;
-                            values["collegeId"] = mapCollegeToId[val];
-                            suggestions = [];
-                            suggestions = collegesList
-                                .where((college) => college
-                                    .toLowerCase()
-                                    .contains(val.toLowerCase()))
-                                .toList();
-                          });
-                        },
-                        requiredField: true,
-                      ),
-                      if (suggestions.length > 0)
-                        Container(
-                          height: 100,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                                color: Theme.of(context).primaryColor),
-                          ),
-                          child: ListView.builder(
-                            itemCount: suggestions.length,
-                            itemBuilder: (ctx, idx) => ListTile(
-                              title: Text(
-                                suggestions[idx],
-                                style: TextStyle(color: Colors.blue[900]),
+          : RefreshIndicator(
+              onRefresh: _refresher,
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                child: SingleChildScrollView(
+                  child: Form(
+                    key: _form,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Input(
+                          controller: cont,
+                          label: "College Name",
+                          helperLines: 6,
+                          helper:
+                              "\u2022Suggested to use full name displayed on official college website.\n\u2022Avoid making acronyms.\nIf your college name shows in the space below this, please click it.",
+                          disabled: !newCollege,
+                          onChanged: (val) {
+                            setState(() {
+                              values["collegeName"] = val;
+                              values["collegeId"] = mapCollegeToId[val];
+                              suggestions = [];
+                              suggestions = collegesList
+                                  .where((college) => college
+                                      .toLowerCase()
+                                      .contains(val.toLowerCase()))
+                                  .toList();
+                            });
+                          },
+                          requiredField: true,
+                        ),
+                        if (suggestions.length > 0)
+                          Container(
+                            height: 100,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                  color: Theme.of(context).primaryColor),
+                            ),
+                            child: ListView.builder(
+                              itemCount: suggestions.length,
+                              itemBuilder: (ctx, idx) => ListTile(
+                                title: Text(
+                                  suggestions[idx],
+                                  style: TextStyle(color: Colors.blue[900]),
+                                ),
+                                onTap: () {
+                                  cont.text = suggestions[idx];
+                                  values["collegeName"] = suggestions[idx];
+                                  values["collegeId"] =
+                                      mapCollegeToId[suggestions[idx]];
+                                  setState(() {
+                                    newCollege = false;
+                                  });
+                                },
                               ),
-                              onTap: () {
-                                cont.text = suggestions[idx];
-                                values["collegeName"] = suggestions[idx];
-                                values["collegeId"] =
-                                    mapCollegeToId[suggestions[idx]];
-                                setState(() {
-                                  newCollege = false;
-                                });
-                              },
+                            ),
+                          ),
+                        Input(
+                          initialValue: values["fullName"],
+                          label: "Your Full Name",
+                          onSaved: (val) {
+                            setState(() {
+                              values["fullName"] = val;
+                            });
+                          },
+                          requiredField: true,
+                        ),
+                        Input(
+                          initialValue: values["designation"],
+                          label: "Your designation in said college",
+                          onSaved: (val) {
+                            setState(() {
+                              values["designation"] = val;
+                            });
+                          },
+                          requiredField: true,
+                        ),
+                        Input(
+                          initialValue: values["phone"].toString(),
+                          type: TextInputType.phone,
+                          label: "Your phone number",
+                          onSaved: (val) {
+                            setState(() {
+                              values["phone"] = int.parse(val);
+                            });
+                          },
+                          validator: (val) {
+                            if (val.length < 10) {
+                              return "Too short";
+                            }
+                            if (val.length > 10) {
+                              return "Too long";
+                            }
+                            return null;
+                          },
+                        ),
+                        Input(
+                          initialValue: values["email"],
+                          type: TextInputType.emailAddress,
+                          label: "Your email",
+                          onSaved: (val) {
+                            setState(() {
+                              values["email"] = val;
+                            });
+                          },
+                          validator: (val) {
+                            if (val != email) {
+                              return "You must use your registered email";
+                            }
+                            return null;
+                          },
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: RaisedButton(
+                            onPressed: () {
+                              confirmDialog();
+                            },
+                            child: Text(
+                              "Submit",
+                              style: Theme.of(context).textTheme.button,
                             ),
                           ),
                         ),
-                      Input(
-                        initialValue: values["fullName"],
-                        label: "Your Full Name",
-                        onSaved: (val) {
-                          setState(() {
-                            values["fullName"] = val;
-                          });
-                        },
-                        requiredField: true,
-                      ),
-                      Input(
-                        initialValue: values["designation"],
-                        label: "Your designation in said college",
-                        onSaved: (val) {
-                          setState(() {
-                            values["designation"] = val;
-                          });
-                        },
-                        requiredField: true,
-                      ),
-                      Input(
-                        initialValue: values["phone"].toString(),
-                        type: TextInputType.phone,
-                        label: "Your phone number",
-                        onSaved: (val) {
-                          setState(() {
-                            values["phone"] = int.parse(val);
-                          });
-                        },
-                        validator: (val) {
-                          if (val.length < 10) {
-                            return "Too short";
-                          }
-                          if (val.length > 10) {
-                            return "Too long";
-                          }
-                          return null;
-                        },
-                      ),
-                      Input(
-                        initialValue: values["email"],
-                        type: TextInputType.emailAddress,
-                        label: "Your email",
-                        onSaved: (val) {
-                          setState(() {
-                            values["email"] = val;
-                          });
-                        },
-                        validator: (val) {
-                          if (val != email) {
-                            return "You must use your registered email";
-                          }
-                          return null;
-                        },
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: RaisedButton(
-                          onPressed: () {
-                            confirmDialog();
-                          },
-                          child: Text(
-                            "Submit",
-                            style: Theme.of(context).textTheme.button,
-                          ),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),

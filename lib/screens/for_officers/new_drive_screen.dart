@@ -22,11 +22,13 @@ class NewDriveScreen extends StatefulWidget {
 
 class _NewDriveScreenState extends State<NewDriveScreen> {
   final _form = GlobalKey<FormState>();
+  bool _error = false;
   List<String> suggestions = [];
   TextEditingController cont = new TextEditingController();
   TextEditingController contImage = new TextEditingController();
   DateFormat formatter = new DateFormat("dd-MM-yyyy");
   Map<String, dynamic> values = {
+    "batch": "",
     "companyName": "",
     "companyImageUrl": "",
     "companyId": "",
@@ -79,7 +81,6 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
   void _confirm() {
     if (_form.currentState.validate()) {
       _form.currentState.save();
-      print(values);
       String collegeId = Provider.of<Officer>(context, listen: false).collegeId;
 
       Company company;
@@ -106,6 +107,36 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
               _loading = false;
             });
             Navigator.of(context).pop();
+          }).catchError((e) {
+            setState(() {
+              _loading = false;
+            });
+            showDialog(
+              context: context,
+              builder: (ctx) => SimpleDialog(
+                title: Text(
+                  "Error adding drive",
+                  style: TextStyle(
+                    fontFamily: "Ubuntu",
+                    color: Colors.red,
+                  ),
+                ),
+                children: [
+                  Text(
+                    "${e.message}",
+                    style: TextStyle(
+                        fontFamily: "Ubuntu", color: Colors.indigo[800]),
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                    },
+                    child: Text("OK"),
+                  ),
+                ],
+                contentPadding: EdgeInsets.all(25),
+              ),
+            );
           });
         }
       });
@@ -122,9 +153,36 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
       if (mounted)
         setState(() {
           _loading = false;
+          _error = false;
         });
+    }).catchError((e) {
+      setState(() {
+        _loading = false;
+        _error = true;
+      });
     });
     super.initState();
+  }
+
+  Future<void> _refresher() async {
+    setState(() {
+      _loading = true;
+    });
+    String collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+    Provider.of<Companies>(context, listen: false)
+        .loadCompaniesForList(collegeId)
+        .then((value) {
+      if (mounted)
+        setState(() {
+          _loading = false;
+          _error = false;
+        });
+    }).catchError((e) {
+      setState(() {
+        _loading = false;
+        _error = true;
+      });
+    });
   }
 
   void _pickImage() async {
@@ -158,8 +216,11 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
         ),
       ),
       body: _loading
-          ? Center(
-              child: CircularProgressIndicator(),
+          ? RefreshIndicator(
+              onRefresh: _refresher,
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
             )
           : Container(
               margin: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
@@ -255,6 +316,19 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                                 errorBuilder: (ctx, e, s) => ImageError(),
                               ),
                             ),
+                      Input(
+                        initialValue: values["batch"],
+                        label: "Batch",
+                        type: TextInputType.number,
+                        onSaved: (val) {
+                          if (mounted)
+                            setState(() {
+                              values["batch"] = val;
+                            });
+                        },
+                        helper: "For batch graduating in 2021, enter 2021.",
+                        requiredField: true,
+                      ),
                       Input(
                         initialValue: values["companyMessage"],
                         label: "Message from company",

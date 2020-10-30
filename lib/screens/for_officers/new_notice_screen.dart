@@ -5,6 +5,7 @@ import 'package:placementhq/providers/officer.dart';
 import 'package:placementhq/widgets/input/input.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
 import 'package:placementhq/widgets/input/yes_button.dart';
+import 'package:placementhq/widgets/other/error.dart';
 import 'package:provider/provider.dart';
 
 class NewNoticeScreen extends StatelessWidget {
@@ -30,12 +31,15 @@ class NewNotice extends StatefulWidget {
 
 class _NewNoticeState extends State<NewNotice> {
   bool _loading = false;
+  bool _error = false;
   FilePickerResult file;
   TextEditingController cont = new TextEditingController();
+  TextEditingController cont2 = new TextEditingController();
   Map<String, dynamic> values = {
     "driveId": "",
     "companyName": "",
     "notice": "",
+    "url": "",
     "issuedBy": "",
     "issuerId": "",
     "issuedOn": DateTime.now().toIso8601String(),
@@ -49,9 +53,34 @@ class _NewNoticeState extends State<NewNotice> {
       if (mounted)
         setState(() {
           _loading = false;
+          _error = false;
         });
+    }).catchError((e) {
+      setState(() {
+        _loading = false;
+        _error = true;
+      });
     });
     super.initState();
+  }
+
+  Future<void> _refresher() async {
+    setState(() {
+      _loading = true;
+    });
+    final collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+    Provider.of<Drives>(context, listen: false).loadDrives(collegeId).then((_) {
+      if (mounted)
+        setState(() {
+          _loading = false;
+          _error = false;
+        });
+    }).catchError((e) {
+      setState(() {
+        _loading = false;
+        _error = true;
+      });
+    });
   }
 
   void _addFile() async {
@@ -59,13 +88,14 @@ class _NewNoticeState extends State<NewNotice> {
       type: FileType.custom,
       allowedExtensions: [
         'jpg',
+        'jpeg',
+        'png',
         'pdf',
+        'docx',
         'doc',
         'xlsx',
+        'xls',
         'csv',
-        'docx',
-        'jpeg',
-        'png'
       ],
       allowCompression: true,
     );
@@ -119,8 +149,10 @@ class _NewNoticeState extends State<NewNotice> {
             if (mounted)
               setState(() {
                 values["notice"] = "";
+                values["url"] = "";
               });
             cont.clear();
+            cont2.clear();
             Scaffold.of(context)
                 .showSnackBar(SnackBar(content: Text("Published Notice")));
           });
@@ -145,88 +177,107 @@ class _NewNoticeState extends State<NewNotice> {
         ? Center(
             child: CircularProgressIndicator(),
           )
-        : Container(
-            margin: EdgeInsets.all(10),
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  Container(
-                    height: 80,
-                    padding: EdgeInsets.all(10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+        : _error
+            ? Error(
+                refresher: _refresher,
+              )
+            : RefreshIndicator(
+                onRefresh: _refresher,
+                child: Container(
+                  margin: EdgeInsets.all(10),
+                  child: SingleChildScrollView(
+                    child: Column(
                       children: [
-                        Text("Company Name"),
-                        DropdownButton(
-                          value: values["companyName"],
-                          items: driveCompanies
-                              .map<DropdownMenuItem>(
-                                (value) => DropdownMenuItem(
-                                  value: value,
-                                  child: Text(value),
-                                ),
-                              )
-                              .toList(),
+                        Container(
+                          height: 80,
+                          padding: EdgeInsets.all(10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Text("Company Name"),
+                              DropdownButton(
+                                value: values["companyName"],
+                                items: driveCompanies
+                                    .map<DropdownMenuItem>(
+                                      (value) => DropdownMenuItem(
+                                        value: value,
+                                        child: Text(value),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (val) {
+                                  setState(() {
+                                    values["companyName"] = val;
+                                    values["driveId"] =
+                                        mapDriveCompanyToId[val];
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        Input(
+                          label: "Notice",
+                          controller: cont,
                           onChanged: (val) {
-                            setState(() {
-                              values["companyName"] = val;
-                              values["driveId"] = mapDriveCompanyToId[val];
-                            });
+                            if (mounted)
+                              setState(() {
+                                values["notice"] = val;
+                              });
+                          },
+                          validator: (val) {
+                            if (val.length < 10)
+                              return "Notice should be at least 10 characters long";
+                            return null;
+                          },
+                          minLines: 5,
+                        ),
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.all(10),
+                          child: RaisedButton(
+                            onPressed: () {
+                              _addFile();
+                            },
+                            child: Text(
+                              "Add File",
+                              style: Theme.of(context).textTheme.button,
+                            ),
+                          ),
+                        ),
+                        if (file != null)
+                          Padding(
+                            padding: EdgeInsets.all(10),
+                            child:
+                                Text("File added: ${file.files.single.name}"),
+                          ),
+                        Input(
+                          label: "Add URLs here if required",
+                          controller: cont2,
+                          onChanged: (val) {
+                            if (mounted)
+                              setState(() {
+                                values["url"] = val;
+                              });
                           },
                         ),
+                        Container(
+                          width: double.infinity,
+                          margin: EdgeInsets.all(10),
+                          child: RaisedButton(
+                            onPressed: () {
+                              _publish();
+                            },
+                            child: Text(
+                              "Publish Notice",
+                              style: Theme.of(context).textTheme.button,
+                            ),
+                          ),
+                        )
                       ],
                     ),
                   ),
-                  Input(
-                    label: "Notice",
-                    controller: cont,
-                    onChanged: (val) {
-                      if (mounted)
-                        setState(() {
-                          values["notice"] = val;
-                        });
-                    },
-                    validator: (val) {
-                      if (val.length < 10)
-                        return "Notice should be at least 10 characters long";
-                      return null;
-                    },
-                    minLines: 5,
-                  ),
-                  Container(
-                    width: double.infinity,
-                    margin: EdgeInsets.all(10),
-                    child: RaisedButton(
-                      onPressed: () {
-                        _addFile();
-                      },
-                      child: Text(
-                        "Add File",
-                        style: Theme.of(context).textTheme.button,
-                      ),
-                    ),
-                  ),
-                  if (file != null)
-                    Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Text("File added: ${file.files.single.name}"),
-                    ),
-                  Container(
-                    width: double.infinity,
-                    margin: EdgeInsets.all(10),
-                    child: RaisedButton(
-                      onPressed: () {
-                        _publish();
-                      },
-                      child: Text(
-                        "Publish Notice",
-                        style: Theme.of(context).textTheme.button,
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-          );
+                ),
+              );
   }
 }

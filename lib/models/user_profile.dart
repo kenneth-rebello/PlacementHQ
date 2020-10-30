@@ -26,6 +26,7 @@ class Profile {
   double beMarks;
   int numOfGapYears;
   int numOfKTs;
+  String placedCategory;
   //Contact
   int phone;
   String email;
@@ -68,6 +69,7 @@ class Profile {
     this.pincode,
     this.registrations,
     this.offers,
+    this.placedCategory,
   });
 
   List<String> get hasRegistered {

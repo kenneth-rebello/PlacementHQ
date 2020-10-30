@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:placementhq/providers/auth.dart';
+import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/res/constants.dart';
 import 'package:placementhq/screens/for_officers/account_screen.dart';
 import 'package:placementhq/screens/for_students/offers_screen.dart';
@@ -15,6 +16,8 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isOfficer = Provider.of<Auth>(context, listen: false).isOfficer;
+    final offers =
+        Provider.of<User>(context).userOffers.where((o) => o.accepted == null);
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -23,12 +26,19 @@ class HomeScreen extends StatelessWidget {
         ),
         actions: [
           if (!isOfficer)
-            IconButton(
-              icon: Icon(Icons.all_inbox),
+            FlatButton.icon(
+              padding: EdgeInsets.symmetric(horizontal: 2),
+              icon: Icon(
+                Icons.all_inbox,
+                color: Colors.white,
+              ),
               onPressed: () {
                 Navigator.of(context).pushNamed(OffersScreen.routeName);
               },
-              tooltip: "Your Offers",
+              label: Text(
+                offers.length.toString(),
+                style: Theme.of(context).textTheme.button,
+              ),
             ),
           if (isOfficer)
             IconButton(

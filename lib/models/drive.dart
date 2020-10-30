@@ -1,5 +1,6 @@
 class Drive {
   final String id;
+  final String batch;
   final String companyName;
   final String companyId;
   final String companyImageUrl;
@@ -24,6 +25,7 @@ class Drive {
 
   Drive({
     this.id,
+    this.batch,
     this.companyName,
     this.companyId,
     this.companyMessage,

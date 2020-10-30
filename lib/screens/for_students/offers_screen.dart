@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
 import 'package:placementhq/widgets/input/yes_button.dart';
+import 'package:placementhq/widgets/other/empty_list.dart';
 import 'package:placementhq/widgets/other/image_error.dart';
 import 'package:provider/provider.dart';
 
@@ -16,18 +17,20 @@ class OffersScreen extends StatelessWidget {
           style: Theme.of(context).textTheme.headline1,
         ),
       ),
-      body: Offers(),
+      body: OffersWidget(),
     );
   }
 }
 
-class Offers extends StatefulWidget {
+class OffersWidget extends StatefulWidget {
   @override
   _OffersState createState() => _OffersState();
 }
 
-class _OffersState extends State<Offers> {
-  void _confirm(String id, bool value) {
+class _OffersState extends State<OffersWidget> {
+  bool _inProgress = false;
+
+  void _confirm(String id, bool value, String category) {
     String hint = value ? "Accept" : "Reject";
     String msg = value ? "Offer Accepted" : "Offer Rejected";
     showDialog(
@@ -49,10 +52,21 @@ class _OffersState extends State<Offers> {
       ),
     ).then((res) {
       if (res) {
+        setState(() {
+          _inProgress = true;
+        });
         Provider.of<User>(context, listen: false)
-            .respondToOffer(id, value)
+            .respondToOffer(id, value, category)
             .then((_) {
           Scaffold.of(context).showSnackBar(SnackBar(content: Text(msg)));
+          setState(() {
+            _inProgress = false;
+          });
+        }).catchError((c) {
+          Scaffold.of(context).showSnackBar(SnackBar(content: Text("Failed")));
+          setState(() {
+            _inProgress = false;
+          });
         });
       }
     });
@@ -64,16 +78,12 @@ class _OffersState extends State<Offers> {
 
     return Container(
       child: offers.isEmpty
-          ? Center(
-              child: Text(
-                "You don't have any offers yet.",
-                style: Theme.of(context).textTheme.headline3,
-                textAlign: TextAlign.center,
-              ),
+          ? EmptyList(
+              message: "Keep Trying!",
             )
           : ListView.builder(
               itemBuilder: (ctx, idx) => Container(
-                margin: EdgeInsets.all(10),
+                margin: const EdgeInsets.all(10),
                 child: ListTile(
                   leading: Container(
                     height: 100,
@@ -117,6 +127,7 @@ class _OffersState extends State<Offers> {
                   ),
                   trailing: offers[idx].accepted == null
                       ? PopupMenuButton(
+                          enabled: !_inProgress,
                           itemBuilder: (pCtx) => [
                             PopupMenuItem(
                               child: FlatButton.icon(
@@ -126,7 +137,8 @@ class _OffersState extends State<Offers> {
                                   color: Theme.of(context).primaryColor,
                                 ),
                                 onPressed: () {
-                                  _confirm(offers[idx].id, true);
+                                  _confirm(offers[idx].id, true,
+                                      offers[idx].category);
                                 },
                               ),
                             ),
@@ -138,7 +150,8 @@ class _OffersState extends State<Offers> {
                                   color: Theme.of(context).errorColor,
                                 ),
                                 onPressed: () {
-                                  _confirm(offers[idx].id, false);
+                                  _confirm(offers[idx].id, false,
+                                      offers[idx].category);
                                 },
                               ),
                             ),

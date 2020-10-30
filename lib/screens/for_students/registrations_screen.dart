@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/screens/for_students/drives_screen.dart';
+import 'package:placementhq/widgets/other/empty_list.dart';
+import 'package:placementhq/widgets/other/error.dart';
 import 'package:placementhq/widgets/registration_item/registration_item.dart';
 import 'package:provider/provider.dart';
 
@@ -14,6 +16,7 @@ class RegistrationsScreen extends StatefulWidget {
 
 class _RegistrationsScreenState extends State<RegistrationsScreen> {
   bool _loading = false;
+  bool _error = false;
 
   @override
   void initState() {
@@ -22,9 +25,33 @@ class _RegistrationsScreenState extends State<RegistrationsScreen> {
     Provider.of<Drives>(context, listen: false).loadDrives(collegeId).then((_) {
       setState(() {
         _loading = false;
+        _error = false;
+      });
+    }).catchError((e) {
+      setState(() {
+        _loading = false;
+        _error = true;
       });
     });
     super.initState();
+  }
+
+  Future<void> _refresher() async {
+    setState(() {
+      _loading = true;
+    });
+    final collegeId = Provider.of<User>(context, listen: false).collegeId;
+    Provider.of<Drives>(context, listen: false).loadDrives(collegeId).then((_) {
+      setState(() {
+        _loading = false;
+        _error = false;
+      });
+    }).catchError((e) {
+      setState(() {
+        _loading = false;
+        _error = true;
+      });
+    });
   }
 
   @override
@@ -42,24 +69,33 @@ class _RegistrationsScreenState extends State<RegistrationsScreen> {
         margin: EdgeInsets.all(10),
         child: _loading
             ? Center(child: CircularProgressIndicator())
-            : registrations.length <= 0
-                ? Column(children: [
-                    Text("You have not yet registered for a placement drive"),
-                    RaisedButton(
-                      child: Text(
-                        "See Latest Drives",
-                        style: Theme.of(context).textTheme.button,
+            : _error
+                ? Error(
+                    refresher: _refresher,
+                  )
+                : registrations.length <= 0
+                    ? EmptyList(
+                        message:
+                            "You have not yet registered for a placement drive.",
+                        action: RaisedButton(
+                          child: Text(
+                            "See Latest Drives",
+                            style: Theme.of(context).textTheme.button,
+                          ),
+                          onPressed: () {
+                            Navigator.of(context)
+                                .pushNamed(DrivesScreen.routeName);
+                          },
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _refresher,
+                        child: ListView.builder(
+                          itemBuilder: (ctx, idx) =>
+                              RegistrationItem(registrations[idx]),
+                          itemCount: registrations.length,
+                        ),
                       ),
-                      onPressed: () {
-                        Navigator.of(context).pushNamed(DrivesScreen.routeName);
-                      },
-                    )
-                  ])
-                : ListView.builder(
-                    itemBuilder: (ctx, idx) =>
-                        RegistrationItem(registrations[idx]),
-                    itemCount: registrations.length,
-                  ),
       ),
     );
   }

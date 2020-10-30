@@ -4,6 +4,7 @@ class Registration {
   final String driveId;
   final String company;
   final String candidate;
+  final String department;
   final String companyId;
   final String companyImageUrl;
   final String registeredOn;
@@ -15,6 +16,7 @@ class Registration {
     this.userId,
     this.driveId,
     this.candidate,
+    this.department,
     this.company,
     this.companyId,
     this.companyImageUrl,

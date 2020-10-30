@@ -105,7 +105,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: Column(children: [
                         Text("Could not load profile, please try again"),
                         RaisedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Provider.of<Officer>(context, listen: false)
+                                .loadStudents();
+                          },
                           child: Text(
                             "Retry",
                             style: Theme.of(context).textTheme.button,
@@ -183,6 +186,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ],
                     ),
+                    if (isNotOwnProfile)
+                      ListItem(
+                        label: "Status",
+                        value: profile.placedCategory == "None"
+                            ? "Not yet placed"
+                            : "Placed in " +
+                                profile.placedCategory +
+                                " company",
+                      ),
                     ListItem(
                       label: "College UID",
                       value: profile.rollNo,

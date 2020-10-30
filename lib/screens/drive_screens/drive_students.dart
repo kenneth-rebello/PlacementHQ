@@ -11,6 +11,8 @@ import 'package:placementhq/screens/drive_screens/drive_report.dart';
 import 'package:placementhq/screens/profile_screens/profile_screen.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
 import 'package:placementhq/widgets/input/yes_button.dart';
+import 'package:placementhq/widgets/other/empty_list.dart';
+import 'package:placementhq/widgets/other/error.dart';
 import 'package:placementhq/widgets/other/list_item.dart';
 import 'package:provider/provider.dart';
 
@@ -25,6 +27,7 @@ class DriveStudentsScreen extends StatefulWidget {
 class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
   final DateFormat formatter = new DateFormat("dd-MM-yyyy hh:mm");
   bool _loading = false;
+  bool _error = false;
   bool _pickable = false;
   bool _selecting = false;
   String sortBy = SortOptions.uidAsc;
@@ -40,9 +43,36 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
       if (mounted)
         setState(() {
           _loading = false;
+          _error = false;
         });
+    }).catchError((e) {
+      setState(() {
+        _loading = false;
+        _error = true;
+      });
     });
     super.initState();
+  }
+
+  Future<void> _refresher() async {
+    setState(() {
+      _loading = true;
+    });
+    Provider.of<Drives>(context, listen: false)
+        .getDriveRegistrations(widget.args.id)
+        .then((collegeId) {
+      Provider.of<Officer>(context, listen: false).loadStudents(cId: collegeId);
+      if (mounted)
+        setState(() {
+          _loading = false;
+          _error = false;
+        });
+    }).catchError((e) {
+      setState(() {
+        _loading = false;
+        _error = true;
+      });
+    });
   }
 
   void _showInfo(Drive drive) {
@@ -84,7 +114,7 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
             color: Colors.red,
           ),
         ),
-        contentPadding: EdgeInsets.all(10),
+        contentPadding: EdgeInsets.all(15),
         actions: [
           NoButton(ctx),
           YesButton(ctx),
@@ -221,140 +251,162 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
         margin: EdgeInsets.all(10),
         child: _loading
             ? Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  Container(
-                    height: 0.1 * deviceHeight,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Text("Sort By:"),
-                        DropdownButton(
-                          value: sortBy,
-                          items: Constants.registrationSortOptions
-                              .map<DropdownMenuItem>(
-                                (value) => DropdownMenuItem(
-                                  value: value,
-                                  child: Text(value),
+            : _error
+                ? Error(
+                    refresher: _refresher,
+                  )
+                : registrations.isEmpty
+                    ? EmptyList(
+                        message: "No students have registered yet.",
+                      )
+                    : Column(
+                        children: [
+                          Container(
+                            height: 0.1 * deviceHeight,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                Text("Sort By:"),
+                                DropdownButton(
+                                  value: sortBy,
+                                  items: Constants.registrationSortOptions
+                                      .map<DropdownMenuItem>(
+                                        (value) => DropdownMenuItem(
+                                          value: value,
+                                          child: Text(value),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (val) {
+                                    if (mounted)
+                                      setState(() {
+                                        sortBy = val;
+                                      });
+                                  },
+                                )
+                              ],
+                            ),
+                          ),
+                          RefreshIndicator(
+                            onRefresh: _refresher,
+                            child: Container(
+                              height: 0.75 * deviceHeight,
+                              child: ListView.builder(
+                                itemBuilder: (ctx, idx) => Card(
+                                  color: registrations[idx].selected
+                                      ? Colors.green[400]
+                                      : Colors.white,
+                                  child: ListTile(
+                                    leading: Container(
+                                      width: 80,
+                                      child: Center(
+                                        child: Text(
+                                          registrations[idx].rollNo,
+                                          style: TextStyle(
+                                            fontSize: 21,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.indigo[900],
+                                            fontFamily: 'Ubuntu',
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    title: Text(
+                                      registrations[idx].candidate,
+                                      style: TextStyle(
+                                        color: registrations[idx].selected
+                                            ? Colors.white
+                                            : Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        fontFamily: 'Merriweather',
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      "Registered on: " +
+                                          formatter.format(
+                                            DateTime.parse(registrations[idx]
+                                                .registeredOn),
+                                          ),
+                                      style: TextStyle(
+                                        color: registrations[idx].selected
+                                            ? Colors.black
+                                            : Colors.grey,
+                                        fontFamily: 'Ubuntu',
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.normal,
+                                      ),
+                                    ),
+                                    onTap: _pickable
+                                        ? () {}
+                                        : () {
+                                            Navigator.of(context).pushNamed(
+                                              ProfileScreen.routeName,
+                                              arguments:
+                                                  registrations[idx].userId,
+                                            );
+                                          },
+                                    onLongPress: () {
+                                      if (!registrations[idx].selected &&
+                                          mounted)
+                                        setState(() {
+                                          _pickable = true;
+                                          picked[idx] = true;
+                                        });
+                                    },
+                                    trailing: _selecting
+                                        ? Container(
+                                            height: 50,
+                                            width: 50,
+                                            child: CircularProgressIndicator(),
+                                          )
+                                        : _pickable &&
+                                                !registrations[idx].selected
+                                            ? Checkbox(
+                                                value: picked[idx],
+                                                onChanged: (val) {
+                                                  if (mounted)
+                                                    setState(() {
+                                                      picked[idx] = val;
+                                                      if (!picked.any(
+                                                          (element) =>
+                                                              element)) {
+                                                        _pickable = false;
+                                                      }
+                                                    });
+                                                })
+                                            : isOfficer == true &&
+                                                    !registrations[idx].selected
+                                                ? Container(
+                                                    width: 50,
+                                                    child: PopupMenuButton(
+                                                      itemBuilder: (ctx1) => [
+                                                        PopupMenuItem(
+                                                            child: FlatButton(
+                                                          onPressed: () async {
+                                                            await _confirm(
+                                                                registrations[
+                                                                    idx]);
+                                                            Navigator.of(ctx1)
+                                                                .pop();
+                                                          },
+                                                          child: Text(
+                                                              "Confirm Selection"),
+                                                        )),
+                                                      ],
+                                                      icon:
+                                                          Icon(Icons.more_vert),
+                                                    ),
+                                                  )
+                                                : null,
+                                  ),
                                 ),
-                              )
-                              .toList(),
-                          onChanged: (val) {
-                            if (mounted)
-                              setState(() {
-                                sortBy = val;
-                              });
-                          },
-                        )
-                      ],
-                    ),
-                  ),
-                  Container(
-                    height: 0.75 * deviceHeight,
-                    child: ListView.builder(
-                      itemBuilder: (ctx, idx) => Card(
-                        color: registrations[idx].selected
-                            ? Colors.green[400]
-                            : Colors.white,
-                        child: ListTile(
-                          leading: Container(
-                            width: 80,
-                            child: Center(
-                              child: Text(
-                                registrations[idx].rollNo,
-                                style: TextStyle(
-                                  fontSize: 21,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.indigo[900],
-                                  fontFamily: 'Ubuntu',
-                                ),
+                                itemCount: registrations.length,
                               ),
                             ),
-                          ),
-                          title: Text(
-                            registrations[idx].candidate,
-                            style: TextStyle(
-                              color: registrations[idx].selected
-                                  ? Colors.white
-                                  : Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              fontFamily: 'Merriweather',
-                            ),
-                          ),
-                          subtitle: Text(
-                            "Registered on: " +
-                                formatter.format(
-                                  DateTime.parse(
-                                      registrations[idx].registeredOn),
-                                ),
-                            style: TextStyle(
-                              color: registrations[idx].selected
-                                  ? Colors.black
-                                  : Colors.grey,
-                              fontFamily: 'Ubuntu',
-                              fontSize: 13,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                          onTap: _pickable
-                              ? () {}
-                              : () {
-                                  Navigator.of(context).pushNamed(
-                                    ProfileScreen.routeName,
-                                    arguments: registrations[idx].userId,
-                                  );
-                                },
-                          onLongPress: () {
-                            if (!registrations[idx].selected && mounted)
-                              setState(() {
-                                _pickable = true;
-                                picked[idx] = true;
-                              });
-                          },
-                          trailing: _selecting
-                              ? CircularProgressIndicator()
-                              : _pickable && !registrations[idx].selected
-                                  ? Checkbox(
-                                      value: picked[idx],
-                                      onChanged: (val) {
-                                        if (mounted)
-                                          setState(() {
-                                            picked[idx] = val;
-                                            if (!picked
-                                                .any((element) => element)) {
-                                              _pickable = false;
-                                            }
-                                          });
-                                      })
-                                  : isOfficer == true &&
-                                          !registrations[idx].selected
-                                      ? Container(
-                                          width: 50,
-                                          child: PopupMenuButton(
-                                            itemBuilder: (ctx1) => [
-                                              PopupMenuItem(
-                                                  child: FlatButton(
-                                                onPressed: () async {
-                                                  await _confirm(
-                                                      registrations[idx]);
-                                                  Navigator.of(ctx1).pop();
-                                                },
-                                                child:
-                                                    Text("Confirm Selection"),
-                                              )),
-                                            ],
-                                            icon: Icon(Icons.more_vert),
-                                          ),
-                                        )
-                                      : null,
-                        ),
+                          )
+                        ],
                       ),
-                      itemCount: registrations.length,
-                    ),
-                  )
-                ],
-              ),
       ),
     );
   }

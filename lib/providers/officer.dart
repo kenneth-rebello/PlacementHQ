@@ -130,10 +130,14 @@ class Officer with ChangeNotifier {
           gender: student["gender"],
           nationality: student["nationality"],
           imageUrl: student["imageUrl"],
+          resumeUrl: student["resumeUrl"],
           collegeId: student["collegeId"],
           collegeName: student["collegeName"],
           specialization: student["specialization"],
           rollNo: student["rollNo"] == null ? "" : student["rollNo"],
+          placedCategory: student["placedCategory"] == null
+              ? "None"
+              : student["placedCategory"],
           secMarks: student["secMarks"] == null
               ? null
               : student["secMarks"] is int

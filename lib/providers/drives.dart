@@ -56,6 +56,7 @@ class Drives with ChangeNotifier {
         drives.forEach((key, drive) {
           newDrives.add(Drive(
             id: key,
+            batch: drive["batch"],
             companyId: drive["companyId"],
             companyName: drive["companyName"],
             companyMessage: drive["companyMessage"],
@@ -102,6 +103,18 @@ class Drives with ChangeNotifier {
   ) async {
     final year = DateTime.now().year;
     if (collegeId != null && collegeId != "") {
+      //Check that company does not have an existing active drive in college
+      if (company != null) {
+        final urlDrive =
+            'https://placementhq-777.firebaseio.com/collegeData/$collegeId/drives.json?orderBy="companyId"&equalTo="${company.id}"&auth=$token';
+        final resDrive = await http.get(urlDrive);
+        final objDrive = json.decode(resDrive.body) as Map<String, dynamic>;
+        if (objDrive.isNotEmpty &&
+            objDrive.values.toList()[0]["companyId"] == company.id) {
+          throw HttpException("Company already exists");
+        }
+      }
+
       if (image != null) {
         //Add image to storage
         final ref = FirebaseStorage.instance
@@ -114,25 +127,11 @@ class Drives with ChangeNotifier {
         driveData["companyImageUrl"] = imageUrl;
       }
 
-      //Add Company to PlacementHQ database
-      if (company == null) {
-        final urlComp =
-            "https://placementhq-777.firebaseio.com/companies.json?auth=$token";
-
-        final res = await http.post(urlComp,
-            body: json.encode({
-              "name": driveData["companyName"],
-              "imageUrl": driveData["companyImageUrl"],
-            }));
-        final drive = json.decode(res.body);
-        driveData["companyId"] = drive["name"];
-      }
-
       //Update or Create College historical data about company
       if (company != null) {
         final urlRecord =
             "https://placementhq-777.firebaseio.com/collegeData/$collegeId/companies/${company.id}.json?auth=$token";
-        await http.patch(
+        http.patch(
           urlRecord,
           body: json.encode({
             "lowestPackage": company.lowestPackage > driveData["ctc"]
@@ -147,7 +146,7 @@ class Drives with ChangeNotifier {
       } else {
         final urlRecord =
             "https://placementhq-777.firebaseio.com/collegeData/$collegeId/companies/${driveData["companyId"]}.json?auth=$token";
-        await http.patch(
+        http.patch(
           urlRecord,
           body: json.encode({
             "name": driveData["companyName"],
@@ -161,17 +160,51 @@ class Drives with ChangeNotifier {
 
       final url =
           "https://placementhq-777.firebaseio.com/collegeData/$collegeId/drives.json?auth=$token";
-      await http.post(url, body: json.encode(driveData));
+      final res = await http.post(url, body: json.encode(driveData));
+      final result = json.decode(res.body);
+
+      final newDrive = new Drive(
+        id: result["name"],
+        batch: result["batch"],
+        companyId: driveData["companyId"],
+        companyName: driveData["companyName"],
+        companyMessage: driveData["companyMessage"],
+        companyImageUrl: driveData["companyImageUrl"],
+        expectedDate: driveData["expectedDate"],
+        regDeadline: driveData["regDeadline"],
+        externalLink: driveData["externalLink"],
+        category: driveData["category"],
+        ctc: driveData["ctc"],
+        jobDesc: driveData["jobDesc"],
+        minSecMarks: driveData["minSecMarks"] is int
+            ? driveData["minSecMarks"].toDouble()
+            : driveData["minSecMarks"],
+        minHighSecMarks: driveData["minHighSecMarks"] is int
+            ? driveData["minHighSecMarks"].toDouble()
+            : driveData["minHighSecMarks"],
+        minDiplomaMarks: driveData["minDiplomaMarks"] is int
+            ? driveData["minDiplomaMarks"].toDouble()
+            : driveData["minDiplomaMarks"],
+        minBEMarks: driveData["minBEMarks"] is int
+            ? driveData["minBEMarks"].toDouble()
+            : driveData["minBEMarks"],
+        minCGPA: driveData["minCGPA"] is int
+            ? driveData["minCGPA"].toDouble()
+            : driveData["minCGPA"],
+        maxGapYears: driveData["maxGapYears"],
+        maxKTs: driveData["maxKTs"],
+        location: driveData["location"],
+        requirements: driveData["requirements"],
+      );
+      _drives.add(newDrive);
+      notifyListeners();
     }
   }
 
-  Future<void> closeDrive(String driveId) async {
-    final url =
-        "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/drives/$driveId.json?auth=$token";
-    await http.delete(url);
+  Future<void> closeDrive(String driveId, String batch) async {
     await getDriveRegistrations(driveId);
     await getDriveNotices(driveId);
-    await getDriveOffers(driveId);
+    await getDriveOffers(driveId, batch);
 
     _registrations.forEach((reg) async {
       var url =
@@ -192,17 +225,36 @@ class Drives with ChangeNotifier {
       }
     });
 
-    final thisYear = DateTime.now().year;
+    Drive currentDrive = _drives.firstWhere((e) => e.id == driveId);
+    final companyUrl =
+        "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/companies/${currentDrive.companyId}.json?auth=$token";
+    final companyData = await http.get(companyUrl);
+    final company = json.decode(companyData.body);
+    final int numOfStudents = company["numOfStudents"] == null
+        ? 0
+        : company["numOfStudents"] is int
+            ? company["numOfStudents"]
+            : int.parse(company["numOfStudents"]);
+    await http.patch(
+      companyUrl,
+      body: json.encode({
+        "numOfStudents": numOfStudents + currentDrive.placed,
+      }),
+    );
+
+    final url =
+        "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/drives/$driveId.json?auth=$token";
+    await http.delete(url);
+
     _offers.forEach((offer) async {
       var url3 =
-          "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$thisYear/${offer.id}.json?auth=$token";
-      if (offer.accepted == null)
-        await http.patch(url3, body: json.encode({"accepted": false}));
-    });
-  }
+          "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$batch/${offer.id}.json?auth=$token";
 
-  void removeDriveFromMemory(String id) {
-    _drives.removeWhere((drive) => drive.id == id);
+      if (offer.accepted == null) {
+        await http.patch(url3, body: json.encode({"accepted": false}));
+      }
+    });
+    _drives.removeWhere((drive) => drive.id == driveId);
     notifyListeners();
   }
 
@@ -223,6 +275,7 @@ class Drives with ChangeNotifier {
         id: key,
         company: reg["company"],
         candidate: reg["candidate"],
+        department: reg["department"],
         companyImageUrl: reg["companyImageUrl"],
         companyId: reg["companyId"],
         userId: reg["userId"],
@@ -256,19 +309,21 @@ class Drives with ChangeNotifier {
     final res = await http.get(url);
     final notices = json.decode(res.body) as Map<String, dynamic>;
     List<Notice> newNotices = [];
-    notices.forEach((key, notice) {
-      newNotices.add(Notice(
-        id: key,
-        companyName: notice["companyName"],
-        notice: notice["notice"],
-        driveId: notice["driveId"],
-        issuedBy: notice["issuedBy"],
-        issuerId: notice["issuerId"],
-        issuedOn: notice["issuedOn"],
-        fileUrl: notice["fileUrl"],
-        fileName: notice["fileName"],
-      ));
-    });
+    if (notices != null)
+      notices.forEach((key, notice) {
+        newNotices.add(Notice(
+          id: key,
+          companyName: notice["companyName"],
+          notice: notice["notice"],
+          url: notice["url"],
+          driveId: notice["driveId"],
+          issuedBy: notice["issuedBy"],
+          issuerId: notice["issuerId"],
+          issuedOn: notice["issuedOn"],
+          fileUrl: notice["fileUrl"],
+          fileName: notice["fileName"],
+        ));
+      });
     newNotices.sort((a, b) => b.issuedOn.compareTo(a.issuedOn));
     _notices = newNotices;
     notifyListeners();
@@ -280,44 +335,47 @@ class Drives with ChangeNotifier {
     final res = await http.get(url);
     final notices = json.decode(res.body) as Map<String, dynamic>;
     List<Notice> newNotices = [];
-    notices.forEach((key, notice) {
-      newNotices.add(Notice(
-        id: key,
-        companyName: notice["companyName"],
-        notice: notice["notice"],
-        driveId: notice["driveId"],
-        issuedBy: notice["issuedBy"],
-        issuerId: notice["issuerId"],
-        issuedOn: notice["issuedOn"],
-        fileUrl: notice["fileUrl"],
-        fileName: notice["fileName"],
-      ));
-    });
+    if (notices != null)
+      notices.forEach((key, notice) {
+        newNotices.add(Notice(
+          id: key,
+          companyName: notice["companyName"],
+          notice: notice["notice"],
+          url: notice["url"],
+          driveId: notice["driveId"],
+          issuedBy: notice["issuedBy"],
+          issuerId: notice["issuerId"],
+          issuedOn: notice["issuedOn"],
+          fileUrl: notice["fileUrl"],
+          fileName: notice["fileName"],
+        ));
+      });
     newNotices.sort((a, b) => b.issuedOn.compareTo(a.issuedOn));
     _notices = newNotices;
     notifyListeners();
   }
 
-  Future<void> getDriveOffers(String driveId) async {
-    final thisYear = DateTime.now().year;
+  Future<void> getDriveOffers(String driveId, String batch) async {
     final url =
-        'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$thisYear.json?orderBy="driveId"&equalTo="$driveId"&auth=$token';
+        'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$batch.json?orderBy="driveId"&equalTo="$driveId"&auth=$token';
     final res = await http.get(url);
     final offers = json.decode(res.body) as Map<String, dynamic>;
     List<Offer> newOffers = [];
     offers.forEach((key, offer) {
       newOffers.add(Offer(
         id: key,
-        userId: offers["userId"],
-        candidate: offers["candidate"],
-        driveId: offers["driveId"],
-        rollNo: offers["rollNo"],
-        companyId: offers["companyId"],
-        companyName: offers["companyName"],
-        companyImageUrl: offers["companyImageUrl"],
-        ctc: offers["ctc"],
-        selectedOn: offers["selectedOn"],
-        accepted: offers["accepted"],
+        userId: offer["userId"],
+        candidate: offer["candidate"],
+        driveId: offer["driveId"],
+        rollNo: offer["rollNo"],
+        department: offer["department"],
+        companyId: offer["companyId"],
+        companyName: offer["companyName"],
+        companyImageUrl: offer["companyImageUrl"],
+        ctc: offer["ctc"],
+        selectedOn: offer["selectedOn"],
+        accepted: offer["accepted"],
+        category: offer["category"],
       ));
     });
     // newOffers.sort((a, b) => b.issuedOn.compareTo(a.issuedOn));
@@ -342,9 +400,8 @@ class Drives with ChangeNotifier {
       }),
     );
 
-    final thisYear = DateTime.now().year;
     final urlOffer =
-        "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$thisYear.json?auth=$token";
+        "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/${driveData["batch"]}.json?auth=$token";
     await http.post(
       urlOffer,
       body: json.encode({
@@ -357,6 +414,8 @@ class Drives with ChangeNotifier {
         "companyImageUrl": reg.companyImageUrl,
         "selectedOn": DateTime.now().toIso8601String(),
         "ctc": driveData["ctc"],
+        "category": driveData["category"],
+        "specialization": reg.department,
       }),
     );
 

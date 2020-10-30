@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:placementhq/providers/companies.dart';
 import 'package:placementhq/providers/drives.dart';
+import 'package:placementhq/providers/offers.dart';
 import 'package:placementhq/screens/chat/chat.dart';
 import 'package:placementhq/screens/drive_screens/drive_details.dart';
 import 'package:placementhq/screens/for_officers/account_screen.dart';
 import 'package:placementhq/screens/for_officers/new_notice_screen.dart';
 import 'package:placementhq/screens/for_students/offers_screen.dart';
 import 'package:placementhq/screens/past_data_screens/archives_screen.dart';
+import 'package:placementhq/screens/past_data_screens/offers_history.dart';
 import 'package:provider/provider.dart';
 import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/colleges.dart';
@@ -78,7 +80,15 @@ class MyApp extends StatelessWidget {
               auth.token,
               auth.collegeId,
             ),
-        )
+        ),
+        ChangeNotifierProxyProvider<Auth, Offers>(
+          create: (ctx) => Offers(),
+          update: (ctx, auth, user) => user
+            ..update(
+              auth.token,
+              auth.collegeId,
+            ),
+        ),
       ],
       child: Consumer<Auth>(
         builder: (ctxApp, auth, _) {
@@ -153,6 +163,8 @@ class MyApp extends StatelessWidget {
                   auth.isAuth ? EditProfile() : AuthScreen(),
               ArchivesScreen.routeName: (ctx) =>
                   auth.isAuth ? ArchivesScreen() : AuthScreen(),
+              OffersHistoryScreen.routeName: (ctx) =>
+                  auth.isAuth ? OffersHistoryScreen() : AuthScreen(),
               TPOApplication.routeName: (ctx) =>
                   auth.isAuth ? TPOApplication() : AuthScreen(),
               AccountScreen.routeName: (ctx) =>

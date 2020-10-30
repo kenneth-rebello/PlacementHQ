@@ -44,12 +44,43 @@ class _DriveReportState extends State<DriveReport> {
   final DateFormat formatter = new DateFormat("dd-MM-yyyy hh:mm");
 
   void generateReport() async {
+    final registrations =
+        Provider.of<Drives>(context, listen: false).registrations;
+    if (registrations.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (ctx) => SimpleDialog(
+          title: Text(
+            "Error",
+            style: TextStyle(
+              fontFamily: "Ubuntu",
+              color: Colors.red,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          contentPadding: EdgeInsets.all(25),
+          children: [
+            Text("Nothing to export"),
+            RaisedButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+              child: Text(
+                "OK",
+                style: Theme.of(context).textTheme.button,
+              ),
+            )
+          ],
+        ),
+      );
+      return;
+    }
     if (mounted)
       setState(() {
         _generating = true;
       });
-    final registrations =
-        Provider.of<Drives>(context, listen: false).registrations;
+
     List<List<dynamic>> toFile = new List();
     List<dynamic> row = new List();
     if (columns["firstName"]) row.add("First Name");
@@ -83,7 +114,8 @@ class _DriveReportState extends State<DriveReport> {
         if (columns["uid"]) row.add(reg.rollNo);
         if (columns["email"]) row.add(profile.email);
         if (columns["phone"]) row.add(profile.phone);
-        if (columns["dob"]) row.add(profile.dateOfBirth);
+        if (columns["dob"])
+          row.add(formatter.format(DateTime.parse(profile.dateOfBirth)));
         if (columns["gender"]) row.add(profile.gender);
         if (columns["address"]) row.add(profile.fullAddress);
         if (columns["secMarks"]) row.add(profile.secMarks);
@@ -187,7 +219,7 @@ class _DriveReportState extends State<DriveReport> {
     return Scaffold(
       appBar: AppBar(
           title: Text(
-        "Generate Report",
+        "Generate Report Sheet",
         style: Theme.of(context).textTheme.headline1,
       )),
       body: Container(
@@ -414,7 +446,7 @@ class _DriveReportState extends State<DriveReport> {
                       },
                 disabledColor: Colors.grey,
                 child: Text(
-                  "Generate",
+                  "Export Data",
                   style: Theme.of(context).textTheme.button,
                 ),
               ),

@@ -95,6 +95,26 @@ class NoticeItem extends StatelessWidget {
                     ]),
                   ),
                 ),
+              if (notice.url != null && notice.url != "")
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: RichText(
+                    text: TextSpan(children: [
+                      TextSpan(
+                          text: "Link",
+                          style: TextStyle(
+                            decoration: TextDecoration.underline,
+                            color: Colors.blue[900],
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () async {
+                              if (await canLaunch(notice.url)) {
+                                await launch(notice.url);
+                              }
+                            })
+                    ]),
+                  ),
+                ),
               Text(
                 "Issued by: ${notice.issuedBy}",
                 textAlign: TextAlign.right,

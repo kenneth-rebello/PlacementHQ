@@ -56,6 +56,7 @@ class User with ChangeNotifier {
         state: userProfile.state,
         pincode: userProfile.pincode,
         registrations: userProfile.registrations,
+        placedCategory: userProfile.placedCategory,
       );
     else
       copy = null;
@@ -110,6 +111,9 @@ class User with ChangeNotifier {
         collegeName: profile["collegeName"],
         specialization: profile["specialization"],
         rollNo: profile["rollNo"] == null ? "" : profile["rollNo"],
+        placedCategory: profile["placedCategory"] == null
+            ? "None"
+            : profile["placedCategory"],
         secMarks: profile["secMarks"] == null
             ? null
             : profile["secMarks"] is int
@@ -165,6 +169,7 @@ class User with ChangeNotifier {
                 userId: offer["userId"],
                 candidate: offer["candidate"],
                 rollNo: offer["rollNo"],
+                department: offer["department"],
                 driveId: offer["driveId"],
                 companyId: offer["companyId"],
                 companyName: offer["companyName"],
@@ -172,6 +177,7 @@ class User with ChangeNotifier {
                 ctc: offer["ctc"],
                 selectedOn: offer["selectedOn"],
                 accepted: offer["accepted"],
+                category: offer["category"],
               ),
             );
           });
@@ -188,6 +194,7 @@ class User with ChangeNotifier {
               id: key,
               company: reg["company"],
               candidate: reg["candidate"],
+              department: reg["deprtment"],
               companyId: reg["companyId"],
               companyImageUrl: reg["companyImageUrl"],
               userId: reg["userId"],
@@ -245,6 +252,7 @@ class User with ChangeNotifier {
           "driveId": drive.id,
           "rollNo": user.rollNo,
           "candidate": user.fullNameWMid,
+          "department": user.specialization,
           "company": drive.companyName,
           "companyId": drive.companyId,
           "companyImageUrl": drive.companyImageUrl,
@@ -255,6 +263,8 @@ class User with ChangeNotifier {
       userProfile.registrations.add(Registration(
         candidate: user.fullNameWMid,
         company: drive.companyName,
+        companyId: drive.companyId,
+        department: user.specialization,
         rollNo: user.rollNo,
         companyImageUrl: drive.companyImageUrl,
         userId: user.id,
@@ -267,27 +277,30 @@ class User with ChangeNotifier {
     }
   }
 
-  Future<void> respondToOffer(String id, bool value) async {
+  Future<void> respondToOffer(String id, bool value, String category) async {
     final thisYear = DateTime.now().year;
     final url =
         'https://placementhq-777.firebaseio.com/collegeData/${profile.collegeId}/offers/$thisYear/$id.json?auth=$token';
+    final res = await http.get(url);
+    final offerData = json.decode(res.body) as Map<String, dynamic>;
+    if (offerData["accepted"] == false) {
+      throw HttpException("This drive is closed");
+    }
     await http.patch(
       url,
       body: json.encode({
         "accepted": value,
       }),
     );
+    final urlProfile =
+        "https://placementhq-777.firebaseio.com/users/$userId.json?auth=$token";
+    await http.patch(urlProfile,
+        body: json.encode({"placedCategory": category}));
     final offer = userProfile.offers.firstWhere((e) => e.id == id);
     offer.accepted = value;
+    userProfile.placedCategory = category;
     notifyListeners();
   }
-
-  // void getUsersRegistrations() async {
-  //   final url =
-  //       'https://placementhq-777.firebaseio.com/collegeData/${profile.collegeId}/registrations.json?orderBy="userId"&equalTo="$userId"&auth=$token';
-  //   final res = await http.get(url);
-  //   print(res);
-  // }
 
   void updateValues(Map<String, dynamic> profileData) {
     if (userProfile == null) userProfile = new Profile();
