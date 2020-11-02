@@ -20,14 +20,20 @@ class Offers with ChangeNotifier {
   }
 
   List<Offer> get offers {
-    return [..._offers];
+    return [
+      ..._offers
+        ..sort(
+          (a, b) => DateTime.parse(b.selectedOn)
+              .compareTo(DateTime.parse(a.selectedOn)),
+        )
+    ];
   }
 
   List<Offer> getOffersByYear(String year) {
     final res =
         _archives.firstWhere((data) => data.year == year, orElse: () => null);
     if (res != null)
-      return res.offers;
+      return [...res.offers];
     else
       return [];
   }
@@ -41,9 +47,9 @@ class Offers with ChangeNotifier {
       orElse: () => null,
     );
     if (res != null) {
-      final offers = res.offers.where((o) => o.userId == id).toList();
-      offers.sort((a, b) => a.ctc.compareTo(b.ctc));
-      return offers;
+      final newOffers = res.offers.where((o) => o.userId == id).toList();
+      newOffers.sort((a, b) => a.ctc.compareTo(b.ctc));
+      return [...newOffers];
     } else {
       return [];
     }
@@ -67,7 +73,7 @@ class Offers with ChangeNotifier {
               candidate: offer["candidate"],
               driveId: offer["driveId"],
               rollNo: offer["rollNo"],
-              department: offer["department"],
+              department: offer["specialization"],
               companyId: offer["companyId"],
               companyName: offer["companyName"],
               companyImageUrl: offer["companyImageUrl"],
@@ -92,9 +98,9 @@ class Offers with ChangeNotifier {
         'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers.json?shallow=true&auth=$token';
     final shallowRes = await http.get(url);
     final shallowData = json.decode(shallowRes.body) as Map<String, dynamic>;
-    final years = [];
+    final years = new List<String>();
     shallowData.forEach((key, value) {
-      if (value == true) {
+      if (value == true && !years.contains(key)) {
         years.add(key);
       }
     });
@@ -112,7 +118,7 @@ class Offers with ChangeNotifier {
             candidate: offer["candidate"],
             driveId: offer["driveId"],
             rollNo: offer["rollNo"],
-            department: offer["department"],
+            department: offer["specialization"],
             companyId: offer["companyId"],
             companyName: offer["companyName"],
             companyImageUrl: offer["companyImageUrl"],
@@ -122,7 +128,7 @@ class Offers with ChangeNotifier {
             category: offer["category"],
           ));
         });
-      _offers.addAll(newOffers);
+      _offers = newOffers;
       notifyListeners();
     });
   }
@@ -142,7 +148,7 @@ class Offers with ChangeNotifier {
           candidate: offer["candidate"],
           driveId: offer["driveId"],
           rollNo: offer["rollNo"],
-          department: offer["department"],
+          department: offer["specialization"],
           companyId: offer["companyId"],
           companyName: offer["companyName"],
           companyImageUrl: offer["companyImageUrl"],

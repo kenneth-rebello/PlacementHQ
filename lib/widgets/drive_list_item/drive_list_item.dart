@@ -100,6 +100,15 @@ class _DriveListItemState extends State<DriveListItem> {
         context: context,
         builder: (ctx) => AlertDialog(
           title: Text("Register for ${drive.companyName}?"),
+          content: drive.category == profile.placedCategory
+              ? Text(
+                  "You already have an offer in a ${drive.category} company.\nConsult with your TPO before proceeding",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.orange[400],
+                  ),
+                )
+              : null,
           actions: [NoButton(ctx), YesButton(ctx)],
         ),
       ).then((res) {

@@ -8,10 +8,6 @@ import 'package:placementhq/widgets/home/tpo_home_grid.dart';
 import 'package:placementhq/widgets/home/home_grid.dart';
 import 'package:provider/provider.dart';
 
-enum Options {
-  Logout,
-}
-
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -49,18 +45,17 @@ class HomeScreen extends StatelessWidget {
               tooltip: "My Account",
             ),
           PopupMenuButton(
-            onSelected: (Options value) {
-              if (value == Options.Logout) {
-                final auth = Provider.of<Auth>(context, listen: false);
-                auth.logout();
-              }
-            },
-            itemBuilder: (_) => [
+            itemBuilder: (ctx) => [
               PopupMenuItem(
-                child: Text(
-                  "Logout",
+                child: FlatButton.icon(
+                  icon: Icon(Icons.logout),
+                  label: Text("Logout"),
+                  onPressed: () {
+                    final auth = Provider.of<Auth>(context, listen: false);
+                    auth.logout();
+                    Navigator.of(ctx).pop();
+                  },
                 ),
-                value: Options.Logout,
               ),
             ],
           )

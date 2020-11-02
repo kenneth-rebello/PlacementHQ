@@ -14,6 +14,9 @@ class User with ChangeNotifier {
   String userId;
   String emailId;
   Profile userProfile;
+  final batch = DateTime.now().month <= 5
+      ? DateTime.now().year.toString()
+      : (DateTime.now().year + 1).toString();
 
   User();
 
@@ -56,6 +59,7 @@ class User with ChangeNotifier {
         state: userProfile.state,
         pincode: userProfile.pincode,
         registrations: userProfile.registrations,
+        offers: userProfile.offers,
         placedCategory: userProfile.placedCategory,
       );
     else
@@ -155,9 +159,8 @@ class User with ChangeNotifier {
       notifyListeners();
 
       if (profile["collegeId"] != null && profile["collegeId"] != "") {
-        final thisYear = DateTime.now().year;
         final urlOffer =
-            'https://placementhq-777.firebaseio.com/collegeData/${profile["collegeId"]}/offers/$thisYear.json?orderBy="userId"&equalTo="$userId"&auth=$token';
+            'https://placementhq-777.firebaseio.com/collegeData/${profile["collegeId"]}/offers/$batch.json?orderBy="userId"&equalTo="$userId"&auth=$token';
         final dataOffer = await http.get(urlOffer);
         final offers = json.decode(dataOffer.body) as Map<String, dynamic>;
         List<Offer> newOffers = [];
@@ -261,7 +264,7 @@ class User with ChangeNotifier {
       );
 
       userProfile.registrations.add(Registration(
-        candidate: user.fullNameWMid,
+        candidate: user.fullName,
         company: drive.companyName,
         companyId: drive.companyId,
         department: user.specialization,
@@ -278,9 +281,8 @@ class User with ChangeNotifier {
   }
 
   Future<void> respondToOffer(String id, bool value, String category) async {
-    final thisYear = DateTime.now().year;
     final url =
-        'https://placementhq-777.firebaseio.com/collegeData/${profile.collegeId}/offers/$thisYear/$id.json?auth=$token';
+        'https://placementhq-777.firebaseio.com/collegeData/${profile.collegeId}/offers/$batch/$id.json?auth=$token';
     final res = await http.get(url);
     final offerData = json.decode(res.body) as Map<String, dynamic>;
     if (offerData["accepted"] == false) {

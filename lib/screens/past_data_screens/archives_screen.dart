@@ -10,6 +10,7 @@ import 'package:placementhq/widgets/company_item/company_item.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
 import 'package:placementhq/widgets/input/yes_button.dart';
 import 'package:placementhq/widgets/other/empty_list.dart';
+import 'package:placementhq/widgets/other/error.dart';
 import 'package:provider/provider.dart';
 
 class ArchivesScreen extends StatefulWidget {
@@ -35,6 +36,7 @@ class _ArchivesScreenState extends State<ArchivesScreen> {
           _error = false;
         });
     }).catchError((e) {
+      print(e.toString());
       setState(() {
         _loading = false;
         _error = true;
@@ -256,23 +258,25 @@ class _ArchivesScreenState extends State<ArchivesScreen> {
                     ],
                   ),
               ],
-              bottom: AppBar(
-                automaticallyImplyLeading: false,
-                backgroundColor: Theme.of(context).accentColor,
-                title: Text(
-                  collegeName,
-                  style: Theme.of(context).textTheme.headline5,
-                ),
-                centerTitle: true,
-                actions: [
-                  IconButton(
-                      icon: Icon(Icons.watch_later_outlined),
-                      onPressed: () {
-                        Navigator.of(context)
-                            .pushNamed(OffersHistoryScreen.routeName);
-                      }),
-                ],
-              ),
+              bottom: _error
+                  ? null
+                  : AppBar(
+                      automaticallyImplyLeading: false,
+                      backgroundColor: Theme.of(context).accentColor,
+                      title: Text(
+                        collegeName,
+                        style: Theme.of(context).textTheme.headline5,
+                      ),
+                      centerTitle: true,
+                      actions: [
+                        IconButton(
+                            icon: Icon(Icons.watch_later_outlined),
+                            onPressed: () {
+                              Navigator.of(context)
+                                  .pushNamed(OffersHistoryScreen.routeName);
+                            }),
+                      ],
+                    ),
             ),
             body: RefreshIndicator(
               onRefresh: _refresher,

@@ -28,7 +28,9 @@ class _OffersHistoryScreenState extends State<OffersHistoryScreen> {
   bool _generating = false;
   bool _showFilters = false;
   bool _filterByDept = false;
+  bool _filterByCompany = false;
   String department = Constants.branches[0];
+  String company = "None";
   String sortBy = SortOptions.uidAsc;
   String _year = DateTime.now().month <= 5
       ? DateTime.now().year.toString()
@@ -115,6 +117,7 @@ class _OffersHistoryScreenState extends State<OffersHistoryScreen> {
     List<dynamic> row = [
       "Roll No.",
       "Name",
+      "Department",
       "Company",
       "CTC",
       "Category",
@@ -126,6 +129,7 @@ class _OffersHistoryScreenState extends State<OffersHistoryScreen> {
       List<dynamic> row = new List();
       row.add(offer.rollNo);
       row.add(offer.candidate);
+      row.add(offer.department);
       row.add(offer.companyName);
       row.add(offer.ctc);
       row.add(offer.category);
@@ -144,7 +148,10 @@ class _OffersHistoryScreenState extends State<OffersHistoryScreen> {
       new Directory(dir).createSync();
     }
     String file = "$dir";
-    File f = new File(file + _year + "_Offers" + ".csv");
+    String filters = "";
+    if (_filterByDept) filters += "_${department.split(" ").join()}";
+    if (_filterByCompany) filters += "_${company.split(" ").join()}";
+    File f = new File(file + _year + "_Offers" + filters + ".csv");
     if (f.existsSync()) {
       f.deleteSync();
     }
@@ -214,7 +221,12 @@ class _OffersHistoryScreenState extends State<OffersHistoryScreen> {
         Provider.of<Offers>(context).archives.map((a) => a.year).toList();
     if (!years.contains(_year)) years.insert(0, _year);
     final offers = Provider.of<Offers>(context).getOffersByYear(_year);
+    List<String> companies = ["None"];
+    offers.forEach((o) {
+      if (!companies.contains(o.companyName)) companies.add(o.companyName);
+    });
     if (_filterByDept) offers.retainWhere((a) => a.department == department);
+    if (_filterByCompany) offers.retainWhere((b) => b.companyName == company);
     if (sortBy == SortOptions.uidAsc)
       offers.sort((a, b) => a.rollNo.compareTo(b.rollNo));
     else if (sortBy == SortOptions.uidDesc)
@@ -254,7 +266,7 @@ class _OffersHistoryScreenState extends State<OffersHistoryScreen> {
                           ),
                           contentPadding: EdgeInsets.all(20),
                           content: Text(
-                            "If you have generated a report before, it will be deleted and replaced with a new report. Continue?",
+                            "If you have generated a report before, it will be deleted and replaced with a new report.\n\n All filters will be applied.\n Continue?",
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontFamily: 'Ubuntu',
@@ -375,26 +387,46 @@ class _OffersHistoryScreenState extends State<OffersHistoryScreen> {
                                       child: Image.network(
                                           offers[idx].companyImageUrl),
                                     ),
-                                    title: RichText(
-                                      text: TextSpan(
-                                        children: <TextSpan>[
-                                          TextSpan(
-                                            text: offers[idx].rollNo + "  ",
+                                    title: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        RichText(
+                                          text: TextSpan(
+                                            children: <TextSpan>[
+                                              TextSpan(
+                                                text: offers[idx].rollNo + " ",
+                                                style: TextStyle(
+                                                  color: Colors.indigo[800],
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 17,
+                                                ),
+                                              ),
+                                              TextSpan(
+                                                text: offers[idx].candidate,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Container(
+                                          margin: EdgeInsets.all(3),
+                                          child: Text(
+                                            offers[idx].department,
                                             style: TextStyle(
-                                              color: Colors.indigo[800],
-                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                              color: Colors.indigo[400],
                                             ),
                                           ),
-                                          TextSpan(
-                                            text: offers[idx].candidate,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyText1,
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                    subtitle: Text(offers[idx].companyName),
+                                    subtitle: Text(
+                                        "${offers[idx].companyName}:\t ${offers[idx].ctc.toString()} lpa"),
                                     trailing: Icon(
                                       offers[idx].accepted == true
                                           ? Icons.verified
@@ -445,6 +477,34 @@ class _OffersHistoryScreenState extends State<OffersHistoryScreen> {
                               if (mounted)
                                 setState(() {
                                   department = val;
+                                });
+                            },
+                          ),
+                        CheckListItem(
+                          label: "Filter By Company",
+                          value: _filterByCompany,
+                          onChanged: (val) {
+                            setState(() {
+                              _filterByCompany = val;
+                            });
+                          },
+                        ),
+                        if (_filterByCompany) Text("Select Company:"),
+                        if (_filterByCompany)
+                          DropdownButton(
+                            value: company,
+                            items: companies
+                                .map<DropdownMenuItem>(
+                                  (value) => DropdownMenuItem(
+                                    value: value,
+                                    child: Text(value),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (val) {
+                              if (mounted)
+                                setState(() {
+                                  company = val;
                                 });
                             },
                           ),

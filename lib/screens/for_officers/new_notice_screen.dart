@@ -144,7 +144,8 @@ class _NewNoticeState extends State<NewNotice> {
         if (res == true) {
           Provider.of<Officer>(context, listen: false)
               .addNewNotice(values, file)
-              .then((_) {
+              .then((notice) {
+            Provider.of<Drives>(context, listen: false).addNotice(notice);
             FilePicker.platform.clearTemporaryFiles();
             if (mounted)
               setState(() {

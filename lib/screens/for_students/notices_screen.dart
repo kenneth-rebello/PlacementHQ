@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/drives.dart';
-import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/screens/for_officers/new_notice_screen.dart';
 import 'package:placementhq/widgets/notice_item/notice_item.dart';
 import 'package:placementhq/widgets/other/empty_list.dart';
@@ -22,7 +21,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
   @override
   void initState() {
     _loading = true;
-    final collegeId = Provider.of<User>(context, listen: false).collegeId;
+    final collegeId = Provider.of<Auth>(context, listen: false).collegeId;
     Provider.of<Drives>(context, listen: false)
         .getAllNotices(collegeId)
         .then((value) {
@@ -45,7 +44,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
     setState(() {
       _loading = true;
     });
-    final collegeId = Provider.of<User>(context, listen: false).collegeId;
+    final collegeId = Provider.of<Auth>(context, listen: false).collegeId;
     Provider.of<Drives>(context, listen: false)
         .getAllNotices(collegeId)
         .then((value) {

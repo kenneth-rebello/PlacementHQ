@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:placementhq/models/drive.dart';
@@ -127,6 +128,19 @@ class Drives with ChangeNotifier {
         driveData["companyImageUrl"] = imageUrl;
       }
 
+      if (company == null) {
+        final urlComp =
+            "https://placementhq-777.firebaseio.com/companies.json?auth=$token";
+
+        final res = await http.post(urlComp,
+            body: json.encode({
+              "name": driveData["companyName"],
+              "imageUrl": driveData["companyImageUrl"],
+            }));
+        final companyData = json.decode(res.body);
+        driveData["companyId"] = companyData["name"];
+      }
+
       //Update or Create College historical data about company
       if (company != null) {
         final urlRecord =
@@ -242,6 +256,9 @@ class Drives with ChangeNotifier {
       }),
     );
 
+    final chats = Firestore.instance.document("chats/$driveId");
+    chats.delete().catchError((e) => print(e));
+
     final url =
         "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/drives/$driveId.json?auth=$token";
     await http.delete(url);
@@ -303,6 +320,10 @@ class Drives with ChangeNotifier {
     notifyListeners();
   }
 
+  void addNotice(Notice notice) {
+    if (notice != null) _notices.insert(0, notice);
+  }
+
   Future<void> getDriveNotices(String driveId) async {
     final url =
         'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/notices.json?orderBy="driveId"&equalTo="$driveId"&auth=$token';
@@ -352,6 +373,21 @@ class Drives with ChangeNotifier {
       });
     newNotices.sort((a, b) => b.issuedOn.compareTo(a.issuedOn));
     _notices = newNotices;
+    notifyListeners();
+  }
+
+  Future<void> deleteNotice(String id, String fileName) async {
+    var url =
+        "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/notices/$id.json?auth=$token";
+    await http.delete(url);
+    if (fileName != null && fileName != "") {
+      final ref = FirebaseStorage.instance
+          .ref()
+          .child('notice_documents')
+          .child(fileName);
+      await ref.delete();
+    }
+    _notices.removeWhere((n) => n.id == id);
     notifyListeners();
   }
 

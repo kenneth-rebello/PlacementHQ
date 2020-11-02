@@ -196,6 +196,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 " company",
                       ),
                     ListItem(
+                      label: "No. of offers",
+                      value: profile.offers.length.toString(),
+                    ),
+                    ListItem(
                       label: "College UID",
                       value: profile.rollNo,
                     ),

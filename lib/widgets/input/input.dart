@@ -61,10 +61,12 @@ class Input extends StatelessWidget {
             contentPadding: EdgeInsets.all(10),
             labelText: label,
             labelStyle: TextStyle(
+              fontFamily: "Ubuntu",
               color: textColor,
               fontSize: 15,
             ),
             helperText: helper,
+            helperStyle: TextStyle(fontFamily: "Ubuntu"),
             helperMaxLines: helperLines,
             filled: true,
             fillColor: fillColor,

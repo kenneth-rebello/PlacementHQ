@@ -147,6 +147,10 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
     final registrations = Provider.of<Drives>(context).registrations;
     final drive = Provider.of<Drives>(context).getById(widget.args.id);
 
+    if (sortBy == SortOptions.onlySelected)
+      registrations.retainWhere((a) => a.selected);
+    else if (sortBy == SortOptions.onlyNonSelected)
+      registrations.retainWhere((a) => !a.selected);
     if (sortBy == SortOptions.uidAsc)
       registrations.sort((a, b) => a.rollNo.compareTo(b.rollNo));
     else if (sortBy == SortOptions.uidDesc)
@@ -161,8 +165,6 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
       registrations.sort((a, b) => a.registeredOn.compareTo(b.registeredOn));
     else if (sortBy == SortOptions.registrationDesc)
       registrations.sort((a, b) => b.registeredOn.compareTo(a.registeredOn));
-    if (sortBy == SortOptions.onlySelected)
-      registrations.retainWhere((a) => a.selected);
 
     return Scaffold(
       appBar: AppBar(
@@ -259,108 +261,106 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
                     ? EmptyList(
                         message: "No students have registered yet.",
                       )
-                    : Column(
+                    : Stack(
                         children: [
-                          Container(
-                            height: 0.1 * deviceHeight,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                Text("Sort By:"),
-                                DropdownButton(
-                                  value: sortBy,
-                                  items: Constants.registrationSortOptions
-                                      .map<DropdownMenuItem>(
-                                        (value) => DropdownMenuItem(
-                                          value: value,
-                                          child: Text(value),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: (val) {
-                                    if (mounted)
-                                      setState(() {
-                                        sortBy = val;
-                                      });
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                          RefreshIndicator(
-                            onRefresh: _refresher,
-                            child: Container(
-                              height: 0.75 * deviceHeight,
-                              child: ListView.builder(
-                                itemBuilder: (ctx, idx) => Card(
-                                  color: registrations[idx].selected
-                                      ? Colors.green[400]
-                                      : Colors.white,
-                                  child: ListTile(
-                                    leading: Container(
-                                      width: 80,
-                                      child: Center(
-                                        child: Text(
-                                          registrations[idx].rollNo,
-                                          style: TextStyle(
-                                            fontSize: 21,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.indigo[900],
-                                            fontFamily: 'Ubuntu',
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    title: Text(
-                                      registrations[idx].candidate,
-                                      style: TextStyle(
-                                        color: registrations[idx].selected
-                                            ? Colors.white
-                                            : Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                        fontFamily: 'Merriweather',
-                                      ),
-                                    ),
-                                    subtitle: Text(
-                                      "Registered on: " +
-                                          formatter.format(
-                                            DateTime.parse(registrations[idx]
-                                                .registeredOn),
-                                          ),
-                                      style: TextStyle(
-                                        color: registrations[idx].selected
-                                            ? Colors.black
-                                            : Colors.grey,
-                                        fontFamily: 'Ubuntu',
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.normal,
-                                      ),
-                                    ),
-                                    onTap: _pickable
-                                        ? () {}
-                                        : () {
-                                            Navigator.of(context).pushNamed(
-                                              ProfileScreen.routeName,
-                                              arguments:
-                                                  registrations[idx].userId,
-                                            );
-                                          },
-                                    onLongPress: () {
-                                      if (!registrations[idx].selected &&
-                                          mounted)
-                                        setState(() {
-                                          _pickable = true;
-                                          picked[idx] = true;
-                                        });
-                                    },
-                                    trailing: _selecting
-                                        ? Container(
-                                            height: 50,
-                                            width: 50,
-                                            child: CircularProgressIndicator(),
+                          Column(
+                            children: [
+                              Container(
+                                height: 0.1 * deviceHeight,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Text("Sort/Filter By:"),
+                                    DropdownButton(
+                                      value: sortBy,
+                                      items: Constants.registrationSortOptions
+                                          .map<DropdownMenuItem>(
+                                            (value) => DropdownMenuItem(
+                                              value: value,
+                                              child: Text(value),
+                                            ),
                                           )
-                                        : _pickable &&
+                                          .toList(),
+                                      onChanged: (val) {
+                                        if (mounted)
+                                          setState(() {
+                                            sortBy = val;
+                                          });
+                                      },
+                                    )
+                                  ],
+                                ),
+                              ),
+                              RefreshIndicator(
+                                onRefresh: _refresher,
+                                child: Container(
+                                  height: 0.75 * deviceHeight,
+                                  child: ListView.builder(
+                                    itemBuilder: (ctx, idx) => Card(
+                                      color: registrations[idx].selected
+                                          ? Colors.green[400]
+                                          : Colors.white,
+                                      child: ListTile(
+                                        leading: Container(
+                                          width: 80,
+                                          child: Center(
+                                            child: Text(
+                                              registrations[idx].rollNo,
+                                              style: TextStyle(
+                                                fontSize: 21,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.indigo[900],
+                                                fontFamily: 'Ubuntu',
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        title: Text(
+                                          registrations[idx].candidate,
+                                          style: TextStyle(
+                                            color: registrations[idx].selected
+                                                ? Colors.white
+                                                : Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                            fontFamily: 'Merriweather',
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          "Registered on: " +
+                                              formatter.format(
+                                                DateTime.parse(
+                                                    registrations[idx]
+                                                        .registeredOn),
+                                              ),
+                                          style: TextStyle(
+                                            color: registrations[idx].selected
+                                                ? Colors.black
+                                                : Colors.grey,
+                                            fontFamily: 'Ubuntu',
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                        ),
+                                        onTap: _pickable
+                                            ? () {}
+                                            : () {
+                                                Navigator.of(context).pushNamed(
+                                                  ProfileScreen.routeName,
+                                                  arguments:
+                                                      registrations[idx].userId,
+                                                );
+                                              },
+                                        onLongPress: () {
+                                          if (!registrations[idx].selected &&
+                                              mounted)
+                                            setState(() {
+                                              _pickable = true;
+                                              picked[idx] = true;
+                                            });
+                                        },
+                                        trailing: _pickable &&
                                                 !registrations[idx].selected
                                             ? Checkbox(
                                                 value: picked[idx],
@@ -399,12 +399,28 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
                                                     ),
                                                   )
                                                 : null,
+                                      ),
+                                    ),
+                                    itemCount: registrations.length,
                                   ),
                                 ),
-                                itemCount: registrations.length,
                               ),
+                              Text(
+                                "Long press to select and delete regestrations",
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 11,
+                                ),
+                              )
+                            ],
+                          ),
+                          if (_selecting)
+                            Container(
+                              height: double.infinity,
+                              width: double.infinity,
+                              color: Colors.white54,
+                              child: Center(child: CircularProgressIndicator()),
                             ),
-                          )
                         ],
                       ),
       ),

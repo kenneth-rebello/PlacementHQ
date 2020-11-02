@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:placementhq/providers/companies.dart';
 import 'package:placementhq/providers/offers.dart';
+import 'package:placementhq/widgets/drive_list_item/two_values.dart';
 import 'package:placementhq/widgets/other/empty_list.dart';
 import 'package:placementhq/widgets/other/error.dart';
 import 'package:provider/provider.dart';
@@ -74,7 +75,7 @@ class _CompanyHistoryState extends State<CompanyHistory> {
                   child: CircularProgressIndicator(),
                 )
               : _error
-                  ? Error()
+                  ? Error(refresher: _refresher)
                   : offers.isEmpty
                       ? EmptyList()
                       : ListView.builder(
@@ -95,24 +96,37 @@ class _CompanyHistoryState extends State<CompanyHistory> {
                                   ),
                                 ),
                               ),
-                              title: Text(
-                                offers[idx].candidate,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                    fontFamily: "Ubuntu",
-                                    fontWeight: FontWeight.w600,
-                                    fontStyle: FontStyle.italic,
-                                    fontSize: 19,
-                                    color: Colors.indigo[900]),
-                              ),
-                              subtitle: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
+                              title: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text(offers[idx].ctc.toString()),
-                                  Text(formatter.format(
-                                      DateTime.parse(offers[idx].selectedOn)))
+                                  Text(
+                                    offers[idx].candidate,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontFamily: "Ubuntu",
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 17,
+                                      color: Colors.indigo[900],
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.all(3),
+                                    child: Text(
+                                      offers[idx].department,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.indigo[400],
+                                      ),
+                                    ),
+                                  ),
                                 ],
+                              ),
+                              subtitle: TwoValues(
+                                label1: "CTC",
+                                value1: offers[idx].ctc.toString(),
+                                label2: "Date",
+                                value2: formatter.format(
+                                    DateTime.parse(offers[idx].selectedOn)),
                               ),
                             ),
                           ),

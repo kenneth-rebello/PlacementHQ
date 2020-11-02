@@ -1,6 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:placementhq/models/notice.dart';
+import 'package:placementhq/providers/auth.dart';
+import 'package:placementhq/providers/drives.dart';
+import 'package:placementhq/widgets/input/no_button.dart';
+import 'package:placementhq/widgets/input/yes_button.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class NoticeItem extends StatelessWidget {
@@ -9,6 +14,7 @@ class NoticeItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userId = Provider.of<Auth>(context).userId;
     return ClipRRect(
       borderRadius: BorderRadius.circular(30),
       child: Card(
@@ -115,9 +121,38 @@ class NoticeItem extends StatelessWidget {
                     ]),
                   ),
                 ),
-              Text(
-                "Issued by: ${notice.issuedBy}",
-                textAlign: TextAlign.right,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Issued by: ${notice.issuedBy}",
+                    textAlign: TextAlign.right,
+                    style: TextStyle(fontSize: 13),
+                  ),
+                  if (notice.issuerId == userId)
+                    IconButton(
+                        icon: Icon(
+                          Icons.delete_forever,
+                          color: Colors.indigo[800],
+                        ),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: Text(
+                                "Delete this notice?",
+                                style: TextStyle(color: Colors.red),
+                              ),
+                              actions: [NoButton(ctx), YesButton(ctx)],
+                            ),
+                          ).then((res) {
+                            if (res == true) {
+                              Provider.of<Drives>(context, listen: false)
+                                  .deleteNotice(notice.id, notice.fileName);
+                            }
+                          });
+                        })
+                ],
               )
             ],
           ),

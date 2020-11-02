@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:placementhq/models/notice.dart';
 import 'package:placementhq/models/user_profile.dart';
 
 class OfficerProfile {
@@ -187,7 +188,7 @@ class Officer with ChangeNotifier {
     );
   }
 
-  Future<void> addNewNotice(
+  Future<Notice> addNewNotice(
       Map<String, dynamic> data, FilePickerResult file) async {
     if (collegeId != null) {
       if (file != null) {
@@ -207,7 +208,19 @@ class Officer with ChangeNotifier {
       final url =
           'https://placementhq-777.firebaseio.com/collegeData/$collegeId/notices.json?auth=$token';
       await http.post(url, body: json.encode(data));
+      return Notice(
+        driveId: data["driveId"],
+        companyName: data["companyName"],
+        notice: data["notice"],
+        url: data["url"],
+        issuedBy: data["issuedBy"],
+        issuerId: data["issuerId"],
+        issuedOn: data["issuedOn"],
+        fileUrl: data["fileUrl"],
+        fileName: data["fileName"],
+      );
     }
+    return null;
   }
 
   Future<void> editProfile(Map<String, dynamic> profileData) async {

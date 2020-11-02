@@ -33,7 +33,7 @@ class Auth with ChangeNotifier {
     return _collegeId;
   }
 
-  void setCollegeId(String id) {
+  void setCollegeId(String id) async {
     _collegeId = id;
     notifyListeners();
   }
@@ -122,8 +122,12 @@ class Auth with ChangeNotifier {
           isOfficer = true;
           isVerified = officer["verified"];
         } else {
+          final resUser = await http.get(
+              "https://placementhq-777.firebaseio.com/users/${data['localId']}.json?auth=${data['idToken']}");
+          final user = json.decode(resUser.body);
           isOfficer = false;
           isVerified = false;
+          _collegeId = user["collegeId"];
         }
       } catch (e) {
         print(e);

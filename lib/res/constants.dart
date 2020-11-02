@@ -108,6 +108,7 @@ abstract class Constants {
     SortOptions.nameDesc,
     SortOptions.registrationAsc,
     SortOptions.registrationDesc,
+    SortOptions.onlyNonSelected,
     SortOptions.onlySelected,
   ];
 
@@ -152,6 +153,7 @@ class SortOptions {
   static const registrationAsc = "Registration Date (asc.)";
   static const registrationDesc = "Registration Date (desc.)";
   static const onlySelected = "Only Selected";
+  static const onlyNonSelected = "Only Non-Selected";
   static const ctcAsc = "CTC (asc.)";
   static const ctcDesc = "CTC (desc.)";
 }
