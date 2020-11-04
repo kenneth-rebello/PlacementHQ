@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/widgets/other/error.dart';
 import 'package:placementhq/widgets/profile/academic_details.dart';
 import 'package:placementhq/widgets/profile/contact_details.dart';
 import 'package:placementhq/widgets/profile/personal_details.dart';
@@ -18,6 +19,7 @@ class _EditProfileState extends State<EditProfile>
   TabController _tabController;
   int _tabIndex;
   bool _loading = false;
+  bool _error = false;
 
   @override
   initState() {
@@ -37,8 +39,14 @@ class _EditProfileState extends State<EditProfile>
       if (mounted)
         setState(() {
           _loading = false;
+          _error = true;
           _tabIndex = (_tabIndex + 1) % 3;
         });
+    }).catchError((e) {
+      setState(() {
+        _error = true;
+        _loading = false;
+      });
     });
   }
 
@@ -76,16 +84,18 @@ class _EditProfileState extends State<EditProfile>
             ? Center(
                 child: CircularProgressIndicator(),
               )
-            : Container(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    PersonalDetails(nextPage: nextPage),
-                    AcademicDetails(prevPage: prevPage, nextPage: nextPage),
-                    ContactDetails(prevPage: prevPage, nextPage: nextPage),
-                  ],
-                ),
-              ),
+            : _error
+                ? Error()
+                : Container(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        PersonalDetails(nextPage: nextPage),
+                        AcademicDetails(prevPage: prevPage, nextPage: nextPage),
+                        ContactDetails(prevPage: prevPage, nextPage: nextPage),
+                      ],
+                    ),
+                  ),
       ),
     );
   }

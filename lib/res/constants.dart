@@ -44,9 +44,54 @@ abstract class Constants {
     ),
   ];
 
+  static List<HomeItem> tpcHomeItems = [
+    HomeItem(
+      label: "Latest Placement Drives",
+      routeName: DrivesScreen.routeName,
+      imagePath: 'assets/images/companies.png',
+      protected: true,
+    ),
+    HomeItem(
+      label: "Registered Drives",
+      routeName: RegistrationsScreen.routeName,
+      imagePath: 'assets/images/registrations.png',
+      protected: true,
+    ),
+    HomeItem(
+      label: "Noticeboard",
+      routeName: NoticesScreen.routeName,
+      imagePath: 'assets/images/notices.png',
+      protected: true,
+    ),
+    HomeItem(
+      label: "My Profile",
+      routeName: ProfileScreen.routeName,
+      imagePath: 'assets/images/profile.png',
+      protected: false,
+    ),
+    HomeItem(
+      label: "Ongoing Placement Drives",
+      routeName: CurrentDrivesScreen.routeName,
+      imagePath: 'assets/images/drive.png',
+      protected: false,
+    ),
+    HomeItem(
+      label: "New Placement Drive",
+      routeName: NewDriveScreen.routeName,
+      imagePath: 'assets/images/companies.png',
+      protected: false,
+    ),
+    HomeItem(
+      label: "Placement Archives",
+      routeName: ArchivesScreen.routeName,
+      imagePath: 'assets/images/history.png',
+      protected: false,
+    ),
+  ];
+
   static List<HomeItem> tpoHomeItems = [
     HomeItem(
-      label: "Current Placement Drives",
+      label: "Ongoing Placement Drives",
       routeName: CurrentDrivesScreen.routeName,
       imagePath: 'assets/images/drive.png',
       protected: false,
@@ -117,6 +162,8 @@ abstract class Constants {
     SortOptions.uidDesc,
     SortOptions.nameAsc,
     SortOptions.nameDesc,
+    SortOptions.placedFirst,
+    SortOptions.unPlacedFirst,
   ];
 
   static const List<String> offersSortOptions = [
@@ -124,6 +171,15 @@ abstract class Constants {
     SortOptions.uidDesc,
     SortOptions.ctcAsc,
     SortOptions.ctcDesc,
+  ];
+
+  static const List<String> offersSortOptions2 = [
+    SortOptions.uidAsc,
+    SortOptions.uidDesc,
+    SortOptions.ctcAsc,
+    SortOptions.ctcDesc,
+    SortOptions.acceptedFirst,
+    SortOptions.rejectedFirst,
   ];
 }
 
@@ -156,4 +212,8 @@ class SortOptions {
   static const onlyNonSelected = "Only Non-Selected";
   static const ctcAsc = "CTC (asc.)";
   static const ctcDesc = "CTC (desc.)";
+  static const placedFirst = "Placed First";
+  static const unPlacedFirst = "Unplaced First";
+  static const acceptedFirst = "Accepted First";
+  static const rejectedFirst = "Rejected First";
 }

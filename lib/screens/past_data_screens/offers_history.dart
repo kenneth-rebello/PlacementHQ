@@ -13,6 +13,7 @@ import 'package:placementhq/widgets/input/check_list_item.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
 import 'package:placementhq/widgets/input/yes_button.dart';
 import 'package:placementhq/widgets/other/error.dart';
+import 'package:placementhq/widgets/other/modal.dart';
 import 'package:provider/provider.dart';
 
 class OffersHistoryScreen extends StatefulWidget {
@@ -170,7 +171,8 @@ class _OffersHistoryScreenState extends State<OffersHistoryScreen> {
         builder: (ctx) => SimpleDialog(
           title: Text(
             "CSV file created",
-            style: TextStyle(fontFamily: 'Ubuntu', color: Colors.indigo[800]),
+            style: Theme.of(context).textTheme.headline3,
+            textAlign: TextAlign.left,
           ),
           children: [
             Text(
@@ -259,10 +261,8 @@ class _OffersHistoryScreenState extends State<OffersHistoryScreen> {
                         builder: (ctx) => AlertDialog(
                           title: Text(
                             "Are you sure?",
-                            style: TextStyle(
-                              fontFamily: 'Ubuntu',
-                              color: Colors.indigo[800],
-                            ),
+                            style: Theme.of(context).textTheme.headline3,
+                            textAlign: TextAlign.left,
                           ),
                           contentPadding: EdgeInsets.all(20),
                           content: Text(
@@ -442,9 +442,13 @@ class _OffersHistoryScreenState extends State<OffersHistoryScreen> {
                         ),
                       ),
                 if (_showFilters)
-                  Container(
-                    height: double.infinity,
-                    width: double.infinity,
+                  Modal(
+                    controller: _showFilters,
+                    close: () {
+                      setState(() {
+                        _showFilters = false;
+                      });
+                    },
                     child: SimpleDialog(
                       title: Text(
                         "Filters",

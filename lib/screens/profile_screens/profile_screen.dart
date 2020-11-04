@@ -2,8 +2,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:placementhq/models/user_profile.dart';
+import 'package:placementhq/providers/auth.dart';
+import 'package:placementhq/providers/offers.dart';
 import 'package:placementhq/providers/officer.dart';
 import 'package:placementhq/providers/user.dart';
+import 'package:placementhq/screens/for_students/offers_screen.dart';
 import 'package:placementhq/screens/profile_screens/edit_profile.dart';
 import 'package:placementhq/screens/profile_screens/tpo_application.dart';
 import 'package:placementhq/widgets/other/image_error.dart';
@@ -20,6 +23,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final DateFormat formatter = new DateFormat("dd-MM-yyyy");
+  bool _error = false;
   void _showMarks(Profile profile) {
     showDialog(
       context: context,
@@ -27,9 +31,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         contentPadding: EdgeInsets.all(10),
         title: Text(
           "Academic Details",
-          style: TextStyle(
-            color: Theme.of(context).primaryColor,
-          ),
+          style: Theme.of(context).textTheme.headline3,
+          textAlign: TextAlign.left,
         ),
         children: [
           ListItem(
@@ -71,13 +74,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     Profile profile;
+    List<dynamic> offers = [];
     bool isNotOwnProfile = false;
+    final isOfficer = Provider.of<Auth>(context).isOfficer;
     final profileId = ModalRoute.of(context).settings.arguments;
     if (profileId == null) {
       profile = Provider.of<User>(context).profile;
+      offers = profile == null ? [] : profile.offers;
     } else {
       isNotOwnProfile = true;
       profile = Provider.of<Officer>(context).getProfileById(profileId);
+      offers = Provider.of<Offers>(context).getOffersByStudent(profileId);
     }
 
     return Scaffold(
@@ -93,7 +100,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 Navigator.of(context).pushNamed(EditProfile.routeName);
               },
-            )
+            ),
+          if (isOfficer)
+            PopupMenuButton(
+                itemBuilder: (ctx) => [
+                      if (!profile.isTPC)
+                        PopupMenuItem(
+                          child: FlatButton.icon(
+                            onPressed: () {
+                              Provider.of<Officer>(context, listen: false)
+                                  .appointAsTPC(profileId)
+                                  .then((_) {
+                                _error = false;
+                                Navigator.of(ctx).pop();
+                              }).catchError((e) {
+                                setState(() {
+                                  _error = true;
+                                });
+                              });
+                            },
+                            icon: Icon(Icons.star),
+                            label: Text("Appoint as TPC"),
+                          ),
+                        ),
+                      if (profile.isTPC)
+                        PopupMenuItem(
+                          child: FlatButton.icon(
+                            onPressed: () {
+                              Provider.of<Officer>(context, listen: false)
+                                  .dismissAsTPC(profileId)
+                                  .then((_) {
+                                _error = false;
+                                Navigator.of(ctx).pop();
+                              }).catchError((e) {
+                                setState(() {
+                                  _error = true;
+                                });
+                              });
+                            },
+                            icon: Icon(Icons.remove_circle),
+                            label: Text("Dismiss as TPC"),
+                          ),
+                        ),
+                    ])
         ],
       ),
       body: profile == null
@@ -156,131 +205,143 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
             )
-          : Container(
-              margin: EdgeInsets.all(10),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    if (profile.imageUrl != "" && profile.imageUrl != null)
-                      Container(
-                        height: 120,
-                        child: Image.network(profile.imageUrl,
-                            errorBuilder: (context, error, stackTrace) =>
-                                ImageError()),
-                        margin: EdgeInsets.all(10),
-                      ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+          : _error
+              ? Error()
+              : Container(
+                  margin: EdgeInsets.all(10),
+                  child: SingleChildScrollView(
+                    child: Column(
                       children: [
-                        NameItem(
-                          label: "First Name",
-                          value: profile.firstName,
+                        if (profile.imageUrl != "" && profile.imageUrl != null)
+                          Container(
+                            height: 120,
+                            child: Image.network(profile.imageUrl,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    ImageError()),
+                            margin: EdgeInsets.all(10),
+                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            NameItem(
+                              label: "First Name",
+                              value: profile.firstName,
+                            ),
+                            NameItem(
+                              label: "Middle Name",
+                              value: profile.middleName,
+                            ),
+                            NameItem(
+                              label: "Last Name",
+                              value: profile.lastName,
+                            ),
+                          ],
                         ),
-                        NameItem(
-                          label: "Middle Name",
-                          value: profile.middleName,
+                        if (isNotOwnProfile)
+                          ListItem(
+                            label: "Status",
+                            value: profile.placedCategory == "None"
+                                ? "Not yet placed"
+                                : "Placed in " +
+                                    profile.placedCategory +
+                                    " company",
+                          ),
+                        GestureDetector(
+                          onTap: isNotOwnProfile
+                              ? () {}
+                              : () {
+                                  Navigator.of(context)
+                                      .pushNamed(OffersScreen.routeName);
+                                },
+                          child: ListItem(
+                            label: "No. of offers",
+                            value: offers.length.toString(),
+                          ),
                         ),
-                        NameItem(
-                          label: "Last Name",
-                          value: profile.lastName,
+                        ListItem(
+                          label: "College UID",
+                          value: profile.rollNo,
+                        ),
+                        ListItem(
+                          label: "College",
+                          value: profile.collegeName,
+                          flexibleHeight: true,
+                        ),
+                        ListItem(
+                          label: "Specialization",
+                          value: profile.specialization,
+                        ),
+                        Divider(),
+                        Center(
+                          child: FlatButton(
+                            child: Text(
+                              "Academic Details",
+                              style: TextStyle(
+                                decoration: TextDecoration.underline,
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ),
+                            onPressed: () => _showMarks(profile),
+                          ),
+                        ),
+                        ListItem(
+                          label: "Email",
+                          value: profile.email,
+                        ),
+                        ListItem(
+                          label: "Phone No.",
+                          value: profile.phone.toString(),
+                        ),
+                        if (profile.dateOfBirth != null &&
+                            profile.dateOfBirth != "")
+                          ListItem(
+                            label: "Date Of Birth",
+                            value: formatter
+                                .format(DateTime.parse(profile.dateOfBirth)),
+                          ),
+                        if (profile.resumeUrl != null &&
+                            profile.resumeUrl != "")
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: RichText(
+                              text: TextSpan(children: [
+                                TextSpan(
+                                    text: "Resume URL",
+                                    style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      color: Colors.blue[900],
+                                    ),
+                                    recognizer: TapGestureRecognizer()
+                                      ..onTap = () async {
+                                        if (await canLaunch(
+                                            profile.resumeUrl)) {
+                                          await launch(profile.resumeUrl);
+                                        }
+                                      })
+                              ]),
+                            ),
+                          ),
+                        ListItem(
+                          label: "Address",
+                          value: profile.address,
+                          flexibleHeight: true,
+                        ),
+                        ListItem(
+                          label: "City",
+                          value: profile.city,
+                        ),
+                        ListItem(
+                          label: "State",
+                          value: profile.state,
+                        ),
+                        ListItem(
+                          label: "Pincode",
+                          value: profile.pincode.toString(),
                         ),
                       ],
                     ),
-                    if (isNotOwnProfile)
-                      ListItem(
-                        label: "Status",
-                        value: profile.placedCategory == "None"
-                            ? "Not yet placed"
-                            : "Placed in " +
-                                profile.placedCategory +
-                                " company",
-                      ),
-                    ListItem(
-                      label: "No. of offers",
-                      value: profile.offers.length.toString(),
-                    ),
-                    ListItem(
-                      label: "College UID",
-                      value: profile.rollNo,
-                    ),
-                    ListItem(
-                      label: "College",
-                      value: profile.collegeName,
-                      flexibleHeight: true,
-                    ),
-                    ListItem(
-                      label: "Specialization",
-                      value: profile.specialization,
-                    ),
-                    Divider(),
-                    Center(
-                      child: FlatButton(
-                        child: Text(
-                          "Academic Details",
-                          style: TextStyle(
-                            decoration: TextDecoration.underline,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                        ),
-                        onPressed: () => _showMarks(profile),
-                      ),
-                    ),
-                    ListItem(
-                      label: "Email",
-                      value: profile.email,
-                    ),
-                    ListItem(
-                      label: "Phone No.",
-                      value: profile.phone.toString(),
-                    ),
-                    if (profile.dateOfBirth != null &&
-                        profile.dateOfBirth != "")
-                      ListItem(
-                        label: "Date Of Birth",
-                        value: formatter
-                            .format(DateTime.parse(profile.dateOfBirth)),
-                      ),
-                    if (profile.resumeUrl != null && profile.resumeUrl != "")
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: RichText(
-                          text: TextSpan(children: [
-                            TextSpan(
-                                text: "Resume URL",
-                                style: TextStyle(
-                                  decoration: TextDecoration.underline,
-                                  color: Colors.blue[900],
-                                ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () async {
-                                    if (await canLaunch(profile.resumeUrl)) {
-                                      await launch(profile.resumeUrl);
-                                    }
-                                  })
-                          ]),
-                        ),
-                      ),
-                    ListItem(
-                      label: "Address",
-                      value: profile.address,
-                      flexibleHeight: true,
-                    ),
-                    ListItem(
-                      label: "City",
-                      value: profile.city,
-                    ),
-                    ListItem(
-                      label: "State",
-                      value: profile.state,
-                    ),
-                    ListItem(
-                      label: "Pincode",
-                      value: profile.pincode.toString(),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
     );
   }
 }

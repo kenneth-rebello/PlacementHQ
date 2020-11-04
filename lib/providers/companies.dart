@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:placementhq/models/http_exception.dart';
 
 class Company {
   String name;
@@ -37,6 +38,9 @@ class Companies with ChangeNotifier {
   }
 
   Future<void> loadCompaniesForList(String collegeId) async {
+    if (collegeId == null || _token == null) {
+      throw HttpException("Invalid operation");
+    }
     final url =
         "https://placementhq-777.firebaseio.com/collegeData/$collegeId/companies.json?auth=$_token";
     final res = await http.get(url);

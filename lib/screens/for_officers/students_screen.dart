@@ -12,6 +12,7 @@ import 'package:placementhq/widgets/input/check_list_item.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
 import 'package:placementhq/widgets/input/yes_button.dart';
 import 'package:placementhq/widgets/other/error.dart';
+import 'package:placementhq/widgets/other/modal.dart';
 import 'package:provider/provider.dart';
 
 class StudentsScreen extends StatefulWidget {
@@ -37,9 +38,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
   void initState() {
     _loading = true;
     Provider.of<Officer>(context, listen: false).loadStudents().then((_) {
-      Provider.of<Offers>(context, listen: false)
-          .getYearOffers(DateTime.now().year.toString())
-          .then((_) {
+      Provider.of<Offers>(context, listen: false).getCollegeOffers().then((_) {
         setState(() {
           _loading = false;
           _error = false;
@@ -59,9 +58,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
       _loading = true;
     });
     Provider.of<Officer>(context, listen: false).loadStudents().then((_) {
-      Provider.of<Offers>(context, listen: false)
-          .getYearOffers(DateTime.now().year.toString())
-          .then((_) {
+      Provider.of<Offers>(context, listen: false).getCollegeOffers().then((_) {
         setState(() {
           _loading = false;
           _error = false;
@@ -134,7 +131,9 @@ class _StudentsScreenState extends State<StudentsScreen> {
       directory.createSync();
     }
     String file = "$dir";
-    String year = DateTime.now().year.toString();
+    final year = DateTime.now().month <= 5
+        ? DateTime.now().year.toString()
+        : (DateTime.now().year + 1).toString();
     String info = "";
     if (_filterByDept) info += "_" + department.split(" ").join();
     if (_filterByPlaced) info += "_" + category;
@@ -154,7 +153,8 @@ class _StudentsScreenState extends State<StudentsScreen> {
         builder: (ctx) => SimpleDialog(
           title: Text(
             "CSV file created",
-            style: TextStyle(fontFamily: 'Ubuntu', color: Colors.indigo[800]),
+            style: Theme.of(context).textTheme.headline3,
+            textAlign: TextAlign.left,
           ),
           children: [
             Text(
@@ -222,6 +222,22 @@ class _StudentsScreenState extends State<StudentsScreen> {
     else if (sortBy == SortOptions.nameDesc)
       students.sort((a, b) =>
           b.fullName.toLowerCase().compareTo(a.fullName.toLowerCase()));
+    else if (sortBy == SortOptions.placedFirst)
+      students.sort((a, b) {
+        final res = a.placedValue.compareTo(b.placedValue);
+        if (res == 0) {
+          return a.rollNo.compareTo(b.rollNo);
+        }
+        return res;
+      });
+    else if (sortBy == SortOptions.unPlacedFirst)
+      students.sort((a, b) {
+        final res = b.placedValue.compareTo(a.placedValue);
+        if (res == 0) {
+          return a.rollNo.compareTo(b.rollNo);
+        }
+        return res;
+      });
 
     return Scaffold(
       appBar: AppBar(
@@ -243,17 +259,17 @@ class _StudentsScreenState extends State<StudentsScreen> {
               }),
         ],
       ),
-      body: Container(
-        margin: EdgeInsets.all(10),
-        child: _loading
-            ? Center(child: CircularProgressIndicator())
-            : _error
-                ? Error(
-                    refresher: _refresher,
-                  )
-                : Stack(
-                    children: [
-                      Column(
+      body: _loading
+          ? Center(child: CircularProgressIndicator())
+          : _error
+              ? Error(
+                  refresher: _refresher,
+                )
+              : Stack(
+                  children: [
+                    Container(
+                      margin: EdgeInsets.all(10),
+                      child: Column(
                         children: [
                           Container(
                             height: 0.07 * deviceHeight,
@@ -289,10 +305,10 @@ class _StudentsScreenState extends State<StudentsScreen> {
                                             builder: (ctx) => AlertDialog(
                                               title: Text(
                                                 "Are you sure?",
-                                                style: TextStyle(
-                                                  fontFamily: 'Ubuntu',
-                                                  color: Colors.indigo[800],
-                                                ),
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .headline3,
+                                                textAlign: TextAlign.left,
                                               ),
                                               contentPadding:
                                                   EdgeInsets.all(20),
@@ -349,7 +365,15 @@ class _StudentsScreenState extends State<StudentsScreen> {
                                             ),
                                           ),
                                           title: Text(
-                                            students[idx].fullName,
+                                            students[idx].isTPC
+                                                ? students[idx].fullName +
+                                                    "\u2605"
+                                                : students[idx].fullName,
+                                            style: TextStyle(
+                                              color: students[idx].isTPC
+                                                  ? Colors.orange[800]
+                                                  : Colors.indigo[800],
+                                            ),
                                           ),
                                           subtitle: Text(
                                               students[idx].specialization),
@@ -378,98 +402,101 @@ class _StudentsScreenState extends State<StudentsScreen> {
                           )
                         ],
                       ),
-                      if (_showFilters)
-                        Container(
-                          color: Colors.white54,
-                          height: double.infinity,
-                          width: double.infinity,
-                          child: SimpleDialog(
-                            contentPadding: EdgeInsets.all(20),
-                            title: Text(
-                              "Filters",
-                              style: Theme.of(context).textTheme.headline3,
-                            ),
-                            children: [
-                              CheckListItem(
-                                label: "Filter By Dept.",
-                                value: _filterByDept,
-                                onChanged: (val) {
-                                  setState(() {
-                                    _filterByDept = val;
-                                  });
-                                },
-                              ),
-                              if (_filterByDept) Text("Select Department:"),
-                              if (_filterByDept)
-                                DropdownButton(
-                                  value: department,
-                                  items: Constants.branches
-                                      .map<DropdownMenuItem>(
-                                        (value) => DropdownMenuItem(
-                                          value: value,
-                                          child: Text(value),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: (val) {
-                                    if (mounted)
-                                      setState(() {
-                                        department = val;
-                                      });
-                                  },
-                                ),
-                              CheckListItem(
-                                label: "Filter By Placement Status.",
-                                value: _filterByPlaced,
-                                onChanged: (val) {
-                                  setState(() {
-                                    _filterByPlaced = val;
-                                  });
-                                },
-                              ),
-                              if (_filterByPlaced) Text("Select Category:"),
-                              if (_filterByPlaced)
-                                DropdownButton(
-                                  value: category,
-                                  items: categories
-                                      .map<DropdownMenuItem>(
-                                        (value) => DropdownMenuItem(
-                                          value: value,
-                                          child: Text(value),
-                                        ),
-                                      )
-                                      .toList(),
-                                  onChanged: (val) {
-                                    if (mounted)
-                                      setState(() {
-                                        category = val;
-                                      });
-                                  },
-                                ),
-                              RaisedButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _showFilters = !_showFilters;
-                                  });
-                                },
-                                child: Text(
-                                  "Done",
-                                  style: Theme.of(context).textTheme.button,
-                                ),
-                              )
-                            ],
+                    ),
+                    if (_showFilters)
+                      Modal(
+                        controller: _showFilters,
+                        close: () {
+                          setState(() {
+                            _showFilters = false;
+                          });
+                        },
+                        child: SimpleDialog(
+                          contentPadding: EdgeInsets.all(20),
+                          title: Text(
+                            "Filters",
+                            style: Theme.of(context).textTheme.headline3,
                           ),
+                          children: [
+                            CheckListItem(
+                              label: "Filter By Dept.",
+                              value: _filterByDept,
+                              onChanged: (val) {
+                                setState(() {
+                                  _filterByDept = val;
+                                });
+                              },
+                            ),
+                            if (_filterByDept) Text("Select Department:"),
+                            if (_filterByDept)
+                              DropdownButton(
+                                value: department,
+                                items: Constants.branches
+                                    .map<DropdownMenuItem>(
+                                      (value) => DropdownMenuItem(
+                                        value: value,
+                                        child: Text(value),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (val) {
+                                  if (mounted)
+                                    setState(() {
+                                      department = val;
+                                    });
+                                },
+                              ),
+                            CheckListItem(
+                              label: "Filter By Placement Status.",
+                              value: _filterByPlaced,
+                              onChanged: (val) {
+                                setState(() {
+                                  _filterByPlaced = val;
+                                });
+                              },
+                            ),
+                            if (_filterByPlaced) Text("Select Category:"),
+                            if (_filterByPlaced)
+                              DropdownButton(
+                                value: category,
+                                items: categories
+                                    .map<DropdownMenuItem>(
+                                      (value) => DropdownMenuItem(
+                                        value: value,
+                                        child: Text(value),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (val) {
+                                  if (mounted)
+                                    setState(() {
+                                      category = val;
+                                    });
+                                },
+                              ),
+                            RaisedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _showFilters = !_showFilters;
+                                });
+                              },
+                              child: Text(
+                                "Done",
+                                style: Theme.of(context).textTheme.button,
+                              ),
+                            )
+                          ],
                         ),
-                      if (_generating)
-                        Container(
-                          color: Colors.white54,
-                          height: double.infinity,
-                          width: double.infinity,
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
-                    ],
-                  ),
-      ),
+                      ),
+                    if (_generating)
+                      Container(
+                        color: Colors.white54,
+                        height: double.infinity,
+                        width: double.infinity,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                  ],
+                ),
     );
   }
 }

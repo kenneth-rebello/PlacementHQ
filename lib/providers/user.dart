@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:placementhq/models/drive.dart';
+import 'package:placementhq/models/notice.dart';
 import 'package:placementhq/models/offer.dart';
 import 'package:placementhq/models/registration.dart';
 import 'package:placementhq/models/user_profile.dart';
@@ -13,7 +15,7 @@ class User with ChangeNotifier {
   String token;
   String userId;
   String emailId;
-  Profile userProfile;
+  Profile _userProfile;
   final batch = DateTime.now().month <= 5
       ? DateTime.now().year.toString()
       : (DateTime.now().year + 1).toString();
@@ -28,39 +30,39 @@ class User with ChangeNotifier {
 
   Profile get profile {
     Profile copy;
-    if (userProfile != null)
+    if (_userProfile != null)
       copy = Profile(
-        id: userProfile.id,
-        verified: userProfile.verified,
-        firstName: userProfile.firstName,
-        middleName: userProfile.middleName,
-        lastName: userProfile.lastName,
-        dateOfBirth: userProfile.dateOfBirth,
-        gender: userProfile.gender,
-        nationality: userProfile.nationality,
-        imageUrl: userProfile.imageUrl,
-        resumeUrl: userProfile.resumeUrl,
-        collegeId: userProfile.collegeId,
-        collegeName: userProfile.collegeName,
-        specialization: userProfile.specialization,
-        rollNo: userProfile.rollNo,
-        secMarks: userProfile.secMarks,
-        highSecMarks: userProfile.highSecMarks,
-        hasDiploma: userProfile.hasDiploma,
-        diplomaMarks: userProfile.diplomaMarks,
-        beMarks: userProfile.beMarks,
-        cgpa: userProfile.cgpa,
-        numOfGapYears: userProfile.numOfGapYears,
-        numOfKTs: userProfile.numOfKTs,
-        phone: userProfile.phone,
-        email: userProfile.email,
-        address: userProfile.address,
-        city: userProfile.city,
-        state: userProfile.state,
-        pincode: userProfile.pincode,
-        registrations: userProfile.registrations,
-        offers: userProfile.offers,
-        placedCategory: userProfile.placedCategory,
+        id: _userProfile.id,
+        verified: _userProfile.verified,
+        firstName: _userProfile.firstName,
+        middleName: _userProfile.middleName,
+        lastName: _userProfile.lastName,
+        dateOfBirth: _userProfile.dateOfBirth,
+        gender: _userProfile.gender,
+        nationality: _userProfile.nationality,
+        imageUrl: _userProfile.imageUrl,
+        resumeUrl: _userProfile.resumeUrl,
+        collegeId: _userProfile.collegeId,
+        collegeName: _userProfile.collegeName,
+        specialization: _userProfile.specialization,
+        rollNo: _userProfile.rollNo,
+        secMarks: _userProfile.secMarks,
+        highSecMarks: _userProfile.highSecMarks,
+        hasDiploma: _userProfile.hasDiploma,
+        diplomaMarks: _userProfile.diplomaMarks,
+        beMarks: _userProfile.beMarks,
+        cgpa: _userProfile.cgpa,
+        numOfGapYears: _userProfile.numOfGapYears,
+        numOfKTs: _userProfile.numOfKTs,
+        phone: _userProfile.phone,
+        email: _userProfile.email,
+        address: _userProfile.address,
+        city: _userProfile.city,
+        state: _userProfile.state,
+        pincode: _userProfile.pincode,
+        registrations: _userProfile.registrations,
+        offers: _userProfile.offers,
+        placedCategory: _userProfile.placedCategory,
       );
     else
       copy = null;
@@ -68,41 +70,47 @@ class User with ChangeNotifier {
   }
 
   String get collegeId {
-    if (userProfile != null) {
-      return userProfile.collegeId;
+    if (_userProfile != null) {
+      return _userProfile.collegeId;
     } else
       return null;
   }
 
   List<Registration> get userRegistrations {
-    if (userProfile != null) {
-      return userProfile.registrations
-        ..sort((a, b) {
-          return DateTime.parse(a.registeredOn).compareTo(
-            DateTime.parse(b.registeredOn),
-          );
-        });
+    if (_userProfile != null) {
+      return [
+        ..._userProfile.registrations
+          ..sort((a, b) {
+            return DateTime.parse(a.registeredOn).compareTo(
+              DateTime.parse(b.registeredOn),
+            );
+          })
+      ];
     } else
       return [];
   }
 
   List<Offer> get userOffers {
-    if (userProfile != null) {
-      return [...userProfile.offers];
+    if (_userProfile != null) {
+      return [..._userProfile.offers];
     } else
       return [];
   }
 
   Future<Profile> loadCurrentUserProfile() async {
+    if (userId == null || userId == "") {
+      throw HttpException("Invalid Operation");
+    }
     final url =
         "https://placementhq-777.firebaseio.com/users/$userId.json?auth=$token";
     final data = await http.get(url);
     final profile = json.decode(data.body);
 
     if (profile != null) {
-      userProfile = new Profile(
+      _userProfile = new Profile(
         id: userId,
-        verified: profile["verified"],
+        verified: profile["verified"] == null ? false : profile["verified"],
+        isTPC: profile["isTPC"] == null ? false : profile["isTPC"],
         firstName: profile["firstName"],
         middleName: profile["middleName"],
         lastName: profile["lastName"],
@@ -184,7 +192,7 @@ class User with ChangeNotifier {
               ),
             );
           });
-        userProfile.offers = [...newOffers];
+        _userProfile.offers = [...newOffers];
 
         final urlReg =
             'https://placementhq-777.firebaseio.com/collegeData/${profile["collegeId"]}/registrations.json?orderBy="userId"&equalTo="$userId"&print=pretty&auth=$token';
@@ -207,18 +215,21 @@ class User with ChangeNotifier {
               selected: reg["selected"] == null ? false : reg["selected"],
             ));
           });
-        userProfile.registrations = [...newReg];
+        _userProfile.registrations = [...newReg];
       }
     } else {
-      userProfile = null;
+      _userProfile = null;
     }
     notifyListeners();
 
-    return userProfile;
+    return _userProfile;
   }
 
   Future<void> editProfile(Map<String, dynamic> profileData,
       {File image}) async {
+    if (userId == null || userId == "") {
+      throw HttpException("Invalid Operation");
+    }
     if (image != null) {
       final ref = FirebaseStorage.instance
           .ref()
@@ -240,15 +251,47 @@ class User with ChangeNotifier {
     );
   }
 
+  Future<void> getRegistrations() async {
+    if (collegeId == null || collegeId == "") {
+      throw HttpException("Invalid Operation");
+    }
+    final url =
+        'https://placementhq-777.firebaseio.com/collegeData/$collegeId/registrations.json?orderBy="userId"&equalTo="$userId"&print=pretty&auth=$token';
+    final data = await http.get(url);
+    final registrations = json.decode(data.body) as Map<String, dynamic>;
+    final List<Registration> newReg = [];
+    if (registrations != null)
+      registrations.forEach((key, reg) {
+        newReg.add(Registration(
+          id: key,
+          company: reg["company"],
+          candidate: reg["candidate"],
+          department: reg["deprtment"],
+          companyId: reg["companyId"],
+          companyImageUrl: reg["companyImageUrl"],
+          userId: reg["userId"],
+          driveId: reg["driveId"],
+          registeredOn: reg["registeredOn"],
+          rollNo: reg["rollNo"] == null ? "" : reg["rollNo"],
+          selected: reg["selected"] == null ? false : reg["selected"],
+        ));
+      });
+    _userProfile.registrations = [...newReg];
+    notifyListeners();
+  }
+
   Future<void> newRegistration(Profile user, Drive drive) async {
-    final existing = userProfile.registrations.firstWhere(
+    if (collegeId == null || collegeId == "") {
+      throw HttpException("Invalid Operation");
+    }
+    final existing = _userProfile.registrations.firstWhere(
       (reg) => reg.userId == user.id && reg.driveId == drive.id,
       orElse: () => null,
     );
     if (collegeId != null && existing == null) {
       final url =
           "https://placementhq-777.firebaseio.com/collegeData/$collegeId/registrations.json?auth=$token";
-      await http.post(
+      final res = await http.post(
         url,
         body: json.encode({
           "userId": user.id,
@@ -262,8 +305,10 @@ class User with ChangeNotifier {
           "registeredOn": DateTime.now().toIso8601String(),
         }),
       );
+      final registration = json.decode(res.body) as Map<String, dynamic>;
 
-      userProfile.registrations.add(Registration(
+      _userProfile.registrations.add(Registration(
+        id: registration["name"],
         candidate: user.fullName,
         company: drive.companyName,
         companyId: drive.companyId,
@@ -280,9 +325,61 @@ class User with ChangeNotifier {
     }
   }
 
-  Future<void> respondToOffer(String id, bool value, String category) async {
+  Future<void> cancelRegistration(String id) async {
+    if (collegeId == null || collegeId == "" || id == null || id == "") {
+      throw HttpException("Invalid Operation");
+    }
     final url =
-        'https://placementhq-777.firebaseio.com/collegeData/${profile.collegeId}/offers/$batch/$id.json?auth=$token';
+        "https://placementhq-777.firebaseio.com/collegeData/$collegeId/registrations/$id.json?auth=$token";
+    await http.delete(url);
+    _userProfile.registrations.removeWhere((r) => r.id == id);
+    notifyListeners();
+  }
+
+  Future<void> getOffers() async {
+    if (collegeId == null || collegeId == "" || batch == null || batch == "") {
+      throw HttpException("Invalid Operation");
+    }
+    final url =
+        'https://placementhq-777.firebaseio.com/collegeData/$collegeId/offers/$batch.json?orderBy="userId"&equalTo="$userId"&auth=$token';
+    final data = await http.get(url);
+    final offers = json.decode(data.body) as Map<String, dynamic>;
+    List<Offer> newOffers = [];
+    if (offers != null)
+      offers.forEach((key, offer) {
+        newOffers.add(
+          new Offer(
+            id: key,
+            userId: offer["userId"],
+            candidate: offer["candidate"],
+            rollNo: offer["rollNo"],
+            department: offer["department"],
+            driveId: offer["driveId"],
+            companyId: offer["companyId"],
+            companyName: offer["companyName"],
+            companyImageUrl: offer["companyImageUrl"],
+            ctc: offer["ctc"],
+            selectedOn: offer["selectedOn"],
+            accepted: offer["accepted"],
+            category: offer["category"],
+          ),
+        );
+      });
+    _userProfile.offers = [...newOffers];
+    notifyListeners();
+  }
+
+  Future<void> respondToOffer(String id, bool value, String category) async {
+    if (collegeId == null ||
+        collegeId == "" ||
+        batch == "" ||
+        batch == null ||
+        userId == "" ||
+        userId == null) {
+      throw HttpException("Invalid Operation");
+    }
+    final url =
+        'https://placementhq-777.firebaseio.com/collegeData/$collegeId/offers/$batch/$id.json?auth=$token';
     final res = await http.get(url);
     final offerData = json.decode(res.body) as Map<String, dynamic>;
     if (offerData["accepted"] == false) {
@@ -298,59 +395,99 @@ class User with ChangeNotifier {
         "https://placementhq-777.firebaseio.com/users/$userId.json?auth=$token";
     await http.patch(urlProfile,
         body: json.encode({"placedCategory": category}));
-    final offer = userProfile.offers.firstWhere((e) => e.id == id);
+    final offer = _userProfile.offers.firstWhere((e) => e.id == id);
     offer.accepted = value;
-    userProfile.placedCategory = category;
+    _userProfile.placedCategory = category;
     notifyListeners();
   }
 
   void updateValues(Map<String, dynamic> profileData) {
-    if (userProfile == null) userProfile = new Profile();
+    if (_userProfile == null) _userProfile = new Profile();
     if (profileData["verified"] != null)
-      userProfile.verified = profileData["verified"];
+      _userProfile.verified = profileData["verified"];
     if (profileData["firstName"] != null)
-      userProfile.firstName = profileData["firstName"];
+      _userProfile.firstName = profileData["firstName"];
     if (profileData["middleName"] != null)
-      userProfile.middleName = profileData["middleName"];
+      _userProfile.middleName = profileData["middleName"];
     if (profileData["lastName"] != null)
-      userProfile.lastName = profileData["lastName"];
+      _userProfile.lastName = profileData["lastName"];
     if (profileData["gender"] != null)
-      userProfile.gender = profileData["gender"];
+      _userProfile.gender = profileData["gender"];
     if (profileData["dateOfBirth"] != null)
-      userProfile.dateOfBirth = profileData["dateOfBirth"];
+      _userProfile.dateOfBirth = profileData["dateOfBirth"];
     if (profileData["imageUrl"] != null)
-      userProfile.imageUrl = profileData["imageUrl"];
+      _userProfile.imageUrl = profileData["imageUrl"];
     if (profileData["resumeUrl"] != null)
-      userProfile.resumeUrl = profileData["resumeUrl"];
+      _userProfile.resumeUrl = profileData["resumeUrl"];
     if (profileData["nationality"] != null)
-      userProfile.nationality = profileData["nationality"];
+      _userProfile.nationality = profileData["nationality"];
     if (profileData["collegeName"] != null)
-      userProfile.collegeName = profileData["collegeName"];
+      _userProfile.collegeName = profileData["collegeName"];
     if (profileData["collegeId"] != null)
-      userProfile.collegeId = profileData["collegeId"];
+      _userProfile.collegeId = profileData["collegeId"];
     if (profileData["specialization"] != null)
-      userProfile.specialization = profileData["specialization"];
+      _userProfile.specialization = profileData["specialization"];
     if (profileData["rollNo"] != null)
-      userProfile.rollNo = profileData["rollNo"];
+      _userProfile.rollNo = profileData["rollNo"];
     if (profileData["secMarks"] != null)
-      userProfile.secMarks = profileData["secMarks"];
+      _userProfile.secMarks = profileData["secMarks"];
     if (profileData["highSecMarks"] != null)
-      userProfile.highSecMarks = profileData["highSecMarks"];
+      _userProfile.highSecMarks = profileData["highSecMarks"];
     if (profileData["hasDiploma"] != null)
-      userProfile.hasDiploma = profileData["hasDiploma"];
-    if (profileData["cgpa"] != null) userProfile.cgpa = profileData["cgpa"];
+      _userProfile.hasDiploma = profileData["hasDiploma"];
+    if (profileData["cgpa"] != null) _userProfile.cgpa = profileData["cgpa"];
     if (profileData["numOfGapYears"] != null)
-      userProfile.numOfGapYears = profileData["numOfGapYears"];
+      _userProfile.numOfGapYears = profileData["numOfGapYears"];
     if (profileData["numOfKTs"] != null)
-      userProfile.numOfKTs = profileData["numOfKTs"];
-    if (profileData["phone"] != null) userProfile.phone = profileData["phone"];
-    if (profileData["email"] != null) userProfile.email = profileData["email"];
-    if (profileData["city"] != null) userProfile.city = profileData["city"];
-    if (profileData["state"] != null) userProfile.state = profileData["state"];
+      _userProfile.numOfKTs = profileData["numOfKTs"];
+    if (profileData["phone"] != null) _userProfile.phone = profileData["phone"];
+    if (profileData["email"] != null) _userProfile.email = profileData["email"];
+    if (profileData["city"] != null) _userProfile.city = profileData["city"];
+    if (profileData["state"] != null) _userProfile.state = profileData["state"];
     if (profileData["address"] != null)
-      userProfile.address = profileData["address"];
+      _userProfile.address = profileData["address"];
     if (profileData["pincode"] != null)
-      userProfile.pincode = profileData["pincode"];
+      _userProfile.pincode = profileData["pincode"];
     notifyListeners();
+  }
+
+  Future<Notice> addNewNotice(
+      Map<String, dynamic> data, FilePickerResult file) async {
+    if (collegeId == null || collegeId == "") {
+      throw HttpException("Invalid Operation");
+    }
+    if (collegeId != null) {
+      if (file != null) {
+        File upload = File(file.files.single.path);
+        final ref = FirebaseStorage.instance
+            .ref()
+            .child('notice_documents')
+            .child(file.files.single.name);
+        await ref.putFile(upload).onComplete;
+
+        final downloadLink = await ref.getDownloadURL();
+        data["fileUrl"] = downloadLink;
+        data["fileName"] = file.files.single.name;
+      }
+      data["issuedBy"] = _userProfile.fullName;
+      data["issuerId"] = _userProfile.id;
+      final url =
+          'https://placementhq-777.firebaseio.com/collegeData/$collegeId/notices.json?auth=$token';
+      final res = await http.post(url, body: json.encode(data));
+      final notice = json.decode(res.body) as Map<String, dynamic>;
+      return Notice(
+        id: notice["name"],
+        driveId: data["driveId"],
+        companyName: data["companyName"],
+        notice: data["notice"],
+        url: data["url"],
+        issuedBy: data["issuedBy"],
+        issuerId: data["issuerId"],
+        issuedOn: data["issuedOn"],
+        fileUrl: data["fileUrl"],
+        fileName: data["fileName"],
+      );
+    }
+    return null;
   }
 }

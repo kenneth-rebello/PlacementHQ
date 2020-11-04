@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:placementhq/models/arguments.dart';
 import 'package:placementhq/models/drive.dart';
 import 'package:placementhq/models/registration.dart';
 import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/providers/officer.dart';
 import 'package:placementhq/res/constants.dart';
-import 'package:placementhq/screens/drive_screens/drive_details.dart';
 import 'package:placementhq/screens/drive_screens/drive_report.dart';
 import 'package:placementhq/screens/profile_screens/profile_screen.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
@@ -18,7 +18,7 @@ import 'package:provider/provider.dart';
 
 class DriveStudentsScreen extends StatefulWidget {
   static const routeName = "/drive_students";
-  final DriveArguments args;
+  final Arguments args;
   DriveStudentsScreen(this.args);
   @override
   _DriveStudentsScreenState createState() => _DriveStudentsScreenState();
@@ -79,6 +79,11 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => SimpleDialog(
+        title: Text(
+          "Stats",
+          style: Theme.of(context).textTheme.headline3,
+          textAlign: TextAlign.left,
+        ),
         contentPadding: EdgeInsets.all(5),
         children: [
           ListItem(
@@ -131,6 +136,11 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
           setState(() {
             _selecting = false;
           });
+        }).catchError((e) {
+          setState(() {
+            _loading = false;
+            _error = true;
+          });
         });
       }
     });
@@ -139,6 +149,7 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
   @override
   Widget build(BuildContext context) {
     final isOfficer = Provider.of<Auth>(context, listen: false).isOfficer;
+    final isTPC = Provider.of<Auth>(context, listen: false).isTPC;
 
     final deviceHeight = MediaQuery.of(context).size.height -
         MediaQuery.of(context).padding.top -
@@ -169,43 +180,16 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.args.companyName,
+          widget.args.title,
           style: Theme.of(context).textTheme.headline1,
         ),
         actions: [
           IconButton(
               icon: Icon(Icons.info_outline),
               onPressed: () => _showInfo(drive)),
-          if (isOfficer && !_pickable)
-            PopupMenuButton(
-              itemBuilder: (ctx) => [
-                PopupMenuItem(
-                  child: FlatButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => DriveReport(
-                            DriveArguments(
-                              id: widget.args.id,
-                              companyName: widget.args.companyName,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    child: Text(
-                      "Generate Report",
-                      style: TextStyle(fontFamily: "Ubuntu"),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          if (isOfficer && _pickable)
-            PopupMenuButton(
-              itemBuilder: (ctx) => [
-                PopupMenuItem(
-                  child: FlatButton(
+          if (isOfficer || isTPC)
+            _pickable
+                ? IconButton(
                     onPressed: () {
                       showDialog(
                         context: context,
@@ -233,20 +217,42 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
                             }
                           }
                           Provider.of<Drives>(context, listen: false)
-                              .removeRegistrations(
-                            idsToRemove,
-                          );
+                              .removeRegistrations(idsToRemove)
+                              .catchError((e) {
+                            setState(() {
+                              _loading = false;
+                              _error = true;
+                            });
+                          });
                         }
                       });
                     },
-                    child: Text(
-                      "Remove Students",
-                      style: TextStyle(fontFamily: "Ubuntu"),
-                    ),
+                    icon: Icon(Icons.delete_forever),
+                  )
+                : PopupMenuButton(
+                    itemBuilder: (ctx) => [
+                      PopupMenuItem(
+                        child: FlatButton.icon(
+                          icon: Icon(Icons.save_alt),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => DriveReport(
+                                  Arguments(
+                                    id: widget.args.id,
+                                    title: widget.args.title,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          label: Text(
+                            "Generate Report",
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
-            ),
         ],
       ),
       body: Container(
@@ -375,7 +381,8 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
                                                       }
                                                     });
                                                 })
-                                            : isOfficer == true &&
+                                            : (isOfficer == true ||
+                                                        isTPC == true) &&
                                                     !registrations[idx].selected
                                                 ? Container(
                                                     width: 50,

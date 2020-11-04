@@ -73,11 +73,8 @@ class _DriveListItemState extends State<DriveListItem> {
           builder: (ctx) => SimpleDialog(
             title: Text(
               "You are missing some mandatory fields",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.indigo[800],
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(context).textTheme.headline3,
+              textAlign: TextAlign.left,
             ),
             children: [
               Text(
@@ -99,7 +96,11 @@ class _DriveListItemState extends State<DriveListItem> {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: Text("Register for ${drive.companyName}?"),
+          title: Text(
+            "Register for ${drive.companyName}?",
+            style: Theme.of(context).textTheme.headline3,
+            textAlign: TextAlign.left,
+          ),
           content: drive.category == profile.placedCategory
               ? Text(
                   "You already have an offer in a ${drive.category} company.\nConsult with your TPO before proceeding",

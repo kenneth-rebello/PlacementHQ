@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/providers/officer.dart';
+import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/screens/for_officers/new_drive_screen.dart';
 import 'package:placementhq/widgets/drive_list_item/drive_list_item.dart';
 import 'package:placementhq/widgets/other/empty_list.dart';
@@ -20,7 +22,14 @@ class _CurrentDrivesScreenState extends State<CurrentDrivesScreen> {
   @override
   void initState() {
     _loading = true;
-    String collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+    String collegeId;
+    final isTPC = Provider.of<Auth>(context, listen: false).isTPC;
+    if (isTPC) {
+      collegeId = Provider.of<User>(context, listen: false).collegeId;
+    } else {
+      collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+    }
+
     Provider.of<Drives>(context, listen: false).loadDrives(collegeId).then((_) {
       if (mounted)
         setState(() {
@@ -40,7 +49,13 @@ class _CurrentDrivesScreenState extends State<CurrentDrivesScreen> {
     setState(() {
       _loading = true;
     });
-    String collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+    String collegeId;
+    final isTPC = Provider.of<Auth>(context, listen: false).isTPC;
+    if (isTPC) {
+      collegeId = Provider.of<User>(context, listen: false).collegeId;
+    } else {
+      collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+    }
     Provider.of<Drives>(context, listen: false).loadDrives(collegeId).then((_) {
       if (mounted)
         setState(() {

@@ -37,7 +37,11 @@ class _TPOApplicationState extends State<TPOApplication> {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-              title: Text("Submit Application?"),
+              title: Text(
+                "Submit Application?",
+                style: Theme.of(context).textTheme.headline3,
+                textAlign: TextAlign.left,
+              ),
               content: Column(
                 children: [
                   Text(

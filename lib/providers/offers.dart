@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:placementhq/models/http_exception.dart';
 import 'package:placementhq/models/offer.dart';
 
 class Offers with ChangeNotifier {
@@ -56,6 +57,9 @@ class Offers with ChangeNotifier {
   }
 
   Future<void> getCollegeOffers() async {
+    if (_collegeId == null || _collegeId == "") {
+      throw HttpException("Invalid Operation");
+    }
     final url =
         'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers.json?auth=$token';
     final res = await http.get(url);
@@ -94,6 +98,9 @@ class Offers with ChangeNotifier {
   }
 
   Future<void> getCompanyOffers(String companyId) async {
+    if (_collegeId == null || _collegeId == "") {
+      throw HttpException("Invalid Operation");
+    }
     final url =
         'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers.json?shallow=true&auth=$token';
     final shallowRes = await http.get(url);
@@ -134,6 +141,9 @@ class Offers with ChangeNotifier {
   }
 
   Future<void> getYearOffers(String year) async {
+    if (_collegeId == null || _collegeId == "") {
+      throw HttpException("Invalid Operation");
+    }
     final url =
         'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$year.json?auth=$token';
     final res = await http.get(url);
@@ -166,7 +176,6 @@ class Offers with ChangeNotifier {
         offers: newOffers,
       )
     ];
-    // newOffers.sort((a, b) => b.issuedOn.compareTo(a.issuedOn));
     notifyListeners();
   }
 }

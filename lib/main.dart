@@ -149,6 +149,8 @@ class MyApp extends StatelessWidget {
                             : AuthScreen(),
                   ),
             routes: {
+              HomeScreen.routeName: (ctx) =>
+                  auth.isAuth ? HomeScreen() : AuthScreen(),
               DrivesScreen.routeName: (ctx) =>
                   auth.isAuth ? DrivesScreen() : AuthScreen(),
               RegistrationsScreen.routeName: (ctx) =>

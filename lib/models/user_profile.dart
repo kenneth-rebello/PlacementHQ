@@ -4,6 +4,7 @@ import 'package:placementhq/models/offer.dart';
 class Profile {
   //Personal
   bool verified;
+  bool isTPC;
   String id;
   String firstName;
   String middleName;
@@ -40,6 +41,7 @@ class Profile {
 
   Profile({
     this.verified,
+    this.isTPC,
     this.id,
     this.firstName = "",
     this.middleName = "",
@@ -93,5 +95,11 @@ class Profile {
 
   String toString() {
     return this.fullName;
+  }
+
+  String get placedValue {
+    final res = this.placedCategory == "None" ? "Z" : "A";
+    print(res);
+    return res;
   }
 }

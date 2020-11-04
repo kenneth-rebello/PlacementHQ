@@ -36,7 +36,6 @@ class _ArchivesScreenState extends State<ArchivesScreen> {
           _error = false;
         });
     }).catchError((e) {
-      print(e.toString());
       setState(() {
         _loading = false;
         _error = true;
@@ -146,7 +145,8 @@ class _ArchivesScreenState extends State<ArchivesScreen> {
         builder: (ctx) => SimpleDialog(
           title: Text(
             "CSV file created",
-            style: TextStyle(fontFamily: 'Ubuntu', color: Colors.indigo[800]),
+            style: Theme.of(context).textTheme.headline3,
+            textAlign: TextAlign.left,
           ),
           children: [
             Text(
@@ -231,10 +231,8 @@ class _ArchivesScreenState extends State<ArchivesScreen> {
                               builder: (ctx) => AlertDialog(
                                 title: Text(
                                   "Are you sure?",
-                                  style: TextStyle(
-                                    fontFamily: 'Ubuntu',
-                                    color: Colors.indigo[800],
-                                  ),
+                                  style: Theme.of(context).textTheme.headline3,
+                                  textAlign: TextAlign.left,
                                 ),
                                 contentPadding: EdgeInsets.all(20),
                                 content: Text(

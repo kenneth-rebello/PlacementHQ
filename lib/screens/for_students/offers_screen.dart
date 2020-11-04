@@ -30,6 +30,10 @@ class OffersWidget extends StatefulWidget {
 class _OffersState extends State<OffersWidget> {
   bool _inProgress = false;
 
+  Future<void> _refresher() async {
+    Provider.of<User>(context, listen: false).getOffers();
+  }
+
   void _confirm(String id, bool value, String category) {
     String hint = value ? "Accept" : "Reject";
     String msg = value ? "Offer Accepted" : "Offer Rejected";
@@ -81,86 +85,89 @@ class _OffersState extends State<OffersWidget> {
           ? EmptyList(
               message: "Keep Trying!",
             )
-          : ListView.builder(
-              itemBuilder: (ctx, idx) => Container(
-                margin: const EdgeInsets.all(10),
-                child: ListTile(
-                  leading: Container(
-                    height: 100,
-                    width: 100,
-                    child: Image.network(
-                      offers[idx].companyImageUrl,
-                      errorBuilder: (c, e, s) => ImageError(),
+          : RefreshIndicator(
+              onRefresh: _refresher,
+              child: ListView.builder(
+                itemBuilder: (ctx, idx) => Container(
+                  margin: const EdgeInsets.all(10),
+                  child: ListTile(
+                    leading: Container(
+                      height: 100,
+                      width: 100,
+                      child: Image.network(
+                        offers[idx].companyImageUrl,
+                        errorBuilder: (c, e, s) => ImageError(),
+                      ),
                     ),
-                  ),
-                  title: Text(
-                    offers[idx].companyName,
-                    style: Theme.of(context).textTheme.headline5,
-                  ),
-                  subtitle: RichText(
-                    text: TextSpan(
-                      style: TextStyle(color: Colors.black),
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: "Status: ",
-                          style: Theme.of(context).textTheme.bodyText2,
-                        ),
-                        offers[idx].accepted == null
-                            ? TextSpan(
-                                text: "Awaiting",
-                              )
-                            : offers[idx].accepted
-                                ? TextSpan(
-                                    text: "Accepted",
-                                    style: TextStyle(
-                                      color: Colors.green,
+                    title: Text(
+                      offers[idx].companyName,
+                      style: Theme.of(context).textTheme.headline5,
+                    ),
+                    subtitle: RichText(
+                      text: TextSpan(
+                        style: TextStyle(color: Colors.black),
+                        children: <TextSpan>[
+                          TextSpan(
+                            text: "Status: ",
+                            style: Theme.of(context).textTheme.bodyText2,
+                          ),
+                          offers[idx].accepted == null
+                              ? TextSpan(
+                                  text: "Awaiting",
+                                )
+                              : offers[idx].accepted
+                                  ? TextSpan(
+                                      text: "Accepted",
+                                      style: TextStyle(
+                                        color: Colors.green,
+                                      ),
+                                    )
+                                  : TextSpan(
+                                      text: "Rejected",
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      ),
                                     ),
-                                  )
-                                : TextSpan(
-                                    text: "Rejected",
-                                    style: TextStyle(
-                                      color: Colors.red,
-                                    ),
+                        ],
+                      ),
+                    ),
+                    trailing: offers[idx].accepted == null
+                        ? PopupMenuButton(
+                            enabled: !_inProgress,
+                            itemBuilder: (pCtx) => [
+                              PopupMenuItem(
+                                child: FlatButton.icon(
+                                  label: Text("Accept"),
+                                  icon: Icon(
+                                    Icons.check_circle,
+                                    color: Theme.of(context).primaryColor,
                                   ),
-                      ],
-                    ),
+                                  onPressed: () {
+                                    _confirm(offers[idx].id, true,
+                                        offers[idx].category);
+                                  },
+                                ),
+                              ),
+                              PopupMenuItem(
+                                child: FlatButton.icon(
+                                  label: Text("Reject"),
+                                  icon: Icon(
+                                    Icons.cancel,
+                                    color: Theme.of(context).errorColor,
+                                  ),
+                                  onPressed: () {
+                                    _confirm(offers[idx].id, false,
+                                        offers[idx].category);
+                                  },
+                                ),
+                              ),
+                            ],
+                          )
+                        : null,
                   ),
-                  trailing: offers[idx].accepted == null
-                      ? PopupMenuButton(
-                          enabled: !_inProgress,
-                          itemBuilder: (pCtx) => [
-                            PopupMenuItem(
-                              child: FlatButton.icon(
-                                label: Text("Accept"),
-                                icon: Icon(
-                                  Icons.check_circle,
-                                  color: Theme.of(context).primaryColor,
-                                ),
-                                onPressed: () {
-                                  _confirm(offers[idx].id, true,
-                                      offers[idx].category);
-                                },
-                              ),
-                            ),
-                            PopupMenuItem(
-                              child: FlatButton.icon(
-                                label: Text("Reject"),
-                                icon: Icon(
-                                  Icons.cancel,
-                                  color: Theme.of(context).errorColor,
-                                ),
-                                onPressed: () {
-                                  _confirm(offers[idx].id, false,
-                                      offers[idx].category);
-                                },
-                              ),
-                            ),
-                          ],
-                        )
-                      : null,
                 ),
+                itemCount: offers.length,
               ),
-              itemCount: offers.length,
             ),
     );
   }

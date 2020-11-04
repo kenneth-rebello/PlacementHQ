@@ -69,6 +69,9 @@ class Officer with ChangeNotifier {
   }
 
   Future<void> loadCurrentOfficerProfile() async {
+    if (userId == null || userId == "") {
+      throw HttpException("Invalid Operation");
+    }
     final url =
         "https://placementhq-777.firebaseio.com/officers/$userId.json?auth=$token";
     final res = await http.get(url);
@@ -123,6 +126,7 @@ class Officer with ChangeNotifier {
       students.forEach((key, student) {
         newStudents.add(Profile(
           id: key,
+          isTPC: student["isTPC"] == null ? false : student["isTPC"],
           verified: student["verified"],
           firstName: student["firstName"],
           middleName: student["middleName"],
@@ -174,6 +178,7 @@ class Officer with ChangeNotifier {
           city: student["city"],
           state: student["state"],
           pincode: student["pincode"],
+          offers: [],
         ));
       });
       _students = newStudents;
@@ -188,8 +193,35 @@ class Officer with ChangeNotifier {
     );
   }
 
+  Future<void> appointAsTPC(String id) async {
+    if (id == null || id == "") {
+      throw HttpException("Invalid Operation");
+    }
+    final url =
+        "https://placementhq-777.firebaseio.com/users/$id.json?auth=$token";
+    await http.patch(url, body: json.encode({"isTPC": true}));
+    var student = _students.firstWhere((s) => s.id == id);
+    student.isTPC = true;
+    notifyListeners();
+  }
+
+  Future<void> dismissAsTPC(String id) async {
+    if (id == null || id == "") {
+      throw HttpException("Invalid Operation");
+    }
+    final url =
+        "https://placementhq-777.firebaseio.com/users/$id.json?auth=$token";
+    await http.patch(url, body: json.encode({"isTPC": false}));
+    var student = _students.firstWhere((s) => s.id == id);
+    student.isTPC = false;
+    notifyListeners();
+  }
+
   Future<Notice> addNewNotice(
       Map<String, dynamic> data, FilePickerResult file) async {
+    if (collegeId == null || collegeId == "") {
+      throw HttpException("Invalid Operation");
+    }
     if (collegeId != null) {
       if (file != null) {
         File upload = File(file.files.single.path);
@@ -207,8 +239,10 @@ class Officer with ChangeNotifier {
       data["issuerId"] = _profile.id;
       final url =
           'https://placementhq-777.firebaseio.com/collegeData/$collegeId/notices.json?auth=$token';
-      await http.post(url, body: json.encode(data));
+      final res = await http.post(url, body: json.encode(data));
+      final notice = json.decode(res.body) as Map<String, dynamic>;
       return Notice(
+        id: notice["name"],
         driveId: data["driveId"],
         companyName: data["companyName"],
         notice: data["notice"],
@@ -224,6 +258,9 @@ class Officer with ChangeNotifier {
   }
 
   Future<void> editProfile(Map<String, dynamic> profileData) async {
+    if (userId == null || userId == "") {
+      throw HttpException("Invalid Operation");
+    }
     final db =
         "https://placementhq-777.firebaseio.com/officers/$userId.json?auth=$token";
 

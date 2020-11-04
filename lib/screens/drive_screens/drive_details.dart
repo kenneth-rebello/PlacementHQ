@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:placementhq/models/arguments.dart';
 import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/screens/chat/chat.dart';
 import 'package:placementhq/screens/drive_screens/drive_notices_screen.dart';
+import 'package:placementhq/screens/drive_screens/drive_offers.dart';
 import 'package:placementhq/screens/drive_screens/drive_students.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
 import 'package:placementhq/widgets/input/yes_button.dart';
@@ -55,17 +57,18 @@ class _DriveDetailsScreenState extends State<DriveDetailsScreen> {
         setState(() {
           _loading = true;
         });
+
         Provider.of<Drives>(context, listen: false)
             .closeDrive(id, batch)
             .then((_) {
           Navigator.of(context).pop();
+        }).catchError((e) {
+          setState(() {
+            _loading = false;
+            _error = true;
+          });
         });
       }
-    }).catchError((e) {
-      setState(() {
-        _loading = false;
-        _error = true;
-      });
     });
   }
 
@@ -97,7 +100,13 @@ class _DriveDetailsScreenState extends State<DriveDetailsScreen> {
                               Provider.of<User>(context, listen: false)
                                   .collegeId;
                           Provider.of<Drives>(context, listen: false)
-                              .loadDrives(collegeId);
+                              .loadDrives(collegeId)
+                              .catchError((e) {
+                            setState(() {
+                              _loading = false;
+                              _error = true;
+                            });
+                          });
                         })
                       ]))
                     : SingleChildScrollView(
@@ -145,9 +154,9 @@ class _DriveDetailsScreenState extends State<DriveDetailsScreen> {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (ctx) => DriveStudentsScreen(
-                                        DriveArguments(
+                                        Arguments(
                                           id: drive.id,
-                                          companyName: drive.companyName,
+                                          title: drive.companyName,
                                         ),
                                       ),
                                     ),
@@ -182,11 +191,34 @@ class _DriveDetailsScreenState extends State<DriveDetailsScreen> {
                               width: double.infinity,
                               child: RaisedButton(
                                 onPressed: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (ctx) => DriveOffersScreen(
+                                        Arguments(
+                                          id: drive.id,
+                                          title: drive.companyName,
+                                          data1: drive.batch,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  "See All Offers",
+                                  style: Theme.of(context).textTheme.button,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              margin: EdgeInsets.all(4),
+                              width: double.infinity,
+                              child: RaisedButton(
+                                onPressed: () {
                                   Navigator.of(context).pushNamed(
                                     ChatScreen.routeName,
-                                    arguments: DriveArguments(
+                                    arguments: Arguments(
                                       id: drive.id,
-                                      companyName: drive.companyName,
+                                      title: drive.companyName,
                                     ),
                                   );
                                 },
@@ -217,11 +249,4 @@ class _DriveDetailsScreenState extends State<DriveDetailsScreen> {
       ),
     );
   }
-}
-
-class DriveArguments {
-  final String id;
-  final String companyName;
-
-  DriveArguments({this.id, this.companyName});
 }

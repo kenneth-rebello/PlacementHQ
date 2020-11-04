@@ -5,6 +5,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:placementhq/providers/companies.dart';
 import 'package:placementhq/providers/drives.dart';
+import 'package:placementhq/providers/auth.dart';
+import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/providers/officer.dart';
 import 'package:placementhq/res/constants.dart';
 import 'package:placementhq/widgets/input/check_list_item.dart';
@@ -82,7 +84,13 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
   void _confirm() {
     if (_form.currentState.validate()) {
       _form.currentState.save();
-      String collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+      String collegeId;
+      final isTPC = Provider.of<Auth>(context, listen: false).isTPC;
+      if (isTPC) {
+        collegeId = Provider.of<User>(context, listen: false).collegeId;
+      } else {
+        collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+      }
 
       Company company;
       if (!newCompany) {
@@ -93,7 +101,10 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
         context: context,
         builder: (ctx) => AlertDialog(
           title: Text(
-              "Are you sure you want to add new drive for ${values["companyName"]}?"),
+            "Are you sure you want to add new drive for ${values["companyName"]}?",
+            style: Theme.of(context).textTheme.headline3,
+            textAlign: TextAlign.left,
+          ),
           actions: [NoButton(ctx), YesButton(ctx)],
         ),
       ).then((res) {
@@ -111,6 +122,7 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
           }).catchError((e) {
             setState(() {
               _loading = false;
+              _error = true;
             });
             showDialog(
               context: context,
@@ -147,7 +159,14 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
   @override
   void initState() {
     _loading = true;
-    String collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+    String collegeId;
+    final isTPC = Provider.of<Auth>(context, listen: false).isTPC;
+    if (isTPC == true) {
+      collegeId = Provider.of<User>(context, listen: false).collegeId;
+    } else {
+      collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+    }
+
     Provider.of<Companies>(context, listen: false)
         .loadCompaniesForList(collegeId)
         .then((value) {
@@ -353,6 +372,12 @@ class _NewDriveScreenState extends State<NewDriveScreen> {
                               helper:
                                   "For batch graduating in 2021, enter 2021.",
                               requiredField: true,
+                              validator: (val) {
+                                if (val.length < 4) {
+                                  return "Invalid";
+                                }
+                                return null;
+                              },
                             ),
                             Input(
                               initialValue: values["companyMessage"],

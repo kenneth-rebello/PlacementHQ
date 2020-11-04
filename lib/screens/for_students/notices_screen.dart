@@ -65,6 +65,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
   Widget build(BuildContext context) {
     final notices = Provider.of<Drives>(context).notices;
     final isOfficer = Provider.of<Auth>(context).isOfficer;
+    final isTPC = Provider.of<Auth>(context).isTPC;
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -72,7 +73,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
           style: Theme.of(context).textTheme.headline1,
         ),
         actions: [
-          if (isOfficer)
+          if (isOfficer || isTPC)
             IconButton(
               icon: Icon(Icons.add),
               onPressed: () {

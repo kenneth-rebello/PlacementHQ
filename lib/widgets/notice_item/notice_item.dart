@@ -20,7 +20,7 @@ class NoticeItem extends StatelessWidget {
       child: Card(
         color: Colors.orange[200],
         child: Container(
-          height: 160,
+          height: 180,
           padding: EdgeInsets.all(10),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -83,7 +83,7 @@ class NoticeItem extends StatelessWidget {
               ),
               if (notice.fileUrl != null)
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(4.0),
                   child: RichText(
                     text: TextSpan(children: [
                       TextSpan(
@@ -103,7 +103,7 @@ class NoticeItem extends StatelessWidget {
                 ),
               if (notice.url != null && notice.url != "")
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(4.0),
                   child: RichText(
                     text: TextSpan(children: [
                       TextSpan(
@@ -141,14 +141,28 @@ class NoticeItem extends StatelessWidget {
                             builder: (ctx) => AlertDialog(
                               title: Text(
                                 "Delete this notice?",
-                                style: TextStyle(color: Colors.red),
+                                style: Theme.of(context).textTheme.headline3,
+                                textAlign: TextAlign.left,
                               ),
                               actions: [NoButton(ctx), YesButton(ctx)],
                             ),
                           ).then((res) {
                             if (res == true) {
                               Provider.of<Drives>(context, listen: false)
-                                  .deleteNotice(notice.id, notice.fileName);
+                                  .deleteNotice(notice.id, notice.fileName)
+                                  .then((_) {
+                                Scaffold.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Deleted successfully."),
+                                  ),
+                                );
+                              }).catchError((e) {
+                                Scaffold.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Operation Failed"),
+                                  ),
+                                );
+                              });
                             }
                           });
                         })

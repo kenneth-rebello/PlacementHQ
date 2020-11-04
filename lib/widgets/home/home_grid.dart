@@ -16,6 +16,7 @@ class _HomeGridState extends State<HomeGrid> {
   bool _error = false;
 
   void initState() {
+    _loading = true;
     final fbm = FirebaseMessaging();
     fbm.configure(
       onMessage: (msg) {
@@ -82,13 +83,23 @@ class _HomeGridState extends State<HomeGrid> {
     super.initState();
   }
 
-  Future<void> _refresh() async {
+  Future<void> _refresher() async {
+    final fbm = FirebaseMessaging();
     setState(() {
       _loading = true;
     });
     Provider.of<User>(context, listen: false)
         .loadCurrentUserProfile()
         .then((_) {
+      String collegeId = Provider.of<User>(context, listen: false).collegeId;
+      String userId = Provider.of<Auth>(context, listen: false).userId;
+      final topic1 = "user" + userId;
+      fbm.subscribeToTopic(topic1);
+      if (collegeId != null) {
+        Provider.of<Auth>(context, listen: false).setCollegeId(collegeId);
+        final topic2 = "college_" + collegeId;
+        fbm.subscribeToTopic(topic2);
+      }
       setState(() {
         _loading = false;
         _error = false;
@@ -104,20 +115,28 @@ class _HomeGridState extends State<HomeGrid> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    List<HomeItem> items = Constants.homeItems;
+    List<HomeItem> items = [];
 
+    final isTPC = Provider.of<Auth>(context, listen: false).isTPC;
     final profile = Provider.of<User>(context).profile;
+
+    if (isTPC) {
+      items = Constants.tpcHomeItems;
+    } else {
+      items = Constants.homeItems;
+    }
     if (profile == null) {
       items = items.where((item) => !item.protected).toList();
     }
+
     return _loading
         ? Center(child: CircularProgressIndicator())
         : _error
             ? Error(
-                refresher: _refresh,
+                refresher: _refresher,
               )
             : RefreshIndicator(
-                onRefresh: _refresh,
+                onRefresh: _refresher,
                 child: Container(
                   child: GridView.builder(
                     padding: const EdgeInsets.all(10),

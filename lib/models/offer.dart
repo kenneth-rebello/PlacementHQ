@@ -28,6 +28,15 @@ class Offer {
     this.selectedOn,
     this.accepted,
   });
+
+  String get acceptedValue {
+    final res = this.accepted == null
+        ? "K"
+        : this.accepted == true
+            ? "A"
+            : "R";
+    return res;
+  }
 }
 
 class Data {

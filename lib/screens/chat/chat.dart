@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:placementhq/models/arguments.dart';
 import 'package:placementhq/providers/auth.dart';
-import 'package:placementhq/screens/drive_screens/drive_details.dart';
 import 'package:placementhq/widgets/chat/message.dart';
 import 'package:placementhq/widgets/chat/newmessage.dart';
 import 'package:provider/provider.dart';
@@ -10,9 +10,9 @@ class ChatScreen extends StatelessWidget {
   static const routeName = "/chat";
   @override
   Widget build(BuildContext context) {
-    final DriveArguments args = ModalRoute.of(context).settings.arguments;
+    final Arguments args = ModalRoute.of(context).settings.arguments;
     final driveId = args.id;
-    final name = args.companyName;
+    final name = args.title;
     final userId = Provider.of<Auth>(context).userId;
     final col = "chats/$driveId/messages";
     return Scaffold(

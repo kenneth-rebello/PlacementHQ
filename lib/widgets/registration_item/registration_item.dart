@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:placementhq/models/registration.dart';
+import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/screens/drive_screens/drive_details.dart';
+import 'package:placementhq/widgets/input/no_button.dart';
+import 'package:placementhq/widgets/input/yes_button.dart';
 import 'package:placementhq/widgets/other/image_error.dart';
+import 'package:provider/provider.dart';
 
 class RegistrationItem extends StatelessWidget {
   final Registration registration;
@@ -44,6 +48,45 @@ class RegistrationItem extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyText1,
             textAlign: TextAlign.center,
           ),
+          trailing: registration.selected == true
+              ? SizedBox(width: 2)
+              : IconButton(
+                  icon: Icon(
+                    Icons.cancel,
+                    color: Colors.red,
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text(
+                          "Are you sure?",
+                          style: Theme.of(context).textTheme.headline3,
+                          textAlign: TextAlign.left,
+                        ),
+                        contentPadding: EdgeInsets.all(10),
+                        content: Text(
+                            "Cancel your registration for ${registration.company}?"),
+                        actions: [NoButton(ctx), YesButton(ctx)],
+                      ),
+                    ).then((res) {
+                      if (res) {
+                        Provider.of<User>(context, listen: false)
+                            .cancelRegistration(registration.id)
+                            .then((_) {
+                          Scaffold.of(context).showSnackBar(SnackBar(
+                            content: Text("Canceled registration."),
+                          ));
+                        }).catchError((e) {
+                          Scaffold.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text("Operation Failed"),
+                            ),
+                          );
+                        });
+                      }
+                    });
+                  }),
         ),
       ),
     );

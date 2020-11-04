@@ -4,16 +4,16 @@ import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:placementhq/models/arguments.dart';
 import 'package:placementhq/providers/drives.dart';
 import 'package:placementhq/providers/officer.dart';
-import 'package:placementhq/screens/drive_screens/drive_details.dart';
 import 'package:placementhq/widgets/input/check_list_item.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
 import 'package:placementhq/widgets/input/yes_button.dart';
 import 'package:provider/provider.dart';
 
 class DriveReport extends StatefulWidget {
-  final DriveArguments args;
+  final Arguments args;
   DriveReport(this.args);
   @override
   _DriveReportState createState() => _DriveReportState();
@@ -147,8 +147,7 @@ class _DriveReportState extends State<DriveReport> {
       new Directory(dir).createSync();
     }
     String file = "$dir";
-    File f =
-        new File(file + widget.args.companyName + "_Registrations" + ".csv");
+    File f = new File(file + widget.args.title + "_Registrations" + ".csv");
     if (f.existsSync()) {
       f.deleteSync();
     }
@@ -167,7 +166,8 @@ class _DriveReportState extends State<DriveReport> {
         builder: (ctx) => SimpleDialog(
           title: Text(
             "CSV file created",
-            style: TextStyle(fontFamily: 'Ubuntu', color: Colors.indigo[800]),
+            style: Theme.of(context).textTheme.headline3,
+            textAlign: TextAlign.left,
           ),
           children: [
             Text(
@@ -423,10 +423,8 @@ class _DriveReportState extends State<DriveReport> {
                           builder: (ctx) => AlertDialog(
                             title: Text(
                               "Are you sure?",
-                              style: TextStyle(
-                                fontFamily: 'Ubuntu',
-                                color: Colors.indigo[800],
-                              ),
+                              style: Theme.of(context).textTheme.headline3,
+                              textAlign: TextAlign.left,
                             ),
                             contentPadding: EdgeInsets.all(20),
                             content: Text(

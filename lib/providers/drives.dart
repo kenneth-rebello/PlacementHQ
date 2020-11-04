@@ -47,6 +47,9 @@ class Drives with ChangeNotifier {
   }
 
   Future<void> loadDrives(String collegeId) async {
+    if (collegeId == null || collegeId == "") {
+      throw HttpException("Invalid operation");
+    }
     if (collegeId != null && collegeId != "") {
       final url =
           "https://placementhq-777.firebaseio.com/collegeData/$collegeId/drives.json?auth=$token";
@@ -102,7 +105,9 @@ class Drives with ChangeNotifier {
     Company company,
     File image,
   ) async {
-    final year = DateTime.now().year;
+    if (collegeId == null || collegeId == "" || token == null) {
+      throw HttpException("Invalid operation");
+    }
     if (collegeId != null && collegeId != "") {
       //Check that company does not have an existing active drive in college
       if (company != null) {
@@ -142,7 +147,11 @@ class Drives with ChangeNotifier {
       }
 
       //Update or Create College historical data about company
+      final year = DateTime.now().year;
       if (company != null) {
+        if (company.id == null || company.id == "") {
+          throw HttpException("Invalid operation");
+        }
         final urlRecord =
             "https://placementhq-777.firebaseio.com/collegeData/$collegeId/companies/${company.id}.json?auth=$token";
         http.patch(
@@ -158,6 +167,9 @@ class Drives with ChangeNotifier {
           }),
         );
       } else {
+        if (driveData["companyId"] == null || driveData["companyId"] == "") {
+          throw HttpException("Invalid operation");
+        }
         final urlRecord =
             "https://placementhq-777.firebaseio.com/collegeData/$collegeId/companies/${driveData["companyId"]}.json?auth=$token";
         http.patch(
@@ -220,26 +232,39 @@ class Drives with ChangeNotifier {
     await getDriveNotices(driveId);
     await getDriveOffers(driveId, batch);
 
-    _registrations.forEach((reg) async {
-      var url =
-          "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/registrations/${reg.id}.json?auth=$token";
-      await http.delete(url);
-    });
+    Drive currentDrive = _drives.firstWhere((e) => e.id == driveId);
+    if (currentDrive.companyId == null ||
+        currentDrive.companyId == "" ||
+        batch == null ||
+        batch == "" ||
+        _collegeId == null ||
+        _collegeId == "") {
+      throw HttpException("Invalid operation");
+    }
 
-    _notices.forEach((notice) async {
-      var url2 =
-          "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/notices/${notice.id}.json?auth=$token";
-      await http.delete(url2);
-      if (notice.fileName != null && notice.fileName != "") {
-        final ref = FirebaseStorage.instance
-            .ref()
-            .child('notice_documents')
-            .child(notice.fileName);
-        await ref.delete();
+    _registrations.forEach((reg) async {
+      if (reg.id != null && reg.id != "") {
+        var url =
+            "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/registrations/${reg.id}.json?auth=$token";
+        await http.delete(url);
       }
     });
 
-    Drive currentDrive = _drives.firstWhere((e) => e.id == driveId);
+    _notices.forEach((notice) async {
+      if (notice.id != null && notice.id != "") {
+        var url2 =
+            "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/notices/${notice.id}.json?auth=$token";
+        await http.delete(url2);
+        if (notice.fileName != null && notice.fileName != "") {
+          final ref = FirebaseStorage.instance
+              .ref()
+              .child('notice_documents')
+              .child(notice.fileName);
+          await ref.delete();
+        }
+      }
+    });
+
     final companyUrl =
         "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/companies/${currentDrive.companyId}.json?auth=$token";
     final companyData = await http.get(companyUrl);
@@ -264,11 +289,13 @@ class Drives with ChangeNotifier {
     await http.delete(url);
 
     _offers.forEach((offer) async {
-      var url3 =
-          "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$batch/${offer.id}.json?auth=$token";
+      if (offer.id != null && offer.id != "") {
+        var url3 =
+            "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$batch/${offer.id}.json?auth=$token";
 
-      if (offer.accepted == null) {
-        await http.patch(url3, body: json.encode({"accepted": false}));
+        if (offer.accepted == null) {
+          await http.patch(url3, body: json.encode({"accepted": false}));
+        }
       }
     });
     _drives.removeWhere((drive) => drive.id == driveId);
@@ -276,6 +303,12 @@ class Drives with ChangeNotifier {
   }
 
   Future<String> getDriveRegistrations(String driveId) async {
+    if (_collegeId == null ||
+        _collegeId == "" ||
+        driveId == null ||
+        driveId == "") {
+      throw HttpException("Invalid Operation");
+    }
     final urlReg =
         'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/registrations.json?orderBy="driveId"&equalTo="$driveId"&auth=$token';
     final res = await http.get(urlReg);
@@ -312,9 +345,11 @@ class Drives with ChangeNotifier {
 
   Future<void> removeRegistrations(List<String> ids) async {
     ids.forEach((id) async {
-      var url =
-          "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/registrations/$id.json?auth=$token";
-      await http.delete(url);
+      if (id != "" && id != null) {
+        var url =
+            "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/registrations/$id.json?auth=$token";
+        await http.delete(url);
+      }
     });
     _registrations.removeWhere((reg) => ids.contains(reg.id));
     notifyListeners();
@@ -325,6 +360,12 @@ class Drives with ChangeNotifier {
   }
 
   Future<void> getDriveNotices(String driveId) async {
+    if (_collegeId == null ||
+        _collegeId == "" ||
+        driveId == null ||
+        driveId == "") {
+      throw HttpException("Invalid Operation");
+    }
     final url =
         'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/notices.json?orderBy="driveId"&equalTo="$driveId"&auth=$token';
     final res = await http.get(url);
@@ -351,6 +392,9 @@ class Drives with ChangeNotifier {
   }
 
   Future<void> getAllNotices(String collegeId) async {
+    if (_collegeId == null || _collegeId == "") {
+      throw HttpException("Invalid Operation");
+    }
     final url =
         'https://placementhq-777.firebaseio.com/collegeData/$collegeId/notices.json?auth=$token';
     final res = await http.get(url);
@@ -377,6 +421,9 @@ class Drives with ChangeNotifier {
   }
 
   Future<void> deleteNotice(String id, String fileName) async {
+    if (_collegeId == null || _collegeId == "" || id == null || id == "") {
+      throw HttpException("Invalid Operation");
+    }
     var url =
         "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/notices/$id.json?auth=$token";
     await http.delete(url);
@@ -392,6 +439,14 @@ class Drives with ChangeNotifier {
   }
 
   Future<void> getDriveOffers(String driveId, String batch) async {
+    if (_collegeId == null ||
+        _collegeId == "" ||
+        driveId == null ||
+        driveId == "" ||
+        batch == null ||
+        batch == "") {
+      throw HttpException("Invalid Operation");
+    }
     final url =
         'https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$batch.json?orderBy="driveId"&equalTo="$driveId"&auth=$token';
     final res = await http.get(url);
@@ -404,7 +459,7 @@ class Drives with ChangeNotifier {
         candidate: offer["candidate"],
         driveId: offer["driveId"],
         rollNo: offer["rollNo"],
-        department: offer["department"],
+        department: offer["specialization"],
         companyId: offer["companyId"],
         companyName: offer["companyName"],
         companyImageUrl: offer["companyImageUrl"],
@@ -420,6 +475,9 @@ class Drives with ChangeNotifier {
   }
 
   Future<void> confirmSelection(Registration reg) async {
+    if (_collegeId == null || _collegeId == "" || reg == null) {
+      throw HttpException("Invalid Operation");
+    }
     final url =
         "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/registrations/${reg.id}.json?auth=$token";
     await http.patch(url, body: json.encode({"selected": true}));
@@ -457,6 +515,25 @@ class Drives with ChangeNotifier {
 
     final student = _registrations.firstWhere((r) => r.id == reg.id);
     student.selected = true;
+    notifyListeners();
+  }
+
+  Future<void> editOffer(
+      Map<String, dynamic> data, String id, String batch) async {
+    if (_collegeId == null ||
+        _collegeId == "" ||
+        id == null ||
+        id == "" ||
+        batch == null ||
+        batch == "") {
+      throw HttpException("Invalid Operation");
+    }
+    final url =
+        "https://placementhq-777.firebaseio.com/collegeData/$_collegeId/offers/$batch/$id.json?auth=$token";
+    await http.patch(url, body: json.encode(data));
+    var offer = _offers.firstWhere((o) => o.id == id);
+    offer.ctc = data["ctc"];
+    offer.category = data["category"];
     notifyListeners();
   }
 }

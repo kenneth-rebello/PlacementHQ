@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:placementhq/providers/officer.dart';
 import 'package:placementhq/widgets/input/input.dart';
+import 'package:placementhq/widgets/other/error.dart';
 import 'package:placementhq/widgets/other/list_item.dart';
 import 'package:provider/provider.dart';
 
@@ -15,6 +16,7 @@ class _AccountScreenState extends State<AccountScreen> {
   final _form = GlobalKey<FormState>();
   bool editable = false;
   bool _loading = false;
+  bool _error = false;
   Map<String, dynamic> values = {
     "email": "",
     "phone": "",
@@ -57,6 +59,11 @@ class _AccountScreenState extends State<AccountScreen> {
                             editable = false;
                             _loading = false;
                           });
+                      }).catchError((e) {
+                        setState(() {
+                          _loading = false;
+                          _error = true;
+                        });
                       });
                     }
                   }
@@ -78,66 +85,68 @@ class _AccountScreenState extends State<AccountScreen> {
               ? Center(
                   child: CircularProgressIndicator(),
                 )
-              : SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      ListItem(label: "Name", value: account.fullName),
-                      ListItem(
-                          label: "Designation", value: account.designation),
-                      ListItem(
-                        label: "College",
-                        value: account.collegeName,
-                        flexibleHeight: true,
+              : _error
+                  ? Error()
+                  : SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          ListItem(label: "Name", value: account.fullName),
+                          ListItem(
+                              label: "Designation", value: account.designation),
+                          ListItem(
+                            label: "College",
+                            value: account.collegeName,
+                            flexibleHeight: true,
+                          ),
+                          editable
+                              ? Input(
+                                  initialValue: values["email"],
+                                  onChanged: (val) {
+                                    if (mounted)
+                                      setState(() {
+                                        values["email"] = val;
+                                      });
+                                  },
+                                  label: "Email",
+                                  type: TextInputType.emailAddress,
+                                  requiredField: true,
+                                  validator: (val) {
+                                    if (!val.contains("@")) {
+                                      return "Should be a valid email address";
+                                    }
+                                    return null;
+                                  },
+                                )
+                              : ListItem(
+                                  label: "Email",
+                                  value: account.email,
+                                  flexibleHeight: true,
+                                ),
+                          editable
+                              ? Input(
+                                  initialValue: values["phone"].toString(),
+                                  onChanged: (val) {
+                                    if (mounted)
+                                      setState(() {
+                                        values["phone"] = int.parse(val);
+                                      });
+                                  },
+                                  label: "Phone Number",
+                                  type: TextInputType.phone,
+                                  requiredField: true,
+                                  validator: (val) {
+                                    if (val.length != 10) {
+                                      return "Should be 10 digits";
+                                    }
+                                    return null;
+                                  },
+                                )
+                              : ListItem(
+                                  label: "Phone No",
+                                  value: account.phone.toString())
+                        ],
                       ),
-                      editable
-                          ? Input(
-                              initialValue: values["email"],
-                              onChanged: (val) {
-                                if (mounted)
-                                  setState(() {
-                                    values["email"] = val;
-                                  });
-                              },
-                              label: "Email",
-                              type: TextInputType.emailAddress,
-                              requiredField: true,
-                              validator: (val) {
-                                if (!val.contains("@")) {
-                                  return "Should be a valid email address";
-                                }
-                                return null;
-                              },
-                            )
-                          : ListItem(
-                              label: "Email",
-                              value: account.email,
-                              flexibleHeight: true,
-                            ),
-                      editable
-                          ? Input(
-                              initialValue: values["phone"].toString(),
-                              onChanged: (val) {
-                                if (mounted)
-                                  setState(() {
-                                    values["phone"] = int.parse(val);
-                                  });
-                              },
-                              label: "Phone Number",
-                              type: TextInputType.phone,
-                              requiredField: true,
-                              validator: (val) {
-                                if (val.length != 10) {
-                                  return "Should be 10 digits";
-                                }
-                                return null;
-                              },
-                            )
-                          : ListItem(
-                              label: "Phone No",
-                              value: account.phone.toString())
-                    ],
-                  ),
-                ),
+                    ),
         ),
       ),
     );

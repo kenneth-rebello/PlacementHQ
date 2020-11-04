@@ -41,10 +41,14 @@ class _RegistrationsScreenState extends State<RegistrationsScreen> {
       _loading = true;
     });
     final collegeId = Provider.of<User>(context, listen: false).collegeId;
-    Provider.of<Drives>(context, listen: false).loadDrives(collegeId).then((_) {
-      setState(() {
-        _loading = false;
-        _error = false;
+    Provider.of<User>(context, listen: false).getRegistrations().then((_) {
+      Provider.of<Drives>(context, listen: false)
+          .loadDrives(collegeId)
+          .then((_) {
+        setState(() {
+          _loading = false;
+          _error = false;
+        });
       });
     }).catchError((e) {
       setState(() {

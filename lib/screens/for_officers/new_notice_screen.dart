@@ -1,7 +1,10 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:placementhq/models/notice.dart';
 import 'package:placementhq/providers/drives.dart';
+import 'package:placementhq/providers/auth.dart';
 import 'package:placementhq/providers/officer.dart';
+import 'package:placementhq/providers/user.dart';
 import 'package:placementhq/widgets/input/input.dart';
 import 'package:placementhq/widgets/input/no_button.dart';
 import 'package:placementhq/widgets/input/yes_button.dart';
@@ -48,7 +51,7 @@ class _NewNoticeState extends State<NewNotice> {
   @override
   void initState() {
     _loading = true;
-    final collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+    final collegeId = Provider.of<Auth>(context, listen: false).collegeId;
     Provider.of<Drives>(context, listen: false).loadDrives(collegeId).then((_) {
       if (mounted)
         setState(() {
@@ -68,7 +71,7 @@ class _NewNoticeState extends State<NewNotice> {
     setState(() {
       _loading = true;
     });
-    final collegeId = Provider.of<Officer>(context, listen: false).collegeId;
+    final collegeId = Provider.of<Auth>(context, listen: false).collegeId;
     Provider.of<Drives>(context, listen: false).loadDrives(collegeId).then((_) {
       if (mounted)
         setState(() {
@@ -107,6 +110,30 @@ class _NewNoticeState extends State<NewNotice> {
     }
   }
 
+  Future<Notice> addNotice() async {
+    final isTPC = Provider.of<Auth>(context, listen: false).isTPC;
+    Notice notice;
+
+    if (isTPC) {
+      notice = await Provider.of<User>(context, listen: false)
+          .addNewNotice(values, file)
+          .catchError((e) {
+        setState(() {
+          _error = true;
+        });
+      });
+    } else {
+      notice = await Provider.of<Officer>(context, listen: false)
+          .addNewNotice(values, file)
+          .catchError((e) {
+        setState(() {
+          _error = true;
+        });
+      });
+    }
+    return notice;
+  }
+
   _publish() {
     if (values["companyName"] == "" || values["notice"] == "") {
       showDialog(
@@ -131,7 +158,11 @@ class _NewNoticeState extends State<NewNotice> {
       showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-                title: Text("Are you sure?"),
+                title: Text(
+                  "Are you sure?",
+                  style: Theme.of(context).textTheme.headline3,
+                  textAlign: TextAlign.left,
+                ),
                 content: Text(
                   "Publish following notice for ${values["companyName"]}?\n\n${values["notice"]}",
                   textAlign: TextAlign.center,
@@ -142,18 +173,18 @@ class _NewNoticeState extends State<NewNotice> {
                 ],
               )).then((res) {
         if (res == true) {
-          Provider.of<Officer>(context, listen: false)
-              .addNewNotice(values, file)
-              .then((notice) {
+          addNotice().then((notice) {
             Provider.of<Drives>(context, listen: false).addNotice(notice);
             FilePicker.platform.clearTemporaryFiles();
             if (mounted)
               setState(() {
                 values["notice"] = "";
                 values["url"] = "";
+                file = null;
               });
             cont.clear();
             cont2.clear();
+
             Scaffold.of(context)
                 .showSnackBar(SnackBar(content: Text("Published Notice")));
           });
@@ -247,10 +278,22 @@ class _NewNoticeState extends State<NewNotice> {
                           ),
                         ),
                         if (file != null)
-                          Padding(
-                            padding: EdgeInsets.all(10),
-                            child:
-                                Text("File added: ${file.files.single.name}"),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.all(10),
+                                child: Text(
+                                    "File added: ${file.files.single.name}"),
+                              ),
+                              IconButton(
+                                  icon: Icon(Icons.cancel),
+                                  onPressed: () {
+                                    setState(() {
+                                      file = null;
+                                    });
+                                  })
+                            ],
                           ),
                         Input(
                           label: "Add URLs here if required",

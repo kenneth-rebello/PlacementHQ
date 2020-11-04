@@ -17,6 +17,7 @@ class Auth with ChangeNotifier {
   String _collegeId;
   bool isOfficer = false;
   bool isVerified = false;
+  bool isTPC = false;
   Timer authTimer;
   String userEmail;
   String userPassword;
@@ -121,12 +122,14 @@ class Auth with ChangeNotifier {
         if (officer != null) {
           isOfficer = true;
           isVerified = officer["verified"];
+          _collegeId = officer["collegeId"];
         } else {
           final resUser = await http.get(
               "https://placementhq-777.firebaseio.com/users/${data['localId']}.json?auth=${data['idToken']}");
           final user = json.decode(resUser.body);
           isOfficer = false;
           isVerified = false;
+          isTPC = user["isTPC"] == null ? false : user["isTPC"];
           _collegeId = user["collegeId"];
         }
       } catch (e) {
@@ -143,6 +146,7 @@ class Auth with ChangeNotifier {
         'email': email,
         "collegeId": _collegeId,
         "isOfficer": isOfficer,
+        "isTPC": isTPC,
         "isVerified": isVerified,
       });
       prefs.setString('pHQuserData', userData);
@@ -179,6 +183,7 @@ class Auth with ChangeNotifier {
     final expiryDate = DateTime.parse(userData['expiryDate']);
     isVerified = userData["isVerified"];
     isOfficer = userData["isOfficer"];
+    isTPC = userData["isTPC"];
     _token = userData['token'];
     _userId = userData['userId'];
     _collegeId = userData["collegeId"];
@@ -201,6 +206,9 @@ class Auth with ChangeNotifier {
       fbm.unsubscribeFromTopic("college" + _collegeId);
       fbm.unsubscribeFromTopic("user" + userId);
     }
+    isOfficer = false;
+    isVerified = false;
+    isTPC = false;
     _token = null;
     _userId = null;
     _expiryDate = null;
@@ -245,6 +253,7 @@ class Auth with ChangeNotifier {
       'email': cachedData["email"],
       "collegeId": cachedData["collegeId"],
       "isOfficer": cachedData["isOfficer"],
+      "isTPC": cachedData["isTPC"],
       "isVerified": cachedData["isVerified"],
     });
     prefs.setString('pHQuserData', userData);

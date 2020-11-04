@@ -1,6 +1,9 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
-class Error extends StatelessWidget {
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+class Error extends StatefulWidget {
   final String message;
   final Widget action;
   final Future<void> Function() refresher;
@@ -9,11 +12,32 @@ class Error extends StatelessWidget {
     this.action,
     this.refresher,
   });
+
+  @override
+  _ErrorState createState() => _ErrorState();
+}
+
+class _ErrorState extends State<Error> {
+  bool _connected = true;
+
+  @override
+  void initState() {
+    http.get("https://www.google.com/").then((res) {}).catchError((e) {
+      if (e.runtimeType == SocketException) {
+        setState(() {
+          _connected = false;
+        });
+      }
+    });
+
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(color: Colors.indigo[100]),
+      decoration: BoxDecoration(color: Colors.indigo[50]),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -33,27 +57,51 @@ class Error extends StatelessWidget {
               style: TextStyle(
                 fontFamily: "Merriweather",
                 color: Colors.red,
-                fontSize: 20,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              "$message",
-              style: TextStyle(
-                fontFamily: "Merriweather",
-                color: Colors.indigo[700],
                 fontSize: 18,
               ),
               textAlign: TextAlign.center,
             ),
           ),
-          if (action != null) action,
-          if (refresher != null)
+          _connected
+              ? SizedBox(height: 1)
+              : Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Icon(
+                    Icons.wifi_off,
+                    size: 30,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ),
+          _connected
+              ? SizedBox(height: 1)
+              : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "Please check your internet connection",
+                    style: TextStyle(
+                      fontFamily: "Merriweather",
+                      color: Colors.indigo[700],
+                      fontSize: 16,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "${widget.message}",
+              style: TextStyle(
+                fontFamily: "Merriweather",
+                color: Colors.indigo[700],
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          if (widget.action != null) widget.action,
+          if (widget.refresher != null)
             RaisedButton(
-              onPressed: refresher,
+              onPressed: widget.refresher,
               child: Text(
                 "Retry",
                 style: Theme.of(context).textTheme.button,
