@@ -135,7 +135,6 @@ class _DriveDetailsScreenState extends State<DriveDetailsScreen> {
                                 label:
                                     "From the office of ${drive.companyName}: ",
                                 value: drive.companyMessage,
-                                flexibleHeight: true,
                               ),
                             ListItem(
                               label: "Expected By: ",

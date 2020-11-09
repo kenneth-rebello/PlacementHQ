@@ -402,7 +402,11 @@ class User with ChangeNotifier {
   }
 
   void updateValues(Map<String, dynamic> profileData) {
-    if (_userProfile == null) _userProfile = new Profile();
+    if (_userProfile == null)
+      _userProfile = new Profile(
+        offers: [],
+        registrations: [],
+      );
     if (profileData["verified"] != null)
       _userProfile.verified = profileData["verified"];
     if (profileData["firstName"] != null)

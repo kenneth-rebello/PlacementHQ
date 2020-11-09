@@ -147,12 +147,21 @@ class _AcademicDetailsState extends State<AcademicDetails> {
                     if (suggestions.length > 0)
                       Container(
                         height: 100,
+                        decoration: BoxDecoration(
+                          border:
+                              Border.all(color: Theme.of(context).primaryColor),
+                        ),
                         child: ListView.builder(
                           itemCount: suggestions.length,
                           itemBuilder: (ctx, idx) => ListTile(
+                            tileColor: Colors.indigo[400],
                             title: Text(
                               suggestions[idx],
-                              style: TextStyle(color: Colors.blue[900]),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontFamily: "Ubuntu",
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                             onTap: () {
                               cont.text = suggestions[idx];
@@ -161,6 +170,7 @@ class _AcademicDetailsState extends State<AcademicDetails> {
                                 initValues["collegeId"] =
                                     mapCollegeToId[suggestions[idx]];
                                 _enabled = false;
+                                suggestions = [];
                               });
                             },
                           ),

@@ -96,7 +96,6 @@ class _AccountScreenState extends State<AccountScreen> {
                           ListItem(
                             label: "College",
                             value: account.collegeName,
-                            flexibleHeight: true,
                           ),
                           editable
                               ? Input(
@@ -120,7 +119,6 @@ class _AccountScreenState extends State<AccountScreen> {
                               : ListItem(
                                   label: "Email",
                                   value: account.email,
-                                  flexibleHeight: true,
                                 ),
                           editable
                               ? Input(

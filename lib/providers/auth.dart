@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/http_exception.dart';
@@ -203,7 +202,7 @@ class Auth with ChangeNotifier {
 
     if (_collegeId != null) {
       final fbm = FirebaseMessaging();
-      fbm.unsubscribeFromTopic("college" + _collegeId);
+      fbm.unsubscribeFromTopic("college_" + _collegeId);
       fbm.unsubscribeFromTopic("user" + userId);
     }
     isOfficer = false;
@@ -269,8 +268,6 @@ class Auth with ChangeNotifier {
       return;
     }
 
-    DateFormat formatter = new DateFormat("dd-MM-yyyy hh:mm");
-    print(formatter.format(_expiryDate));
     final timeToExpire = _expiryDate.difference(DateTime.now()).inSeconds;
     authTimer = Timer(Duration(seconds: timeToExpire - 300), refreshToken);
   }

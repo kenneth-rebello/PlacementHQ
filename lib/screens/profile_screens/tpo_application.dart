@@ -66,7 +66,6 @@ class _TPOApplicationState extends State<TPOApplication> {
           Provider.of<Officer>(context, listen: false)
               .applyForAccount(values, newCollege)
               .then((_) {
-            Provider.of<Auth>(context, listen: false).logout();
             Navigator.of(context).pop();
           });
         }
@@ -159,21 +158,29 @@ class _TPOApplicationState extends State<TPOApplication> {
                             height: 100,
                             decoration: BoxDecoration(
                               border: Border.all(
-                                  color: Theme.of(context).primaryColor),
+                                color: Colors.orange[600],
+                                width: 1.5,
+                              ),
                             ),
                             child: ListView.builder(
                               itemCount: suggestions.length,
                               itemBuilder: (ctx, idx) => ListTile(
+                                tileColor: Colors.indigo[400],
                                 title: Text(
                                   suggestions[idx],
-                                  style: TextStyle(color: Colors.blue[900]),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontFamily: "Ubuntu",
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                                 onTap: () {
                                   cont.text = suggestions[idx];
-                                  values["collegeName"] = suggestions[idx];
-                                  values["collegeId"] =
-                                      mapCollegeToId[suggestions[idx]];
                                   setState(() {
+                                    values["collegeName"] = suggestions[idx];
+                                    values["collegeId"] =
+                                        mapCollegeToId[suggestions[idx]];
+                                    suggestions = [];
                                     newCollege = false;
                                   });
                                 },

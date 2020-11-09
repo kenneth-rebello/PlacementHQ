@@ -23,6 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userId = Provider.of<Auth>(context).userId;
     final isOfficer = Provider.of<Auth>(context, listen: false).isOfficer;
     var profile;
     if (isOfficer == true) {
@@ -157,6 +158,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   AboutText("Version 1.0.0"),
+                  if (userId != null && userId != "")
+                    Container(
+                      margin: EdgeInsets.all(3),
+                      child: Text(
+                        "User ID: $userId",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

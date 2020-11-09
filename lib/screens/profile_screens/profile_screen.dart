@@ -166,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ]),
                     )
                   : Container(
-                      height: 200,
+                      height: 250,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
@@ -265,7 +265,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ListItem(
                           label: "College",
                           value: profile.collegeName,
-                          flexibleHeight: true,
                         ),
                         ListItem(
                           label: "Specialization",
@@ -324,7 +323,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ListItem(
                           label: "Address",
                           value: profile.address,
-                          flexibleHeight: true,
                         ),
                         ListItem(
                           label: "City",

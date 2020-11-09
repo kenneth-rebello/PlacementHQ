@@ -1,7 +1,4 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:placementhq/res/constants.dart';
 import 'package:provider/provider.dart';
 import '../models/http_exception.dart';
 import '../providers/auth.dart';
@@ -40,33 +37,9 @@ class AuthScreen extends StatelessWidget {
                 children: <Widget>[
                   Flexible(
                     child: Container(
-                      margin:
-                          EdgeInsets.symmetric(vertical: 40, horizontal: 40),
-                      padding:
-                          EdgeInsets.symmetric(vertical: 15, horizontal: 60),
-                      transform: Matrix4.rotationZ(-4 * pi / 180),
-                      // ..translate(10.0),
-                      // ..translate(-10.0),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.indigo[800],
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 8,
-                            color: Colors.black26,
-                            offset: Offset(0, 2),
-                          )
-                        ],
-                      ),
-                      child: Text(
-                        Constants.title,
-                        style: TextStyle(
-                          fontFamily: 'Exo',
-                          fontSize: 24,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      height: 150,
+                      width: 150,
+                      child: Image.asset('assets/images/logo.png'),
                     ),
                   ),
                   Flexible(

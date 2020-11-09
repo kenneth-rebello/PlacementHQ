@@ -222,6 +222,8 @@ class _DriveStudentsScreenState extends State<DriveStudentsScreen> {
                             setState(() {
                               _loading = false;
                               _error = true;
+                              _pickable = false;
+                              picked = List.filled(1000, false);
                             });
                           });
                         }

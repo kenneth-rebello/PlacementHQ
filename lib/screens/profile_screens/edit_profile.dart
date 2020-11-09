@@ -39,7 +39,7 @@ class _EditProfileState extends State<EditProfile>
       if (mounted)
         setState(() {
           _loading = false;
-          _error = true;
+          _error = false;
           _tabIndex = (_tabIndex + 1) % 3;
         });
     }).catchError((e) {

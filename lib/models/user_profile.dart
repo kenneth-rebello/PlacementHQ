@@ -86,10 +86,16 @@ class Profile {
   }
 
   String get fullName {
+    if (firstName == null) return null;
+    if (lastName == null) this.lastName = "";
     return firstName + " " + lastName;
   }
 
   String get fullAddress {
+    if (address == null) this.address = "";
+    if (city == null) this.city = "";
+    if (state == null) this.state = "";
+    if (pincode == null) this.pincode = 0;
     return address + ", " + city + ", " + state + ". " + pincode.toString();
   }
 
@@ -99,7 +105,6 @@ class Profile {
 
   String get placedValue {
     final res = this.placedCategory == "None" ? "Z" : "A";
-    print(res);
     return res;
   }
 }

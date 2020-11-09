@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 class ListItem extends StatelessWidget {
   final String value;
   final String label;
-  final bool flexibleHeight;
   final double ratio;
   final bool shrink;
   final TextAlign labelAlign;
@@ -12,7 +11,6 @@ class ListItem extends StatelessWidget {
   ListItem({
     @required this.label,
     @required this.value,
-    this.flexibleHeight = false,
     this.ratio = 1 / 3,
     this.shrink = false,
     this.labelAlign = TextAlign.left,
@@ -28,7 +26,6 @@ class ListItem extends StatelessWidget {
     return value == null || value == "" || value == "null"
         ? SizedBox(height: 1)
         : Container(
-            height: flexibleHeight ? null : 50,
             margin: EdgeInsets.symmetric(vertical: 5),
             child: Column(children: [
               Divider(),
